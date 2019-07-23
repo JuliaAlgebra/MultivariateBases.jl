@@ -1,0 +1,13 @@
+name = "PolynomialBases"
+uuid = "be282fd4-ad43-11e9-1d11-8bd9d7e43378"
+repo = "https://github.com/JuliaAlgebra/PolynomialBases.jl.git"
+version = "0.1.0"
+
+[deps]
+MultivariatePolynomials = "102ac46a-7ee4-5c85-9060-abc95bfdeaa3"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
