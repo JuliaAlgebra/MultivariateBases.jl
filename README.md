@@ -15,13 +15,13 @@ based on the [MultivariatePolynomials](https://github.com/JuliaAlgebra/Multivari
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
-[docs-stable-url]: https://JuliaAlgebra.github.io/MultivariatePolynomials.jl/stable
-[docs-latest-url]: https://JuliaAlgebra.github.io/MultivariatePolynomials.jl/latest
+[docs-stable-url]: https://JuliaAlgebra.github.io/PolynomialBases.jl/stable
+[docs-latest-url]: https://JuliaAlgebra.github.io/PolynomialBases.jl/latest
 
-[build-img]: https://travis-ci.org/JuliaAlgebra/MultivariatePolynomials.jl.svg?branch=master
-[build-url]: https://travis-ci.org/JuliaAlgebra/MultivariatePolynomials.jl
-[codecov-img]: http://codecov.io/github/JuliaAlgebra/MultivariatePolynomials.jl/coverage.svg?branch=master
-[codecov-url]: http://codecov.io/github/JuliaAlgebra/MultivariatePolynomials.jl?branch=master
+[build-img]: https://travis-ci.org/JuliaAlgebra/PolynomialBases.jl.svg?branch=master
+[build-url]: https://travis-ci.org/JuliaAlgebra/PolynomialBases.jl
+[codecov-img]: http://codecov.io/github/JuliaAlgebra/PolynomialBases.jl/coverage.svg?branch=master
+[codecov-url]: http://codecov.io/github/JuliaAlgebra/PolynomialBases.jl?branch=master
 
 [gitter-url]: https://gitter.im/JuliaAlgebra/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link
 [gitter-img]: https://badges.gitter.im/JuliaAlgebra/Lobby.svg
