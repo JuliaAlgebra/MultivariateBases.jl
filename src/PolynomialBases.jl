@@ -1,4 +1,4 @@
-module PolynomialBases
+module MultivariateBases
 
 using MultivariatePolynomials
 

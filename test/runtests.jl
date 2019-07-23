@@ -1,6 +1,6 @@
 using Test
 
-using PolynomialBases
+using MultivariateBases
 
 @testset "Monomial" begin
     include("monomial.jl")

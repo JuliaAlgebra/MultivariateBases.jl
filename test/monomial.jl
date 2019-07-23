@@ -1,5 +1,5 @@
 using Test
-using PolynomialBases
+using MultivariateBases
 using DynamicPolynomials
 @polyvar x y
 
