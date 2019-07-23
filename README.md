@@ -1,4 +1,4 @@
-# Multivariate Polynomials
+# Polynomial Bases
 
 | **Documentation** | **Build Status** | **Social** |
 |:-----------------:|:----------------:|:----------:|
