@@ -1,6 +1,7 @@
 module MultivariateBases
 
 using MultivariatePolynomials
+const MP= MultivariatePolynomials
 
 export AbstractPolynomialBasis
 export FixedPolynomialBasis, ScaledMonomialBasis, MonomialBasis

@@ -8,3 +8,7 @@ Polynomial basis of a subspace of the polynomials [Section~3.1.5, BPT12].
 Society for Industrial and Applied Mathematics, **2012**.
 """
 abstract type AbstractPolynomialBasis end
+
+function MP.polynomial(coefs::Vector, basis::AbstractPolynomialBasis)
+    return MP.polynomial(i -> coefs[i], basis)
+end

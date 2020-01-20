@@ -1,5 +1,5 @@
 """
-    struct ScaledMonomialBasis{MT<:MultivariatePolynomials.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractPolynomialBasis
+    struct ScaledMonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractPolynomialBasis
         monomials::MV
     end
 
@@ -20,15 +20,17 @@ Constraining the polynomial ``axy^2 + bxy`` to be zero with the scaled monomial 
 *Semidefinite Optimization and Convex Algebraic Geometry*.
 Society for Industrial and Applied Mathematics, **2012**.
 """
-struct ScaledMonomialBasis{MT<:MultivariatePolynomials.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractPolynomialBasis
+struct ScaledMonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractPolynomialBasis
     monomials::MV
 end
 ScaledMonomialBasis(monomials) = ScaledMonomialBasis(monovec(monomials))
 
-MultivariatePolynomials.polynomialtype(mb::ScaledMonomialBasis{MT}, T::Type) where MT = MultivariatePolynomials.polynomialtype(MT, promote_type(T, Float64))
-scaling(m::MultivariatePolynomials.AbstractMonomial) = √(factorial(degree(m)) / prod(factorial, exponents(m)))
-MultivariatePolynomials.polynomial(f::Function, mb::ScaledMonomialBasis) = polynomial(i -> scaling(mb.monomials[i]) * f(i), mb.monomials)
-unscale_coef(t::MultivariatePolynomials.AbstractTerm) = coefficient(t) / scaling(monomial(t))
-function MultivariatePolynomials.coefficients(p, ::Type{<:ScaledMonomialBasis})
-    return unscale_coef.(terms(p))
+Base.length(basis::ScaledMonomialBasis) = length(basis.monomials)
+empty_basis(::Type{ScaledMonomialBasis{MT, MVT}}) where {MT, MVT} = ScaledMonomialBasis(MP.emptymonovec(MT))
+MP.polynomialtype(mb::ScaledMonomialBasis{MT}, T::Type) where MT = MP.polynomialtype(MT, promote_type(T, Float64))
+scaling(m::MP.AbstractMonomial) = √(factorial(MP.degree(m)) / prod(factorial, MP.exponents(m)))
+MP.polynomial(f::Function, mb::ScaledMonomialBasis) = MP.polynomial(i -> scaling(mb.monomials[i]) * f(i), mb.monomials)
+unscale_coef(t::MP.AbstractTerm) = coefficient(t) / scaling(monomial(t))
+function MP.coefficients(p, ::Type{<:ScaledMonomialBasis})
+    return unscale_coef.(MP.terms(p))
 end
