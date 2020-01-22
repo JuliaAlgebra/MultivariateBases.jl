@@ -22,3 +22,6 @@ end
     @test polynomial(i -> i^2, basis) == x^2 + 4*√2*x*y + 9y^2
     @test coefficients(x^2 + 4x*y + 9y^2, ScaledMonomialBasis) == [1, 4 / √2, 9]
 end
+@testset "API degree = $degree" for degree in 0:3
+    api_test(ScaledMonomialBasis, degree)
+end

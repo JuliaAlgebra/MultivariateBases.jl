@@ -20,16 +20,30 @@ Constraining the polynomial ``axy^2 + bxy`` to be zero with the scaled monomial 
 *Semidefinite Optimization and Convex Algebraic Geometry*.
 Society for Industrial and Applied Mathematics, **2012**.
 """
-struct ScaledMonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractPolynomialBasis
+struct ScaledMonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractMonomialBasis{MT, MV}
     monomials::MV
 end
 ScaledMonomialBasis(monomials) = ScaledMonomialBasis(monovec(monomials))
 
-Base.length(basis::ScaledMonomialBasis) = length(basis.monomials)
-empty_basis(::Type{ScaledMonomialBasis{MT, MVT}}) where {MT, MVT} = ScaledMonomialBasis(MP.emptymonovec(MT))
-MP.polynomialtype(mb::ScaledMonomialBasis{MT}, T::Type) where MT = MP.polynomialtype(MT, promote_type(T, Float64))
+MP.polynomialtype(::ScaledMonomialBasis{MT}, T::Type) where MT = MP.polynomialtype(MT, promote_type(T, Float64))
+MP.polynomial(f::Function, basis::ScaledMonomialBasis) = MP.polynomial(i -> scaling(basis.monomials[i]) * f(i), basis.monomials)
+
+function Base.promote_rule(::Type{ScaledMonomialBasis{MT, MV}}, ::Type{MonomialBasis{MT, MV}}) where {MT, MV}
+    return MonomialBasis{MT, MV}
+end
+
+function change_basis(Q::AbstractMatrix, basis::ScaledMonomialBasis{MT, MV}, B::Type{MonomialBasis{MT, MV}}) where {MT, MV}
+    n = length(basis)
+    scalings = map(scaling, basis.monomials)
+    scaled_Q = [Q[i, j] * scalings[i] * scalings[j] for i in 1:n, j in 1:n]
+    return scaled_Q, MonomialBasis(basis.monomials)
+end
+
+function MP.polynomial(Q::AbstractMatrix, basis::ScaledMonomialBasis{MT, MV}, T::Type) where {MT, MV}
+    return MP.polynomial(change_basis(Q, basis, MonomialBasis{MT, MV})..., T)
+end
+
 scaling(m::MP.AbstractMonomial) = √(factorial(MP.degree(m)) / prod(factorial, MP.exponents(m)))
-MP.polynomial(f::Function, mb::ScaledMonomialBasis) = MP.polynomial(i -> scaling(mb.monomials[i]) * f(i), mb.monomials)
 unscale_coef(t::MP.AbstractTerm) = coefficient(t) / scaling(monomial(t))
 function MP.coefficients(p, ::Type{<:ScaledMonomialBasis})
     return unscale_coef.(MP.terms(p))
