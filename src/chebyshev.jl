@@ -1,26 +1,35 @@
-struct ChebyshevBasis{P} <: AbstractPolynomialVectorBasis{P, Vector{P}}
+abstract type AbstractChebyshevBasis{P} <: AbstractGegenbauerBasis{P} end
+
+polynomial_type(::Type{<:AbstractChebyshevBasis}, V::Type) = MP.polynomialtype(V, Float64)
+
+reccurence_first_coef(::Type{<:AbstractChebyshevBasis}, degree) = 2
+reccurence_third_coef(::Type{<:AbstractChebyshevBasis}, degree) = -1
+reccurence_deno_coef(::Type{<:AbstractChebyshevBasis}, degree) = 1
+
+"""
+    struct ChebyshevBasisFirstKind{P} <: AbstractChebyshevBasis{P}
+        polynomials::Vector{P}
+    end
+
+Orthogonal polynomial with respect to the univariate weight function ``w(x) = \\frac{1}{\\sqrt{1 - x^2}}`` over the interval ``[-1, 1]``.
+"""
+struct ChebyshevBasisFirstKind{P} <: AbstractChebyshevBasis{P}
     polynomials::Vector{P}
 end
 
-function chebyshev_polynomial_first_kind(variable::MP.AbstractVariable, degree::Integer)
-    @assert degree >= 0
-    if degree == 0
-        return [MA.@rewrite(0 * variable + 1)]
-    elseif degree == 1
-        return push!(chebyshev_polynomial_first_kind(variable, 0),
-                     MA.@rewrite(1 * variable + 0))
-    else
-        previous = chebyshev_polynomial_first_kind(variable, degree - 1)
-        next = MA.@rewrite(2variable * previous[degree] - previous[degree - 1])
-        push!(previous, next)
-        return previous
+const ChebyshevBasis{P} = ChebyshevBasisFirstKind{P}
+
+degree_one_univariate_polynomial(::Type{<:ChebyshevBasisFirstKind}, variable::MP.AbstractVariable) = MA.@rewrite(variable + 0)
+
+"""
+    struct ChebyshevBasisSecondKind{P} <: AbstractChebyshevBasis{P}
+        polynomials::Vector{P}
     end
+
+Orthogonal polynomial with respect to the univariate weight function ``w(x) = \\sqrt{1 - x^2}`` over the interval ``[-1, 1]``.
+"""
+struct ChebyshevBasisSecondKind{P} <: AbstractChebyshevBasis{P}
+    polynomials::Vector{P}
 end
 
-function maxdegree_basis(B::Type{ChebyshevBasis}, variables, maxdegree::Int)
-    univariate = [chebyshev_polynomial_first_kind(variable, maxdegree) for variable in variables]
-    return ChebyshevBasis([
-        prod(i -> univariate[i][degree(mono, variables[i]) + 1],
-             eachindex(variables))
-        for mono in MP.monomials(variables, 0:maxdegree)])
-end
+degree_one_univariate_polynomial(::Type{<:ChebyshevBasisSecondKind}, variable::MP.AbstractVariable) = MA.@rewrite(2variable + 0)

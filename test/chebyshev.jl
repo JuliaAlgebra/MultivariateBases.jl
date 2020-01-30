@@ -1,16 +1,24 @@
 using Test
 using MultivariateBases
-using DynamicPolynomials
-@polyvar x y
 
-@testset "Univariate" begin
-    basis = maxdegree_basis(ChebyshevBasis, (x,), 3)
-    @test basis.polynomials[4] == 1
-    @test basis.polynomials[3] == x
-    @test basis.polynomials[2] == 2x^2 - 1
-    @test basis.polynomials[1] == 4x^3 - 3x
+@testset "Orthogonal" begin
+    orthogonal_test(ChebyshevBasis, x -> [
+        1,
+        x,
+        2x^2 - 1,
+        4x^3 - 3x,
+        8x^4 - 8x^2 + 1
+    ], true)
+    orthogonal_test(ChebyshevBasisSecondKind, x -> [
+        1,
+        2x,
+        4x^2 - 1,
+        8x^3 - 4x,
+        16x^4 - 12x^2 + 1
+    ], true)
 end
 
 @testset "API degree = $degree" for degree in 0:3
     api_test(ChebyshevBasis, degree)
+    api_test(ChebyshevBasisSecondKind, degree)
 end
