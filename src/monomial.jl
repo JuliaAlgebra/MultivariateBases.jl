@@ -11,6 +11,9 @@ empty_basis(MB::Type{<:AbstractMonomialBasis{MT}}) where {MT} = MB(MP.emptymonov
 function maxdegree_basis(B::Type{<:AbstractMonomialBasis}, variables, maxdegree::Int)
     return B(MP.monomials(variables, 0:maxdegree))
 end
+function basis_covering_monomials(B::Type{<:AbstractMonomialBasis}, monos::AbstractVector{<:AbstractMonomial})
+    return B(monos)
+end
 
 # The `i`th index of output is the index of occurence of `x[i]` in `y`,
 # or `0` if it does not occur.

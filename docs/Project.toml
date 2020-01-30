@@ -1,5 +1,6 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+MultivariateBases = "be282fd4-ad43-11e9-1d11-8bd9d7e43378"
 
 [compat]
 Documenter = "~0.21"
