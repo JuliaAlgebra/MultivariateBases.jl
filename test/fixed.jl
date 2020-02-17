@@ -27,4 +27,7 @@ end
     basis = FixedPolynomialBasis([x])
     @test polynomialtype(basis, Int) == polynomialtype(x, Int)
     @test polynomial(i -> 5, basis) == 5x
+    @test typeof(polynomial(i -> 5, basis)) == polynomialtype(basis, Int)
+    @test typeof(polynomial(ones(Int, 1, 1), basis, Int)) <: AbstractPolynomial{Int}
+    @test typeof(polynomial(ones(Int, 1, 1), basis, Float64)) <: AbstractPolynomial{Float64}
 end

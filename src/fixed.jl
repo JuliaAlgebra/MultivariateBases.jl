@@ -15,17 +15,17 @@ function MP.polynomialtype(basis::AbstractPolynomialVectorBasis{PT}, T::Type) wh
     return MP.polynomialtype(PT, V)
 end
 function MP.polynomial(f::Function, basis::AbstractPolynomialVectorBasis)
-    return mapreduce(ip -> f(ip[1]) * ip[2], MA.add!, enumerate(basis.polynomials))
+    return MP.polynomial(mapreduce(
+        ip -> f(ip[1]) * ip[2], MA.add!, enumerate(basis.polynomials)))
 end
 
 function MP.polynomial(Q::AbstractMatrix, basis::AbstractPolynomialVectorBasis,
                        T::Type)
     n = length(basis)
     @assert size(Q) == (n, n)
-    return mapreduce(row -> basis.polynomials[row] *
+    return MP.polynomial(mapreduce(row -> basis.polynomials[row] *
         mapreduce(col -> Q[row, col] * basis.polynomials[col], MA.add!, 1:n),
-        MA.add!, 1:n)
-    return mapreduce()
+        MA.add!, 1:n), T)
 end
 
 """
