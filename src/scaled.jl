@@ -76,7 +76,7 @@ function change_basis(
 ) where {MT,MV}
     n = length(basis)
     scalings = map(scaling, basis.monomials)
-    scaled_Q = [Q[i, j] * scalings[i] * scalings[j] for i in 1:n, j in 1:n]
+    scaled_Q = [Q[i, j] * scalings[i] * scalings[j] for i = 1:n, j = 1:n]
     return scaled_Q, MonomialBasis(basis.monomials)
 end
 
@@ -94,4 +94,7 @@ end
 unscale_coef(t::MP.AbstractTerm) = MP.coefficient(t) / scaling(MP.monomial(t))
 function MP.coefficients(p, ::Type{<:ScaledMonomialBasis})
     return unscale_coef.(MP.terms(p))
+end
+function MP.coefficients(p, basis::ScaledMonomialBasis)
+    return MP.coefficients(p, basis.monomials) ./ scaling.(MP.monomials(p))
 end

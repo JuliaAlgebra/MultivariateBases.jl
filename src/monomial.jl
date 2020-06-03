@@ -91,6 +91,10 @@ function MP.polynomial(Q::AbstractMatrix, mb::MonomialBasis, T::Type)
     return MP.polynomial(Q, mb.monomials, T)
 end
 
+function MP.coefficients(p, basis::MonomialBasis)
+    return MP.coefficients(p, basis.monomials)
+end
+
 function MP.coefficients(p, ::Type{<:MonomialBasis})
     return MP.coefficients(p)
 end

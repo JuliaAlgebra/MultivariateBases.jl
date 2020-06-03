@@ -29,6 +29,8 @@ export generators,
     reccurence_third_coef,
     reccurence_deno_coef
 include("fixed.jl")
+
+import LinearAlgebra
 include("orthogonal.jl")
 include("hermite.jl")
 include("laguerre.jl")

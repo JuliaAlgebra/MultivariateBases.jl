@@ -66,3 +66,15 @@ end
     p = @inferred polynomial(zeros(Int, 0, 0), basis, Int)
     @test iszero(p)
 end
+
+@testset "Enumerate" begin
+    monos = [1, y, x]
+    basis = MonomialBasis(monos)
+    for (i, e) in enumerate(basis)
+        @test e == monos[i]
+    end
+end
+
+@testset "Coefficients" begin
+    coefficient_test(MonomialBasis, [1, -3, 1, 1])
+end
