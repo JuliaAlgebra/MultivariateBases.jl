@@ -18,6 +18,8 @@ export FixedPolynomialBasis, AbstractMultipleOrthogonalBasis, ProbabilistsHermit
 export AbstractGegenbauerBasis, LegendreBasis, ChebyshevBasis, ChebyshevBasisFirstKind, ChebyshevBasisSecondKind
 export univariate_orthogonal_basis, reccurence_first_coef, reccurence_second_coef, reccurence_third_coef, reccurence_deno_coef
 include("fixed.jl")
+
+import LinearAlgebra
 include("orthogonal.jl")
 include("hermite.jl")
 include("laguerre.jl")

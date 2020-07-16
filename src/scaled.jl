@@ -1,9 +1,9 @@
 """
     struct ScaledMonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractPolynomialBasis
-        monomials::MV
+        elements::MV
     end
 
-*Scaled monomial basis* (see [Section 3.1.5, BPT12]) with the monomials of the vector `monomials`.
+*Scaled monomial basis* (see [Section 3.1.5, BPT12]) with the monomials of the vector `elements`.
 Given a monomial ``x^\\alpha = x_1^{\\alpha_1} \\cdots x_n^{\\alpha_n}`` of degree ``d = \\sum_{i=1}^n \\alpha_i``,
 the corresponding polynomial of the basis is
 ```math
@@ -21,12 +21,12 @@ Constraining the polynomial ``axy^2 + bxy`` to be zero with the scaled monomial 
 Society for Industrial and Applied Mathematics, **2012**.
 """
 struct ScaledMonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractMonomialBasis{MT, MV}
-    monomials::MV
+    elements::MV
 end
 ScaledMonomialBasis(monomials) = ScaledMonomialBasis(monovec(monomials))
 
 MP.polynomialtype(::ScaledMonomialBasis{MT}, T::Type) where MT = MP.polynomialtype(MT, promote_type(T, Float64))
-MP.polynomial(f::Function, basis::ScaledMonomialBasis) = MP.polynomial(i -> scaling(basis.monomials[i]) * f(i), basis.monomials)
+MP.polynomial(f::Function, basis::ScaledMonomialBasis) = MP.polynomial(i -> scaling(basis.elements[i]) * f(i), basis.elements)
 
 function Base.promote_rule(::Type{ScaledMonomialBasis{MT, MV}}, ::Type{MonomialBasis{MT, MV}}) where {MT, MV}
     return MonomialBasis{MT, MV}
@@ -34,9 +34,9 @@ end
 
 function change_basis(Q::AbstractMatrix, basis::ScaledMonomialBasis{MT, MV}, B::Type{MonomialBasis{MT, MV}}) where {MT, MV}
     n = length(basis)
-    scalings = map(scaling, basis.monomials)
+    scalings = map(scaling, basis.elements)
     scaled_Q = [Q[i, j] * scalings[i] * scalings[j] for i in 1:n, j in 1:n]
-    return scaled_Q, MonomialBasis(basis.monomials)
+    return scaled_Q, MonomialBasis(basis.elements)
 end
 
 function MP.polynomial(Q::AbstractMatrix, basis::ScaledMonomialBasis{MT, MV}, T::Type) where {MT, MV}

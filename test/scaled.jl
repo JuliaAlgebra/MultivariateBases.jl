@@ -25,3 +25,15 @@ end
 @testset "API degree = $degree" for degree in 0:3
     api_test(ScaledMonomialBasis, degree)
 end
+
+@testset "Enumerate" begin
+    monos = [1, y, x]
+    basis = ScaledMonomialBasis(monos)
+    for (i, e) in enumerate(basis) 
+        @test e == monos[length(monos)+1-i]
+    end
+end
+
+@testset "Coefficients" begin
+    coefficient_test(ScaledMonomialBasis, [0.2581988897471611, 0.2581988897471611, -1.2247448713915892, 1])
+end
