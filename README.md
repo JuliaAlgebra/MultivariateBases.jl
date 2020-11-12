@@ -16,10 +16,10 @@ based on the [MultivariatePolynomials](https://github.com/JuliaAlgebra/Multivari
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-stable-url]: https://JuliaAlgebra.github.io/MultivariateBases.jl/stable
-[docs-latest-url]: https://JuliaAlgebra.github.io/MultivariateBases.jl/latest
+[docs-latest-url]: https://JuliaAlgebra.github.io/MultivariateBases.jl/dev
 
-[build-img]: https://travis-ci.org/JuliaAlgebra/MultivariateBases.jl.svg?branch=master
-[build-url]: https://travis-ci.org/JuliaAlgebra/MultivariateBases.jl
+[build-img]: https://github.com/JuliaAlgebra/MultivariateBases.jl/workflows/CI/badge.svg?branch=master
+[build-url]: https://github.com/JuliaAlgebra/MultivariateBases.jl/actions?query=workflow%3ACI
 [codecov-img]: http://codecov.io/github/JuliaAlgebra/MultivariateBases.jl/coverage.svg?branch=master
 [codecov-url]: http://codecov.io/github/JuliaAlgebra/MultivariateBases.jl?branch=master
 
