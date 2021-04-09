@@ -31,3 +31,11 @@ end
     @test typeof(polynomial(ones(Int, 1, 1), basis, Int)) <: AbstractPolynomial{Int}
     @test typeof(polynomial(ones(Int, 1, 1), basis, Float64)) <: AbstractPolynomial{Float64}
 end
+@testset "Complex" begin
+    basis = FixedPolynomialBasis([(1 + 2im) * x])
+    @test 5x^2 == polynomial(ones(Int, 1, 1), basis, Complex{Int})
+    @test 5x^2 == polynomial(ones(Int, 1, 1), basis, Int)
+    # TODO not inferred on Julia v1.0
+    #@test 5x^2 == @inferred polynomial(ones(Int, 1, 1), basis, Complex{Int})
+    #@test 5x^2 == @inferred polynomial(ones(Int, 1, 1), basis, Int)
+end

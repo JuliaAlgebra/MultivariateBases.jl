@@ -23,7 +23,7 @@ function MP.polynomial(Q::AbstractMatrix, basis::AbstractPolynomialVectorBasis,
                        T::Type)
     n = length(basis)
     @assert size(Q) == (n, n)
-    return MP.polynomial(mapreduce(row -> basis.polynomials[row] *
+    return MP.polynomial(mapreduce(row -> adjoint(basis.polynomials[row]) *
         mapreduce(col -> Q[row, col] * basis.polynomials[col], MA.add!, 1:n),
         MA.add!, 1:n), T)
 end
