@@ -16,9 +16,22 @@ For instance, create a polynomial with the basis ``[xy^2, xy]`` creates the poly
 Constraining the polynomial ``axy^2 + bxy`` to be zero with the scaled monomial basis constrains
 `a/√3` and `b/√2` to be zero.
 
+This basis is orthonormal under the scalar product:
+```math
+\\langle f, g \\rangle = \\int_{\\mathcal{C}^n} f(z) \\overline{g(z)} d\\nu_n
+```
+where ``\\nu_n`` is the Gaussian measure on ``\\mathcal{C}^n`` with the density
+``\\pi^{-n} \\exp(-\\lVert z \\rVert^2)``.
+See [Section 4; B07] for more details.
+
+
 [BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
 *Semidefinite Optimization and Convex Algebraic Geometry*.
-Society for Industrial and Applied Mathematics, **2012**.
+Society for Industrial and Applied Mathematics (2012).
+
+[B07] Barvinok, Alexander.
+*Integration and optimization of multivariate polynomials by restriction onto a random subspace.*
+Foundations of Computational Mathematics 7.2 (2007): 229-244.
 """
 struct ScaledMonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractMonomialBasis{MT, MV}
     monomials::MV
