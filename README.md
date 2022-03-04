@@ -8,6 +8,18 @@
 This package provides a standardized API for multivariate polynomial bases
 based on the [MultivariatePolynomials](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) API.
 
+It defines the following basis:
+* `FixedPolynomialBasis`: A polynomial basis described by a list of polynomials.
+* Monomial bases: `MonomialBasis` and `ScaledMonomialBasis`.
+* Orthogonal bases:
+  - Hermite bases: `ProbabilistsHermiteBasis` and `PhysicistsHermiteBasis`.
+  - `LaguerreBasis`.
+  - Gegenbauer bases:
+    * `LegendreBasis`.
+    * Chebyshev bases: `ChebyshevBasisFirstKind` and `ChebyshevBasisSecondKind`
+
+See the documentation for more details.
+
 ## Documentation
 
 - [**STABLE**][docs-stable-url] &mdash; **most recently tagged version of the documentation.**
