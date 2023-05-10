@@ -1,10 +1,8 @@
 module MultivariateBases
 
-import MutableArithmetics
-const MA = MutableArithmetics
+import MutableArithmetics as MA
 
-using MultivariatePolynomials
-const MP = MultivariatePolynomials
+import MultivariatePolynomials as MP
 
 export AbstractPolynomialBasis
 export maxdegree_basis, basis_covering_monomials, empty_basis

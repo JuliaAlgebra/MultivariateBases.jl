@@ -116,7 +116,7 @@ function basis_covering_monomials(B::Type{<:AbstractMultipleOrthogonalBasis}, mo
             step = even_odd_separated(B) ? 2 : 1
             vstep = v^step
             if MP.divides(vstep, mono)
-                new_mono = MP.mapexponents(-, mono, vstep)
+                new_mono = MP.map_exponents(-, mono, vstep)
                 if !(new_mono in m)
                     push!(m, new_mono)
                     push!(to_add, new_mono)
@@ -124,5 +124,5 @@ function basis_covering_monomials(B::Type{<:AbstractMultipleOrthogonalBasis}, mo
             end
         end
     end
-    return _basis_from_monomials(B, variables(monos), MP.monovec(collect(m)))
+    return _basis_from_monomials(B, variables(monos), MP.monomial_vector(collect(m)))
 end

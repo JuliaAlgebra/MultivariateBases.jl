@@ -36,9 +36,9 @@ Foundations of Computational Mathematics 7.2 (2007): 229-244.
 struct ScaledMonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractMonomialBasis{MT, MV}
     monomials::MV
 end
-ScaledMonomialBasis(monomials) = ScaledMonomialBasis(monovec(monomials))
+ScaledMonomialBasis(monomials) = ScaledMonomialBasis(monomial_vector(monomials))
 
-MP.polynomialtype(::ScaledMonomialBasis{MT}, T::Type) where MT = MP.polynomialtype(MT, promote_type(T, Float64))
+MP.polynomial_type(::ScaledMonomialBasis{MT}, T::Type) where MT = MP.polynomial_type(MT, promote_type(T, Float64))
 MP.polynomial(f::Function, basis::ScaledMonomialBasis) = MP.polynomial(i -> scaling(basis.monomials[i]) * f(i), basis.monomials)
 
 function Base.promote_rule(::Type{ScaledMonomialBasis{MT, MV}}, ::Type{MonomialBasis{MT, MV}}) where {MT, MV}

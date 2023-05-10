@@ -1,6 +1,6 @@
 abstract type AbstractHermiteBasis{P} <: AbstractMultipleOrthogonalBasis{P} end
 
-polynomial_type(::Type{<:AbstractHermiteBasis}, V::Type) = MP.polynomialtype(V, Int)
+MP.polynomial_type(::Type{<:AbstractHermiteBasis}, V::Type) = MP.polynomial_type(V, Int)
 
 even_odd_separated(::Type{<:AbstractHermiteBasis}) = true
 

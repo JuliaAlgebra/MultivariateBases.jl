@@ -9,7 +9,7 @@ struct LaguerreBasis{P} <: AbstractMultipleOrthogonalBasis{P}
     polynomials::Vector{P}
 end
 
-polynomial_type(::Type{<:LaguerreBasis}, V::Type) = MP.polynomialtype(V, Float64)
+MP.polynomial_type(::Type{<:LaguerreBasis}, V::Type) = MP.polynomial_type(V, Float64)
 
 even_odd_separated(::Type{<:LaguerreBasis}) = false
 

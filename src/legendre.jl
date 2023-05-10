@@ -21,7 +21,7 @@ struct LegendreBasis{P} <: AbstractGegenbauerBasis{P}
     polynomials::Vector{P}
 end
 
-polynomial_type(::Type{<:LegendreBasis}, V::Type) = MP.polynomialtype(V, Float64)
+MP.polynomial_type(::Type{<:LegendreBasis}, V::Type) = MP.polynomial_type(V, Float64)
 
 reccurence_first_coef(::Type{<:LegendreBasis}, degree) = (2degree - 1)
 reccurence_third_coef(::Type{<:LegendreBasis}, degree) = -(degree - 1)

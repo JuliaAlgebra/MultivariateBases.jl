@@ -5,9 +5,9 @@ Base.copy(basis::AbstractMonomialBasis) = typeof(basis)(copy(basis.monomials))
 
 MP.nvariables(basis::AbstractMonomialBasis) = MP.nvariables(basis.monomials)
 MP.variables(basis::AbstractMonomialBasis) = MP.variables(basis.monomials)
-MP.monomialtype(::Type{<:AbstractMonomialBasis{MT}}) where MT = MT
+MP.monomial_type(::Type{<:AbstractMonomialBasis{MT}}) where MT = MT
 
-empty_basis(MB::Type{<:AbstractMonomialBasis{MT}}) where {MT} = MB(MP.emptymonovec(MT))
+empty_basis(MB::Type{<:AbstractMonomialBasis{MT}}) where {MT} = MB(MP.empty_monomial_vector(MT))
 function maxdegree_basis(B::Type{<:AbstractMonomialBasis}, variables, maxdegree::Int)
     return B(MP.monomials(variables, 0:maxdegree))
 end
@@ -32,7 +32,7 @@ function multi_findsorted(x, y)
 end
 
 function merge_bases(basis1::MB, basis2::MB) where MB<:AbstractMonomialBasis
-    monos = MP.mergemonovec([basis1.monomials, basis2.monomials])
+    monos = MP.merge_monomial_vectors([basis1.monomials, basis2.monomials])
     I1 = multi_findsorted(monos, basis1.monomials)
     I2 = multi_findsorted(monos, basis2.monomials)
     return MB(monos), I1, I2
@@ -54,9 +54,9 @@ one get ths [`ScaledMonomialBasis`](@ref).
 struct MonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractMonomialBasis{MT, MV}
     monomials::MV
 end
-MonomialBasis(monomials::AbstractVector) = MonomialBasis(MP.monovec(monomials))
+MonomialBasis(monomials::AbstractVector) = MonomialBasis(MP.monomial_vector(monomials))
 
-MP.polynomialtype(::Union{MonomialBasis{MT}, Type{<:MonomialBasis{MT}}}, T::Type) where MT = MP.polynomialtype(MT, T)
+MP.polynomial_type(::Union{MonomialBasis{MT}, Type{<:MonomialBasis{MT}}}, T::Type) where MT = MP.polynomial_type(MT, T)
 MP.polynomial(f::Function, mb::MonomialBasis) = MP.polynomial(f, mb.monomials)
 
 MP.polynomial(Q::AbstractMatrix, mb::MonomialBasis, T::Type) = MP.polynomial(Q, mb.monomials, T)

@@ -15,13 +15,13 @@ function api_test(B::Type{<:AbstractPolynomialBasis}, degree)
         @test typeof(copy(basis)) == typeof(basis)
         @test nvariables(basis) == 2
         @test variables(basis) == x
-        @test monomialtype(typeof(basis)) == monomialtype(x[1])
+        @test monomial_type(typeof(basis)) == monomial_type(x[1])
         @test typeof(empty_basis(typeof(basis))) == typeof(basis)
         @test length(empty_basis(typeof(basis))) == 0
-        @test polynomialtype(basis, Float64) == polynomialtype(x[1], Float64)
-        @test polynomial(i -> 0.0, basis) isa polynomialtype(basis, Float64)
-        @test polynomial(zeros(n, n), basis, Float64) isa polynomialtype(basis, Float64)
-        @test polynomial(ones(n, n), basis, Float64) isa polynomialtype(basis, Float64)
+        @test polynomial_type(basis, Float64) == polynomial_type(x[1], Float64)
+        @test polynomial(i -> 0.0, basis) isa polynomial_type(basis, Float64)
+        @test polynomial(zeros(n, n), basis, Float64) isa polynomial_type(basis, Float64)
+        @test polynomial(ones(n, n), basis, Float64) isa polynomial_type(basis, Float64)
     end
 end
 
@@ -39,7 +39,7 @@ function orthogonal_test(B::Type{<:AbstractMultipleOrthogonalBasis}, univ::Funct
     end
 
     @testset "basis_covering_monomials" begin
-        monos = basis_covering_monomials(B, monovec([x^2 * y, y^2]))
+        monos = basis_covering_monomials(B, monomial_vector([x^2 * y, y^2]))
         if even_odd_separated
             exps = [(2, 1), (0, 2), (0, 1), (0, 0)]
         else
@@ -48,7 +48,7 @@ function orthogonal_test(B::Type{<:AbstractMultipleOrthogonalBasis}, univ::Funct
         for i in 1:length(monos)
             @test monos.polynomials[i] == univariate_x[exps[i][1] + 1] * univariate_y[exps[i][2] + 1]
         end
-        monos = basis_covering_monomials(B, monovec([x^4, x^2, x]))
+        monos = basis_covering_monomials(B, monomial_vector([x^4, x^2, x]))
         if even_odd_separated
             exps = [4, 2, 1, 0]
         else

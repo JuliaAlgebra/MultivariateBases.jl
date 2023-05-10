@@ -5,14 +5,14 @@ Base.copy(basis::AbstractPolynomialVectorBasis) = typeof(basis)(copy(basis.polyn
 
 MP.nvariables(basis::AbstractPolynomialVectorBasis) = MP.nvariables(basis.polynomials)
 MP.variables(basis::AbstractPolynomialVectorBasis) = MP.variables(basis.polynomials)
-MP.monomialtype(::Type{<:AbstractPolynomialVectorBasis{PT}}) where PT = MP.monomialtype(PT)
+MP.monomial_type(::Type{<:AbstractPolynomialVectorBasis{PT}}) where PT = MP.monomial_type(PT)
 
 empty_basis(B::Type{<:AbstractPolynomialVectorBasis{PT, Vector{PT}}}) where PT = B(PT[])
-function MP.polynomialtype(basis::AbstractPolynomialVectorBasis{PT}, T::Type) where PT
-    C = MP.coefficienttype(PT)
+function MP.polynomial_type(::AbstractPolynomialVectorBasis{PT}, T::Type) where PT
+    C = MP.coefficient_type(PT)
     U = MA.promote_operation(*, C, T)
     V = MA.promote_operation(+, U, U)
-    return MP.polynomialtype(PT, V)
+    return MP.polynomial_type(PT, V)
 end
 function MP.polynomial(f::Function, basis::AbstractPolynomialVectorBasis)
     return MP.polynomial(mapreduce(

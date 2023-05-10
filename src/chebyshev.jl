@@ -1,6 +1,6 @@
 abstract type AbstractChebyshevBasis{P} <: AbstractGegenbauerBasis{P} end
 
-polynomial_type(::Type{<:AbstractChebyshevBasis}, V::Type) = MP.polynomialtype(V, Float64)
+MP.polynomial_type(::Type{<:AbstractChebyshevBasis}, V::Type) = MP.polynomial_type(V, Float64)
 
 reccurence_first_coef(::Type{<:AbstractChebyshevBasis}, degree) = 2
 reccurence_third_coef(::Type{<:AbstractChebyshevBasis}, degree) = -1
