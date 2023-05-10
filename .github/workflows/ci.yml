@@ -48,7 +48,7 @@ jobs:
           using Pkg
           Pkg.add([
               PackageSpec(name="MultivariatePolynomials", rev="master"),
-              PackageSpec(name="DynamicPolynomials", rev="bl/coefficient_type"),
+              PackageSpec(name="DynamicPolynomials", rev="master"),
           ])
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
