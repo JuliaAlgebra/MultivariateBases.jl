@@ -12,9 +12,21 @@ export AbstractMonomialBasis, MonomialBasis, ScaledMonomialBasis
 include("monomial.jl")
 include("scaled.jl")
 
-export FixedPolynomialBasis, AbstractMultipleOrthogonalBasis, ProbabilistsHermiteBasis, PhysicistsHermiteBasis, LaguerreBasis
-export AbstractGegenbauerBasis, LegendreBasis, ChebyshevBasis, ChebyshevBasisFirstKind, ChebyshevBasisSecondKind
-export univariate_orthogonal_basis, reccurence_first_coef, reccurence_second_coef, reccurence_third_coef, reccurence_deno_coef
+export FixedPolynomialBasis,
+    AbstractMultipleOrthogonalBasis,
+    ProbabilistsHermiteBasis,
+    PhysicistsHermiteBasis,
+    LaguerreBasis
+export AbstractGegenbauerBasis,
+    LegendreBasis,
+    ChebyshevBasis,
+    ChebyshevBasisFirstKind,
+    ChebyshevBasisSecondKind
+export univariate_orthogonal_basis,
+    reccurence_first_coef,
+    reccurence_second_coef,
+    reccurence_third_coef,
+    reccurence_deno_coef
 include("fixed.jl")
 include("orthogonal.jl")
 include("hermite.jl")

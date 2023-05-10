@@ -1,6 +1,8 @@
 abstract type AbstractHermiteBasis{P} <: AbstractMultipleOrthogonalBasis{P} end
 
-MP.polynomial_type(::Type{<:AbstractHermiteBasis}, V::Type) = MP.polynomial_type(V, Int)
+function MP.polynomial_type(::Type{<:AbstractHermiteBasis}, V::Type)
+    return MP.polynomial_type(V, Int)
+end
 
 even_odd_separated(::Type{<:AbstractHermiteBasis}) = true
 
@@ -18,8 +20,15 @@ struct ProbabilistsHermiteBasis{P} <: AbstractHermiteBasis{P}
     polynomials::Vector{P}
 end
 reccurence_first_coef(::Type{<:ProbabilistsHermiteBasis}, degree) = 1
-reccurence_third_coef(::Type{<:ProbabilistsHermiteBasis}, degree) = -(degree - 1)
-degree_one_univariate_polynomial(::Type{<:ProbabilistsHermiteBasis}, variable::MP.AbstractVariable) = MA.@rewrite(1variable)
+function reccurence_third_coef(::Type{<:ProbabilistsHermiteBasis}, degree)
+    return -(degree - 1)
+end
+function degree_one_univariate_polynomial(
+    ::Type{<:ProbabilistsHermiteBasis},
+    variable::MP.AbstractVariable,
+)
+    MA.@rewrite(1variable)
+end
 
 """
     struct PhysicistsHermiteBasis{P} <: AbstractHermiteBasis{P}
@@ -33,4 +42,9 @@ struct PhysicistsHermiteBasis{P} <: AbstractHermiteBasis{P}
 end
 reccurence_first_coef(::Type{<:PhysicistsHermiteBasis}, degree) = 2
 reccurence_third_coef(::Type{<:PhysicistsHermiteBasis}, degree) = -2(degree - 1)
-degree_one_univariate_polynomial(::Type{<:PhysicistsHermiteBasis}, variable::MP.AbstractVariable) = MA.@rewrite(2variable)
+function degree_one_univariate_polynomial(
+    ::Type{<:PhysicistsHermiteBasis},
+    variable::MP.AbstractVariable,
+)
+    MA.@rewrite(2variable)
+end

@@ -17,10 +17,10 @@ end
     @test coefficients(9 + x + 4y, MonomialBasis) == [1, 4, 9]
 end
 @testset "Quadratic" begin
-    basis = MonomialBasis([x^2, x*y, y^2])
+    basis = MonomialBasis([x^2, x * y, y^2])
     @test polynomial_type(basis, Int) == polynomial_type(x, Int)
-    @test polynomial(i -> i^2, basis) == x^2 + 4x*y + 9y^2
-    @test coefficients(x^2 + 4x*y + 9y^2, MonomialBasis) == [1, 4, 9]
+    @test polynomial(i -> i^2, basis) == x^2 + 4x * y + 9y^2
+    @test coefficients(x^2 + 4x * y + 9y^2, MonomialBasis) == [1, 4, 9]
 end
 @testset "API degree = $degree" for degree in 0:3
     api_test(MonomialBasis, degree)

@@ -1,17 +1,29 @@
-abstract type AbstractMonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractPolynomialBasis end
+abstract type AbstractMonomialBasis{
+    MT<:MP.AbstractMonomial,
+    MV<:AbstractVector{MT},
+} <: AbstractPolynomialBasis end
 
 Base.length(basis::AbstractMonomialBasis) = length(basis.monomials)
 Base.copy(basis::AbstractMonomialBasis) = typeof(basis)(copy(basis.monomials))
 
 MP.nvariables(basis::AbstractMonomialBasis) = MP.nvariables(basis.monomials)
 MP.variables(basis::AbstractMonomialBasis) = MP.variables(basis.monomials)
-MP.monomial_type(::Type{<:AbstractMonomialBasis{MT}}) where MT = MT
+MP.monomial_type(::Type{<:AbstractMonomialBasis{MT}}) where {MT} = MT
 
-empty_basis(MB::Type{<:AbstractMonomialBasis{MT}}) where {MT} = MB(MP.empty_monomial_vector(MT))
-function maxdegree_basis(B::Type{<:AbstractMonomialBasis}, variables, maxdegree::Int)
+function empty_basis(MB::Type{<:AbstractMonomialBasis{MT}}) where {MT}
+    return MB(MP.empty_monomial_vector(MT))
+end
+function maxdegree_basis(
+    B::Type{<:AbstractMonomialBasis},
+    variables,
+    maxdegree::Int,
+)
     return B(MP.monomials(variables, 0:maxdegree))
 end
-function basis_covering_monomials(B::Type{<:AbstractMonomialBasis}, monos::AbstractVector{<:AbstractMonomial})
+function basis_covering_monomials(
+    B::Type{<:AbstractMonomialBasis},
+    monos::AbstractVector{<:AbstractMonomial},
+)
     return B(monos)
 end
 
@@ -31,7 +43,7 @@ function multi_findsorted(x, y)
     return I
 end
 
-function merge_bases(basis1::MB, basis2::MB) where MB<:AbstractMonomialBasis
+function merge_bases(basis1::MB, basis2::MB) where {MB<:AbstractMonomialBasis}
     monos = MP.merge_monomial_vectors([basis1.monomials, basis2.monomials])
     I1 = multi_findsorted(monos, basis1.monomials)
     I2 = multi_findsorted(monos, basis2.monomials)
@@ -51,15 +63,25 @@ This basis is orthogonal under a scalar product defined with the complex Gaussia
 Once normalized so as to be orthonormal with this scalar product,
 one get ths [`ScaledMonomialBasis`](@ref).
 """
-struct MonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractMonomialBasis{MT, MV}
+struct MonomialBasis{MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}} <:
+       AbstractMonomialBasis{MT,MV}
     monomials::MV
 end
-MonomialBasis(monomials::AbstractVector) = MonomialBasis(MP.monomial_vector(monomials))
+function MonomialBasis(monomials::AbstractVector)
+    return MonomialBasis(MP.monomial_vector(monomials))
+end
 
-MP.polynomial_type(::Union{MonomialBasis{MT}, Type{<:MonomialBasis{MT}}}, T::Type) where MT = MP.polynomial_type(MT, T)
+function MP.polynomial_type(
+    ::Union{MonomialBasis{MT},Type{<:MonomialBasis{MT}}},
+    T::Type,
+) where {MT}
+    return MP.polynomial_type(MT, T)
+end
 MP.polynomial(f::Function, mb::MonomialBasis) = MP.polynomial(f, mb.monomials)
 
-MP.polynomial(Q::AbstractMatrix, mb::MonomialBasis, T::Type) = MP.polynomial(Q, mb.monomials, T)
+function MP.polynomial(Q::AbstractMatrix, mb::MonomialBasis, T::Type)
+    return MP.polynomial(Q, mb.monomials, T)
+end
 
 function MP.coefficients(p, ::Type{<:MonomialBasis})
     return MP.coefficients(p)

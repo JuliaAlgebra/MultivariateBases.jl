@@ -20,7 +20,8 @@ where [`reccurence_first_coef`](@ref) gives `a_k`,
 [`reccurence_third_coef`](@ref) gives `c_k` and
 [`reccurence_deno_coef`](@ref) gives `d_k`.
 """
-abstract type AbstractMultipleOrthogonalBasis{P} <: AbstractPolynomialVectorBasis{P, Vector{P}} end
+abstract type AbstractMultipleOrthogonalBasis{P} <:
+              AbstractPolynomialVectorBasis{P,Vector{P}} end
 
 """
     reccurence_first_coef(B::Type{<:AbstractMultipleOrthogonalBasis}, degree::Integer)
@@ -70,21 +71,27 @@ Return the vector of univariate polynomials of the basis `B` up to `degree`
 with variable `variable`.
 """
 function univariate_orthogonal_basis(
-    B::Type{<:AbstractMultipleOrthogonalBasis}, variable::MP.AbstractVariable, degree::Integer)
-
+    B::Type{<:AbstractMultipleOrthogonalBasis},
+    variable::MP.AbstractVariable,
+    degree::Integer,
+)
     @assert degree >= 0
     if degree == 0
-        return polynomial_type(B, typeof(variable))[one(variable)]
+        return MP.polynomial_type(B, typeof(variable))[one(variable)]
     elseif degree == 1
-        return push!(univariate_orthogonal_basis(B, variable, 0),
-                     degree_one_univariate_polynomial(B, variable))
+        return push!(
+            univariate_orthogonal_basis(B, variable, 0),
+            degree_one_univariate_polynomial(B, variable),
+        )
     else
         previous = univariate_orthogonal_basis(B, variable, degree - 1)
         a = reccurence_first_coef(B, degree)
         b = reccurence_second_coef(B, degree)
         c = reccurence_third_coef(B, degree)
         d = reccurence_deno_coef(B, degree)
-        next = MA.@rewrite((a * variable + b) * previous[degree] + c * previous[degree - 1])
+        next = MA.@rewrite(
+            (a * variable + b) * previous[degree] + c * previous[degree-1]
+        )
         if !isone(d)
             next = next / d
         end
@@ -93,21 +100,42 @@ function univariate_orthogonal_basis(
     end
 end
 
-function _basis_from_monomials(B::Type{<:AbstractMultipleOrthogonalBasis}, variables, monos)
-    univariate = [univariate_orthogonal_basis(
-                      B, variable, maximum(mono -> degree(mono, variable), monos))
-                  for variable in variables]
+function _basis_from_monomials(
+    B::Type{<:AbstractMultipleOrthogonalBasis},
+    variables,
+    monos,
+)
+    univariate = [
+        univariate_orthogonal_basis(
+            B,
+            variable,
+            maximum(mono -> MP.degree(mono, variable), monos),
+        ) for variable in variables
+    ]
     return B([
-        prod(i -> univariate[i][degree(mono, variables[i]) + 1],
-             eachindex(variables))
-        for mono in monos])
+        prod(
+            i -> univariate[i][MP.degree(mono, variables[i])+1],
+            eachindex(variables),
+        ) for mono in monos
+    ])
 end
 
-function maxdegree_basis(B::Type{<:AbstractMultipleOrthogonalBasis}, variables, maxdegree::Int)
-    return _basis_from_monomials(B, variables, MP.monomials(variables, 0:maxdegree))
+function maxdegree_basis(
+    B::Type{<:AbstractMultipleOrthogonalBasis},
+    variables,
+    maxdegree::Int,
+)
+    return _basis_from_monomials(
+        B,
+        variables,
+        MP.monomials(variables, 0:maxdegree),
+    )
 end
 
-function basis_covering_monomials(B::Type{<:AbstractMultipleOrthogonalBasis}, monos::AbstractVector{<:AbstractMonomial})
+function basis_covering_monomials(
+    B::Type{<:AbstractMultipleOrthogonalBasis},
+    monos::AbstractVector{<:MP.AbstractMonomial},
+)
     to_add = collect(monos)
     m = Set(monos)
     while !isempty(to_add)
@@ -124,5 +152,9 @@ function basis_covering_monomials(B::Type{<:AbstractMultipleOrthogonalBasis}, mo
             end
         end
     end
-    return _basis_from_monomials(B, variables(monos), MP.monomial_vector(collect(m)))
+    return _basis_from_monomials(
+        B,
+        variables(monos),
+        MP.monomial_vector(collect(m)),
+    )
 end

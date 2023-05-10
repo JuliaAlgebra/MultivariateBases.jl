@@ -28,8 +28,10 @@ end
     @test polynomial_type(basis, Int) == polynomial_type(x, Int)
     @test polynomial(i -> 5, basis) == 5x
     @test typeof(polynomial(i -> 5, basis)) == polynomial_type(basis, Int)
-    @test typeof(polynomial(ones(Int, 1, 1), basis, Int)) <: AbstractPolynomial{Int}
-    @test typeof(polynomial(ones(Int, 1, 1), basis, Float64)) <: AbstractPolynomial{Float64}
+    @test typeof(polynomial(ones(Int, 1, 1), basis, Int)) <:
+          AbstractPolynomial{Int}
+    @test typeof(polynomial(ones(Int, 1, 1), basis, Float64)) <:
+          AbstractPolynomial{Float64}
 end
 @testset "Complex" begin
     basis = FixedPolynomialBasis([(1 + 2im) * x])

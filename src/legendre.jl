@@ -21,10 +21,17 @@ struct LegendreBasis{P} <: AbstractGegenbauerBasis{P}
     polynomials::Vector{P}
 end
 
-MP.polynomial_type(::Type{<:LegendreBasis}, V::Type) = MP.polynomial_type(V, Float64)
+function MP.polynomial_type(::Type{<:LegendreBasis}, V::Type)
+    return MP.polynomial_type(V, Float64)
+end
 
 reccurence_first_coef(::Type{<:LegendreBasis}, degree) = (2degree - 1)
 reccurence_third_coef(::Type{<:LegendreBasis}, degree) = -(degree - 1)
 reccurence_deno_coef(::Type{<:LegendreBasis}, degree) = degree
 
-degree_one_univariate_polynomial(::Type{<:LegendreBasis}, variable::MP.AbstractVariable) = MA.@rewrite(variable + 0)
+function degree_one_univariate_polynomial(
+    ::Type{<:LegendreBasis},
+    variable::MP.AbstractVariable,
+)
+    MA.@rewrite(variable + 0)
+end

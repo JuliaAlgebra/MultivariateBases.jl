@@ -9,7 +9,9 @@ struct LaguerreBasis{P} <: AbstractMultipleOrthogonalBasis{P}
     polynomials::Vector{P}
 end
 
-MP.polynomial_type(::Type{<:LaguerreBasis}, V::Type) = MP.polynomial_type(V, Float64)
+function MP.polynomial_type(::Type{<:LaguerreBasis}, V::Type)
+    return MP.polynomial_type(V, Float64)
+end
 
 even_odd_separated(::Type{<:LaguerreBasis}) = false
 
@@ -18,4 +20,9 @@ reccurence_second_coef(::Type{<:LaguerreBasis}, degree) = (2degree - 1)
 reccurence_third_coef(::Type{<:LaguerreBasis}, degree) = -(degree - 1)
 reccurence_deno_coef(::Type{<:LaguerreBasis}, degree) = degree
 
-degree_one_univariate_polynomial(::Type{<:LaguerreBasis}, variable::MP.AbstractVariable) = MA.@rewrite(1 - variable)
+function degree_one_univariate_polynomial(
+    ::Type{<:LaguerreBasis},
+    variable::MP.AbstractVariable,
+)
+    MA.@rewrite(1 - variable)
+end
