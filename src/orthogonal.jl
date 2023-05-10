@@ -154,7 +154,7 @@ function basis_covering_monomials(
     end
     return _basis_from_monomials(
         B,
-        variables(monos),
+        MP.variables(monos),
         MP.monomial_vector(collect(m)),
     )
 end

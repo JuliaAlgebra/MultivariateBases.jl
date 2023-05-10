@@ -41,16 +41,16 @@ function orthogonal_test(
                                    [(x, univariate_x), (y, univariate_y)]
         basis = maxdegree_basis(B, (var,), 4)
         for i in 1:5
-            @test basis.polynomials[length(basis)+1-i] == univ[i]
+            @test basis.polynomials[i] == univ[i]
         end
     end
 
     @testset "basis_covering_monomials" begin
         monos = basis_covering_monomials(B, monomial_vector([x^2 * y, y^2]))
         if even_odd_separated
-            exps = [(2, 1), (0, 2), (0, 1), (0, 0)]
+            exps = [(0, 0), (0, 1), (0, 2), (2, 1)]
         else
-            exps = [(2, 1), (2, 0), (1, 1), (0, 2), (1, 0), (0, 1), (0, 0)]
+            exps = [(0, 0), (0, 1), (1, 0), (0, 2), (1, 1), (2, 0), (2, 1)]
         end
         for i in 1:length(monos)
             @test monos.polynomials[i] ==
@@ -58,9 +58,9 @@ function orthogonal_test(
         end
         monos = basis_covering_monomials(B, monomial_vector([x^4, x^2, x]))
         if even_odd_separated
-            exps = [4, 2, 1, 0]
+            exps = [0, 1, 2, 4]
         else
-            exps = [4, 3, 2, 1, 0]
+            exps = 0:4
         end
         for i in 1:length(monos)
             @test monos.polynomials[i] == univariate_x[exps[i]+1]
