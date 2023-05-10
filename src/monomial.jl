@@ -22,7 +22,7 @@ function maxdegree_basis(
 end
 function basis_covering_monomials(
     B::Type{<:AbstractMonomialBasis},
-    monos::AbstractVector{<:AbstractMonomial},
+    monos::AbstractVector{<:MP.AbstractMonomial},
 )
     return B(monos)
 end
