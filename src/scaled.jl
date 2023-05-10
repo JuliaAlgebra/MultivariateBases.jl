@@ -37,7 +37,9 @@ struct ScaledMonomialBasis{MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}} <:
        AbstractMonomialBasis{MT,MV}
     monomials::MV
 end
-ScaledMonomialBasis(monomials) = ScaledMonomialBasis(MP.monomial_vector(monomials))
+function ScaledMonomialBasis(monomials)
+    return ScaledMonomialBasis(MP.monomial_vector(monomials))
+end
 
 function MP.polynomial_type(::ScaledMonomialBasis{MT}, T::Type) where {MT}
     return MP.polynomial_type(MT, promote_type(T, Float64))
