@@ -4,4 +4,4 @@ DynamicPolynomials = "7c1d4256-1411-5781-91ec-d7bc3513ac07"
 MultivariateBases = "be282fd4-ad43-11e9-1d11-8bd9d7e43378"
 
 [compat]
-Documenter = "~0.21"
+Documenter = "~0.27"
