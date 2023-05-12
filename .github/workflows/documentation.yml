@@ -18,7 +18,10 @@ jobs:
         shell: julia --project=docs/ {0}
         run: |
           using Pkg
-          Pkg.add(PackageSpec(name="MultivariatePolynomials", rev="master"))
+          Pkg.add([
+              PackageSpec(name="MultivariatePolynomials", rev="master"),
+              PackageSpec(name="DynamicPolynomials", rev="master"),
+          ])
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
       - name: Build and deploy
