@@ -1,6 +1,8 @@
 abstract type AbstractChebyshevBasis{P} <: AbstractGegenbauerBasis{P} end
 
-polynomial_type(::Type{<:AbstractChebyshevBasis}, V::Type) = MP.polynomialtype(V, Float64)
+function MP.polynomial_type(::Type{<:AbstractChebyshevBasis}, V::Type)
+    return MP.polynomial_type(V, Float64)
+end
 
 reccurence_first_coef(::Type{<:AbstractChebyshevBasis}, degree) = 2
 reccurence_third_coef(::Type{<:AbstractChebyshevBasis}, degree) = -1
@@ -19,7 +21,12 @@ end
 
 const ChebyshevBasis{P} = ChebyshevBasisFirstKind{P}
 
-degree_one_univariate_polynomial(::Type{<:ChebyshevBasisFirstKind}, variable::MP.AbstractVariable) = MA.@rewrite(variable + 0)
+function degree_one_univariate_polynomial(
+    ::Type{<:ChebyshevBasisFirstKind},
+    variable::MP.AbstractVariable,
+)
+    MA.@rewrite(variable + 0)
+end
 
 """
     struct ChebyshevBasisSecondKind{P} <: AbstractChebyshevBasis{P}
@@ -32,4 +39,9 @@ struct ChebyshevBasisSecondKind{P} <: AbstractChebyshevBasis{P}
     polynomials::Vector{P}
 end
 
-degree_one_univariate_polynomial(::Type{<:ChebyshevBasisSecondKind}, variable::MP.AbstractVariable) = MA.@rewrite(2variable + 0)
+function degree_one_univariate_polynomial(
+    ::Type{<:ChebyshevBasisSecondKind},
+    variable::MP.AbstractVariable,
+)
+    MA.@rewrite(2variable + 0)
+end

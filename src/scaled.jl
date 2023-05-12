@@ -33,31 +33,54 @@ Society for Industrial and Applied Mathematics (2012).
 *Integration and optimization of multivariate polynomials by restriction onto a random subspace.*
 Foundations of Computational Mathematics 7.2 (2007): 229-244.
 """
-struct ScaledMonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractMonomialBasis{MT, MV}
+struct ScaledMonomialBasis{MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}} <:
+       AbstractMonomialBasis{MT,MV}
     monomials::MV
 end
-ScaledMonomialBasis(monomials) = ScaledMonomialBasis(monovec(monomials))
-
-MP.polynomialtype(::ScaledMonomialBasis{MT}, T::Type) where MT = MP.polynomialtype(MT, promote_type(T, Float64))
-MP.polynomial(f::Function, basis::ScaledMonomialBasis) = MP.polynomial(i -> scaling(basis.monomials[i]) * f(i), basis.monomials)
-
-function Base.promote_rule(::Type{ScaledMonomialBasis{MT, MV}}, ::Type{MonomialBasis{MT, MV}}) where {MT, MV}
-    return MonomialBasis{MT, MV}
+function ScaledMonomialBasis(monomials)
+    return ScaledMonomialBasis(MP.monomial_vector(monomials))
 end
 
-function change_basis(Q::AbstractMatrix, basis::ScaledMonomialBasis{MT, MV}, B::Type{MonomialBasis{MT, MV}}) where {MT, MV}
+function MP.polynomial_type(::ScaledMonomialBasis{MT}, T::Type) where {MT}
+    return MP.polynomial_type(MT, promote_type(T, Float64))
+end
+function MP.polynomial(f::Function, basis::ScaledMonomialBasis)
+    return MP.polynomial(
+        i -> scaling(basis.monomials[i]) * f(i),
+        basis.monomials,
+    )
+end
+
+function Base.promote_rule(
+    ::Type{ScaledMonomialBasis{MT,MV}},
+    ::Type{MonomialBasis{MT,MV}},
+) where {MT,MV}
+    return MonomialBasis{MT,MV}
+end
+
+function change_basis(
+    Q::AbstractMatrix,
+    basis::ScaledMonomialBasis{MT,MV},
+    B::Type{MonomialBasis{MT,MV}},
+) where {MT,MV}
     n = length(basis)
     scalings = map(scaling, basis.monomials)
     scaled_Q = [Q[i, j] * scalings[i] * scalings[j] for i in 1:n, j in 1:n]
     return scaled_Q, MonomialBasis(basis.monomials)
 end
 
-function MP.polynomial(Q::AbstractMatrix, basis::ScaledMonomialBasis{MT, MV}, T::Type) where {MT, MV}
-    return MP.polynomial(change_basis(Q, basis, MonomialBasis{MT, MV})..., T)
+function MP.polynomial(
+    Q::AbstractMatrix,
+    basis::ScaledMonomialBasis{MT,MV},
+    T::Type,
+) where {MT,MV}
+    return MP.polynomial(change_basis(Q, basis, MonomialBasis{MT,MV})..., T)
 end
 
-scaling(m::MP.AbstractMonomial) = √(factorial(MP.degree(m)) / prod(factorial, MP.exponents(m)))
-unscale_coef(t::MP.AbstractTerm) = coefficient(t) / scaling(monomial(t))
+function scaling(m::MP.AbstractMonomial)
+    return √(factorial(MP.degree(m)) / prod(factorial, MP.exponents(m)))
+end
+unscale_coef(t::MP.AbstractTerm) = MP.coefficient(t) / scaling(MP.monomial(t))
 function MP.coefficients(p, ::Type{<:ScaledMonomialBasis})
     return unscale_coef.(MP.terms(p))
 end

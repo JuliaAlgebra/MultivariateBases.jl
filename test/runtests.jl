@@ -8,54 +8,62 @@ function api_test(B::Type{<:AbstractPolynomialBasis}, degree)
     @polyvar x[1:2]
     for basis in [
         maxdegree_basis(B, x, degree),
-        basis_covering_monomials(B, monomials(x, 0:degree))
+        basis_covering_monomials(B, monomials(x, 0:degree)),
     ]
         n = binomial(2 + degree, 2)
         @test length(basis) == n
         @test typeof(copy(basis)) == typeof(basis)
         @test nvariables(basis) == 2
         @test variables(basis) == x
-        @test monomialtype(typeof(basis)) == monomialtype(x[1])
+        @test monomial_type(typeof(basis)) == monomial_type(x[1])
         @test typeof(empty_basis(typeof(basis))) == typeof(basis)
         @test length(empty_basis(typeof(basis))) == 0
-        @test polynomialtype(basis, Float64) == polynomialtype(x[1], Float64)
-        @test polynomial(i -> 0.0, basis) isa polynomialtype(basis, Float64)
-        @test polynomial(zeros(n, n), basis, Float64) isa polynomialtype(basis, Float64)
-        @test polynomial(ones(n, n), basis, Float64) isa polynomialtype(basis, Float64)
+        @test polynomial_type(basis, Float64) == polynomial_type(x[1], Float64)
+        @test polynomial(i -> 0.0, basis) isa polynomial_type(basis, Float64)
+        @test polynomial(zeros(n, n), basis, Float64) isa
+              polynomial_type(basis, Float64)
+        @test polynomial(ones(n, n), basis, Float64) isa
+              polynomial_type(basis, Float64)
     end
 end
 
-function orthogonal_test(B::Type{<:AbstractMultipleOrthogonalBasis}, univ::Function, even_odd_separated::Bool)
+function orthogonal_test(
+    B::Type{<:AbstractMultipleOrthogonalBasis},
+    univ::Function,
+    even_odd_separated::Bool,
+)
     @test MultivariateBases.even_odd_separated(B) == even_odd_separated
     @polyvar x y
     univariate_x = univ(x)
     univariate_y = univ(y)
 
-    @testset "Univariate $var" for (var, univ) in [(x, univariate_x), (y, univariate_y)]
+    @testset "Univariate $var" for (var, univ) in
+                                   [(x, univariate_x), (y, univariate_y)]
         basis = maxdegree_basis(B, (var,), 4)
         for i in 1:5
-            @test basis.polynomials[length(basis) + 1 - i] == univ[i]
+            @test basis.polynomials[i] == univ[i]
         end
     end
 
     @testset "basis_covering_monomials" begin
-        monos = basis_covering_monomials(B, monovec([x^2 * y, y^2]))
+        monos = basis_covering_monomials(B, monomial_vector([x^2 * y, y^2]))
         if even_odd_separated
-            exps = [(2, 1), (0, 2), (0, 1), (0, 0)]
+            exps = [(0, 0), (0, 1), (0, 2), (2, 1)]
         else
-            exps = [(2, 1), (2, 0), (1, 1), (0, 2), (1, 0), (0, 1), (0, 0)]
+            exps = [(0, 0), (0, 1), (1, 0), (0, 2), (1, 1), (2, 0), (2, 1)]
         end
         for i in 1:length(monos)
-            @test monos.polynomials[i] == univariate_x[exps[i][1] + 1] * univariate_y[exps[i][2] + 1]
+            @test monos.polynomials[i] ==
+                  univariate_x[exps[i][1]+1] * univariate_y[exps[i][2]+1]
         end
-        monos = basis_covering_monomials(B, monovec([x^4, x^2, x]))
+        monos = basis_covering_monomials(B, monomial_vector([x^4, x^2, x]))
         if even_odd_separated
-            exps = [4, 2, 1, 0]
+            exps = [0, 1, 2, 4]
         else
-            exps = [4, 3, 2, 1, 0]
+            exps = 0:4
         end
         for i in 1:length(monos)
-            @test monos.polynomials[i] == univariate_x[exps[i] + 1]
+            @test monos.polynomials[i] == univariate_x[exps[i]+1]
         end
     end
 end
