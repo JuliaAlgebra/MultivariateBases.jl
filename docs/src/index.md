@@ -1,4 +1,5 @@
 ```@meta
+CurrentModule = MultivariateBases
 DocTestSetup = quote
     using MultivariateBases
 end
