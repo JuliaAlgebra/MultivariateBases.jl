@@ -1,5 +1,7 @@
 using Documenter, MultivariateBases
 
+DocMeta.setdocmeta!(MultivariateBases, :DocTestSetup, :(using MultivariateBases); recursive=true)
+
 makedocs(
     sitename = "MultivariateBases",
     # See https://github.com/JuliaDocs/Documenter.jl/issues/868
