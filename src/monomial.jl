@@ -5,6 +5,8 @@ abstract type AbstractMonomialBasis{
 
 Base.length(basis::AbstractMonomialBasis) = length(basis.monomials)
 Base.copy(basis::AbstractMonomialBasis) = typeof(basis)(copy(basis.monomials))
+Base.firstindex(basis::AbstractMonomialBasis) = 1
+Base.lastindex(basis::AbstractMonomialBasis) = length(basis)
 
 MP.nvariables(basis::AbstractMonomialBasis) = MP.nvariables(basis.monomials)
 MP.variables(basis::AbstractMonomialBasis) = MP.variables(basis.monomials)
@@ -70,6 +72,8 @@ end
 function MonomialBasis(monomials::AbstractVector)
     return MonomialBasis(MP.monomial_vector(monomials))
 end
+
+Base.getindex(basis::MonomialBasis, i::Int) = basis.monomials[i]
 
 function MP.polynomial_type(
     ::Union{MonomialBasis{MT},Type{<:MonomialBasis{MT}}},

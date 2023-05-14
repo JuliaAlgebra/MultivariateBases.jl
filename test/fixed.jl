@@ -7,6 +7,8 @@ using DynamicPolynomials
     basis = FixedPolynomialBasis([1 - x^2, x^2 + 2])
     @test polynomial_type(basis, Int) == polynomial_type(x, Int)
     @test polynomial(one, basis) == 3
+    @test basis[1] == 1 - x^2
+    @test basis[2] == x^2 + 2
 end
 @testset "Monomial" begin
     basis = FixedPolynomialBasis([x, x^2])
