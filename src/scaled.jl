@@ -41,6 +41,11 @@ function ScaledMonomialBasis(monomials)
     return ScaledMonomialBasis(MP.monomial_vector(monomials))
 end
 
+function Base.getindex(basis::ScaledMonomialBasis, i::Int)
+    mono = basis.monomials[i]
+    return scaling(mono) * mono
+end
+
 function MP.polynomial_type(::ScaledMonomialBasis{MT}, T::Type) where {MT}
     return MP.polynomial_type(MT, promote_type(T, Float64))
 end

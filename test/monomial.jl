@@ -8,6 +8,8 @@ using DynamicPolynomials
     @test polynomial_type(basis, Int) == polynomial_type(x, Int)
     @test polynomial(i -> i^2, basis) == 4x + y
     @test coefficients(x + 4y, MonomialBasis) == [4, 1]
+    @test basis[1] == y
+    @test basis[2] == x
 end
 @testset "Affine" begin
     # It will be sorted and 1 will be moved at the end
