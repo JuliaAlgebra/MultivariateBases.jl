@@ -36,9 +36,13 @@ Foundations of Computational Mathematics 7.2 (2007): 229-244.
 struct ScaledMonomialBasis{MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}} <:
        AbstractMonomialBasis{MT,MV}
     monomials::MV
-end
-function ScaledMonomialBasis(monomials)
-    return ScaledMonomialBasis(MP.monomial_vector(monomials))
+    function ScaledMonomialBasis{MT,MV}(monomials::MV) where {MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}}
+        return new{MT,MV}(monomials)
+    end
+    function ScaledMonomialBasis(monomials::AbstractVector)
+        sorted = MP.monomial_vector(monomials)
+        return ScaledMonomialBasis{eltype(sorted),typeof(sorted)}(sorted)
+    end
 end
 
 function Base.getindex(basis::ScaledMonomialBasis, i::Int)
