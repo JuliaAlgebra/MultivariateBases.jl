@@ -38,8 +38,8 @@ julia> using DynamicPolynomials
 julia> @polyvar x
 (x,)
 
-julia> basis_covering_monomials(ChebyshevBasis, [x^4, x^2])
-ChebyshevBasisFirstKind{Polynomial{true, Float64}}(Polynomial{true, Float64}[1.0, -1.0 + 2.0x², 1.0 - 8.0x² + 8.0x⁴])
+julia> basis_covering_monomials(ChebyshevBasis, [x^2, x^4])
+ChebyshevBasisFirstKind{Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Float64}}(Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Float64}[1.0, -1.0 + 2.0x², 1.0 - 8.0x² + 8.0x⁴])
 ```
 """
 function basis_covering_monomials end

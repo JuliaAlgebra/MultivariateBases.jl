@@ -35,7 +35,7 @@ function multi_findsorted(x, y)
     I = zeros(Int, length(x))
     j = 1
     for i in eachindex(x)
-        while j ≤ length(y) && x[i] < y[j]
+        while j ≤ length(y) && x[i] > y[j]
             j += 1
         end
         if j ≤ length(y) && x[i] == y[j]
@@ -68,9 +68,13 @@ one get ths [`ScaledMonomialBasis`](@ref).
 struct MonomialBasis{MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}} <:
        AbstractMonomialBasis{MT,MV}
     monomials::MV
-end
-function MonomialBasis(monomials::AbstractVector)
-    return MonomialBasis(MP.monomial_vector(monomials))
+    function MonomialBasis{MT,MV}(monomials::MV) where {MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}}
+        return new{MT,MV}(monomials)
+    end
+    function MonomialBasis(monomials::AbstractVector)
+        sorted = MP.monomial_vector(monomials)
+        return MonomialBasis{eltype(sorted),typeof(sorted)}(sorted)
+    end
 end
 
 Base.getindex(basis::MonomialBasis, i::Int) = basis.monomials[i]
