@@ -36,7 +36,9 @@ Foundations of Computational Mathematics 7.2 (2007): 229-244.
 struct ScaledMonomialBasis{MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}} <:
        AbstractMonomialBasis{MT,MV}
     monomials::MV
-    function ScaledMonomialBasis{MT,MV}(monomials::MV) where {MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}}
+    function ScaledMonomialBasis{MT,MV}(
+        monomials::MV,
+    ) where {MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}}
         return new{MT,MV}(monomials)
     end
     function ScaledMonomialBasis(monomials::AbstractVector)

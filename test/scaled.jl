@@ -23,7 +23,7 @@ end
     @test coefficients(x^2 + 4x * y + 9y^2, ScaledMonomialBasis) ==
           [9, 4 / √2, 1]
     @test basis[1] == y^2
-    @test basis[2] == √2 * x * y 
+    @test basis[2] == √2 * x * y
     @test basis[3] == x^2
 end
 @testset "API degree = $degree" for degree in 0:3

@@ -10,7 +10,9 @@ end
 
 Base.firstindex(basis::AbstractPolynomialVectorBasis) = 1
 Base.lastindex(basis::AbstractPolynomialVectorBasis) = length(basis)
-Base.getindex(basis::AbstractPolynomialVectorBasis, i::Int) = basis.polynomials[i]
+function Base.getindex(basis::AbstractPolynomialVectorBasis, i::Int)
+    return basis.polynomials[i]
+end
 
 function MP.nvariables(basis::AbstractPolynomialVectorBasis)
     return MP.nvariables(basis.polynomials)

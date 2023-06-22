@@ -68,7 +68,9 @@ one get ths [`ScaledMonomialBasis`](@ref).
 struct MonomialBasis{MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}} <:
        AbstractMonomialBasis{MT,MV}
     monomials::MV
-    function MonomialBasis{MT,MV}(monomials::MV) where {MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}}
+    function MonomialBasis{MT,MV}(
+        monomials::MV,
+    ) where {MT<:MP.AbstractMonomial,MV<:AbstractVector{MT}}
         return new{MT,MV}(monomials)
     end
     function MonomialBasis(monomials::AbstractVector)
