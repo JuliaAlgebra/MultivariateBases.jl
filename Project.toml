@@ -1,15 +1,15 @@
 name = "MultivariateBases"
 uuid = "be282fd4-ad43-11e9-1d11-8bd9d7e43378"
 repo = "https://github.com/JuliaAlgebra/MultivariateBases.jl.git"
-version = "0.1.5"
+version = "0.2.0"
 
 [deps]
 MultivariatePolynomials = "102ac46a-7ee4-5c85-9060-abc95bfdeaa3"
 MutableArithmetics = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
 
 [compat]
-MultivariatePolynomials = "0.4"
-MutableArithmetics = "0.3, 1"
+MultivariatePolynomials = "0.5"
+MutableArithmetics = "1"
 julia = "1.6"
 
 [extras]
