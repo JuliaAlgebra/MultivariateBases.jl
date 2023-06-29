@@ -41,7 +41,7 @@ julia> @polyvar x
 (x,)
 
 julia> basis_covering_monomials(ChebyshevBasis, [x^2, x^4])
-ChebyshevBasisFirstKind{Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Float64}}(Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Float64}[1.0, -1.0 + 2.0x², 1.0 - 8.0x² + 8.0x⁴])
+ChebyshevBasisFirstKind([1.0, -1.0 + 2.0x², 1.0 - 8.0x² + 8.0x⁴])
 ```
 """
 function basis_covering_monomials end
@@ -51,6 +51,8 @@ function _show(io::IO, mime::MIME, basis::AbstractPolynomialBasis)
     print(io, nameof(T))
     print(io, "([")
     first = true
+    # TODO use Base.show_vector here, maybe by wrapping the `generator` vector
+    #      into something that spits objects wrapped with the `mime` type
     for g in generators(basis)
         if !first
             print(io, ", ")
