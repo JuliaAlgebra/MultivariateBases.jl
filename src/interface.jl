@@ -9,6 +9,8 @@ Society for Industrial and Applied Mathematics, **2012**.
 """
 abstract type AbstractPolynomialBasis end
 
+generators(basis::AbstractPolynomialBasis) = basis.polynomials
+
 function MP.polynomial(coefs::Vector, basis::AbstractPolynomialBasis)
     return MP.polynomial(i -> coefs[i], basis)
 end
@@ -43,3 +45,23 @@ ChebyshevBasisFirstKind{Polynomial{DynamicPolynomials.Commutative{DynamicPolynom
 ```
 """
 function basis_covering_monomials end
+
+function _show(io::IO, mime::MIME, basis::AbstractPolynomialBasis)
+    T = typeof(basis)
+    print(io, nameof(T))
+    print(io, "([")
+    first = true
+    for g in generators(basis)
+        if !first
+            print(io, ", ")
+        end
+        first = false
+        show(io, mime, g)
+    end
+    print(io, "])")
+end
+
+Base.show(io::IO, mime::MIME, basis::AbstractPolynomialBasis) = _show(io, mime, basis)
+
+Base.print(io::IO, basis::AbstractPolynomialBasis) = _show(io, MIME"text/print"(), basis)
+Base.show(io::IO, basis::AbstractPolynomialBasis) = _show(io, MIME"text/plain"(), basis)
