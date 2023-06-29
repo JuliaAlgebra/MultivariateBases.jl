@@ -58,10 +58,27 @@ function _show(io::IO, mime::MIME, basis::AbstractPolynomialBasis)
         first = false
         show(io, mime, g)
     end
-    print(io, "])")
+    return print(io, "])")
 end
 
-Base.show(io::IO, mime::MIME, basis::AbstractPolynomialBasis) = _show(io, mime, basis)
+function Base.show(
+    io::IO,
+    mime::MIME"text/plain",
+    basis::AbstractPolynomialBasis,
+)
+    return _show(io, mime, basis)
+end
+function Base.show(
+    io::IO,
+    mime::MIME"text/print",
+    basis::AbstractPolynomialBasis,
+)
+    return _show(io, mime, basis)
+end
 
-Base.print(io::IO, basis::AbstractPolynomialBasis) = _show(io, MIME"text/print"(), basis)
-Base.show(io::IO, basis::AbstractPolynomialBasis) = _show(io, MIME"text/plain"(), basis)
+function Base.print(io::IO, basis::AbstractPolynomialBasis)
+    return show(io, MIME"text/print"(), basis)
+end
+function Base.show(io::IO, basis::AbstractPolynomialBasis)
+    return show(io, MIME"text/plain"(), basis)
+end

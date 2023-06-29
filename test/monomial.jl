@@ -11,6 +11,8 @@ using DynamicPolynomials
     @test basis[1] == y
     @test basis[2] == x
     @test sprint(show, basis) == "MonomialBasis([y, x])"
+    @test sprint(show, MIME"text/print"(), basis) == "MonomialBasis([y, x])"
+    @test sprint(show, MIME"text/plain"(), basis) == "MonomialBasis([y, x])"
     @test sprint(print, basis) == "MonomialBasis([y, x])"
 end
 @testset "Affine" begin
