@@ -9,6 +9,8 @@ using DynamicPolynomials
     @test polynomial(one, basis) == 3
     @test basis[1] == 1 - x^2
     @test basis[2] == x^2 + 2
+    @test sprint(show, basis) == "FixedPolynomialBasis([1 - x², 2 + x²])"
+    @test sprint(print, basis) == "FixedPolynomialBasis([1 - x^2, 2 + x^2])"
 end
 @testset "Monomial" begin
     basis = FixedPolynomialBasis([x, x^2])

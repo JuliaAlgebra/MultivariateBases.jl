@@ -9,6 +9,8 @@ Society for Industrial and Applied Mathematics, **2012**.
 """
 abstract type AbstractPolynomialBasis end
 
+generators(basis::AbstractPolynomialBasis) = basis.polynomials
+
 function MP.polynomial(coefs::Vector, basis::AbstractPolynomialBasis)
     return MP.polynomial(i -> coefs[i], basis)
 end
@@ -39,7 +41,46 @@ julia> @polyvar x
 (x,)
 
 julia> basis_covering_monomials(ChebyshevBasis, [x^2, x^4])
-ChebyshevBasisFirstKind{Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Float64}}(Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, Graded{LexOrder}, Float64}[1.0, -1.0 + 2.0x², 1.0 - 8.0x² + 8.0x⁴])
+ChebyshevBasisFirstKind([1.0, -1.0 + 2.0x², 1.0 - 8.0x² + 8.0x⁴])
 ```
 """
 function basis_covering_monomials end
+
+function _show(io::IO, mime::MIME, basis::AbstractPolynomialBasis)
+    T = typeof(basis)
+    print(io, nameof(T))
+    print(io, "([")
+    first = true
+    # TODO use Base.show_vector here, maybe by wrapping the `generator` vector
+    #      into something that spits objects wrapped with the `mime` type
+    for g in generators(basis)
+        if !first
+            print(io, ", ")
+        end
+        first = false
+        show(io, mime, g)
+    end
+    return print(io, "])")
+end
+
+function Base.show(
+    io::IO,
+    mime::MIME"text/plain",
+    basis::AbstractPolynomialBasis,
+)
+    return _show(io, mime, basis)
+end
+function Base.show(
+    io::IO,
+    mime::MIME"text/print",
+    basis::AbstractPolynomialBasis,
+)
+    return _show(io, mime, basis)
+end
+
+function Base.print(io::IO, basis::AbstractPolynomialBasis)
+    return show(io, MIME"text/print"(), basis)
+end
+function Base.show(io::IO, basis::AbstractPolynomialBasis)
+    return show(io, MIME"text/plain"(), basis)
+end
