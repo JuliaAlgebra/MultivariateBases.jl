@@ -3,23 +3,6 @@ abstract type AbstractPolynomialVectorBasis{
     PV<:AbstractVector{PT},
 } <: AbstractPolynomialBasis end
 
-Base.length(basis::AbstractPolynomialVectorBasis) = length(basis.polynomials)
-function Base.copy(basis::AbstractPolynomialVectorBasis)
-    return typeof(basis)(copy(basis.polynomials))
-end
-
-Base.firstindex(basis::AbstractPolynomialVectorBasis) = 1
-Base.lastindex(basis::AbstractPolynomialVectorBasis) = length(basis)
-function Base.getindex(basis::AbstractPolynomialVectorBasis, i::Int)
-    return basis.polynomials[i]
-end
-
-function MP.nvariables(basis::AbstractPolynomialVectorBasis)
-    return MP.nvariables(basis.polynomials)
-end
-function MP.variables(basis::AbstractPolynomialVectorBasis)
-    return MP.variables(basis.polynomials)
-end
 function MP.monomial_type(
     ::Type{<:AbstractPolynomialVectorBasis{PT}},
 ) where {PT}
@@ -64,9 +47,11 @@ function MP.polynomial(
                     col -> Q[row, col] * basis.polynomials[col],
                     MA.add!!,
                     1:n,
+                    init = MA.Zero(),
                 ),
             MA.add!!,
             1:n,
+            init = MA.Zero(),
         ),
         T,
     )
