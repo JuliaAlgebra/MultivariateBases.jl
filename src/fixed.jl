@@ -46,11 +46,11 @@ function MP.polynomial(
                 adjoint(basis.polynomials[row]) * mapreduce(
                     col -> Q[row, col] * basis.polynomials[col],
                     MA.add!!,
-                    1:n,
+                    1:n;
                     init = MA.Zero(),
                 ),
             MA.add!!,
-            1:n,
+            1:n;
             init = MA.Zero(),
         ),
         T,

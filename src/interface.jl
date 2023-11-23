@@ -14,7 +14,10 @@ generators(basis::AbstractPolynomialBasis) = basis.polynomials
 function Base.copy(basis::AbstractPolynomialBasis)
     return typeof(basis)(copy(generators(basis)))
 end
-function Base.getindex(basis::AbstractPolynomialBasis, I::AbstractVector{<:Integer})
+function Base.getindex(
+    basis::AbstractPolynomialBasis,
+    I::AbstractVector{<:Integer},
+)
     return typeof(basis)(generators(basis)[I])
 end
 
