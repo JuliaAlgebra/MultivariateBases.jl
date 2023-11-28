@@ -72,3 +72,11 @@ end
     p = @inferred polynomial(zeros(Int, 0, 0), basis, Int)
     @test iszero(p)
 end
+
+@testset "Enumerate" begin
+    monos = [1, x, y^2]
+    basis = FixedPolynomialBasis(monos)
+    for (i, e) in enumerate(basis)
+        @test e == monos[i]
+    end
+end

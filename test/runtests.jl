@@ -1,7 +1,7 @@
 using Test
 
 using MultivariateBases
-
+using LinearAlgebra
 using DynamicPolynomials
 
 function api_test(B::Type{<:AbstractPolynomialBasis}, degree)
@@ -24,6 +24,25 @@ function api_test(B::Type{<:AbstractPolynomialBasis}, degree)
               polynomial_type(basis, Float64)
         @test polynomial(ones(n, n), basis, Float64) isa
               polynomial_type(basis, Float64)
+    end
+end
+
+function univ_orthogonal_test(
+    B::Type{<:AbstractMultipleOrthogonalBasis},
+    univ::Function;
+    kwargs...,
+)
+    @polyvar x
+    basis = maxdegree_basis(B, [x], 4)
+    for i in eachindex(basis)
+        @test isapprox(
+            dot(basis[i], basis[i], B),
+            univ(maxdegree(basis[i]));
+            kwargs...,
+        )
+        for j in 1:i-1
+            @test isapprox(dot(basis[i], basis[j], B), 0.0; kwargs...)
+        end
     end
 end
 
@@ -66,6 +85,15 @@ function orthogonal_test(
             @test monos.polynomials[i] == univariate_x[exps[i]+1]
         end
     end
+end
+
+function coefficient_test(B::Type{<:AbstractPolynomialBasis}, coefs; kwargs...)
+    @polyvar x y
+    p = x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2 + 1
+    basis = basis_covering_monomials(B, monomials(p))
+    cc = coefficients(p, basis)
+    @test isapprox(coefs, cc; kwargs...)
+    @test isapprox(p, polynomial(cc, basis); kwargs...)
 end
 
 @testset "Monomial" begin

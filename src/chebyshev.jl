@@ -28,6 +28,17 @@ function degree_one_univariate_polynomial(
     MA.@rewrite(variable + 0)
 end
 
+function _scalar_product_function(::Type{<:ChebyshevBasisFirstKind}, i::Int)
+    if i == 0
+        return π
+    elseif isodd(i)
+        return 0
+    else
+        n = div(i, 2)
+        return (π / 2^i) * prod(n+1:i) / factorial(n)
+    end
+end
+
 """
     struct ChebyshevBasisSecondKind{P} <: AbstractChebyshevBasis{P}
         polynomials::Vector{P}
@@ -44,4 +55,15 @@ function degree_one_univariate_polynomial(
     variable::MP.AbstractVariable,
 )
     MA.@rewrite(2variable + 0)
+end
+
+function _scalar_product_function(::Type{<:ChebyshevBasisSecondKind}, i::Int)
+    if i == 0
+        return π / 2
+    elseif isodd(i)
+        return 0
+    else
+        n = div(i, 2)
+        return π / (2^(i + 1)) * prod(n+2:i) / factorial(n)
+    end
 end

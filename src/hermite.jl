@@ -30,6 +30,17 @@ function degree_one_univariate_polynomial(
     MA.@rewrite(1variable)
 end
 
+function _scalar_product_function(::Type{<:ProbabilistsHermiteBasis}, i::Int)
+    if i == 0
+        return √(2 * π)
+    elseif isodd(i)
+        return 0
+    else
+        n = div(i, 2)
+        return (√(2 * π) / (2^n)) * prod(n+1:2*n)
+    end
+end
+
 """
     struct PhysicistsHermiteBasis{P} <: AbstractHermiteBasis{P}
         polynomials::Vector{P}
@@ -47,4 +58,15 @@ function degree_one_univariate_polynomial(
     variable::MP.AbstractVariable,
 )
     MA.@rewrite(2variable)
+end
+
+function _scalar_product_function(::Type{<:PhysicistsHermiteBasis}, i::Int)
+    if i == 0
+        return √(π)
+    elseif isodd(i)
+        return 0
+    else
+        n = div(i, 2)
+        return (√(π) / (2^i)) * prod(n+1:i)
+    end
 end

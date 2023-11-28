@@ -13,8 +13,39 @@ using MultivariateBases
         ],
         false,
     )
+
+    univ_orthogonal_test(LaguerreBasis, i -> 1; atol = 1e-12) # there are precision issues
 end
 
 @testset "API degree = $degree" for degree in 0:3
     api_test(LaguerreBasis, degree)
+end
+
+@testset "Coefficients" begin
+    coefficient_test(
+        LaguerreBasis,
+        reverse([
+            48.0,
+            48.0,
+            -96.0,
+            -192.0,
+            -192.0,
+            -96.0,
+            48.0,
+            384.0,
+            564.0,
+            384.0,
+            48.0,
+            -192.0,
+            -744.0,
+            -744.0,
+            -192.0,
+            324.0,
+            720.0,
+            324.0,
+            -264.0,
+            -264.0,
+            85.0,
+        ]),
+    )
 end
