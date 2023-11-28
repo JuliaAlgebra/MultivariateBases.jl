@@ -16,7 +16,11 @@ struct OrthonormalCoefficientsBasis{
     polynomials::PV
 end
 
-function LinearAlgebra.dot(p::MP.AbstractPolynomialLike{S}, q::MP.AbstractPolynomialLike{T}, ::Type{<:OrthonormalCoefficientsBasis}) where {S,T}
+function LinearAlgebra.dot(
+    p::MP.AbstractPolynomialLike{S},
+    q::MP.AbstractPolynomialLike{T},
+    ::Type{<:OrthonormalCoefficientsBasis},
+) where {S,T}
     s = zero(MA.promote_operation(*, S, T))
     terms_p = MP.terms(p)
     terms_q = MP.terms(q)

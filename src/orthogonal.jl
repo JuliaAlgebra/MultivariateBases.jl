@@ -209,10 +209,7 @@ function _integral(
     return sum([_integral(t, basis_type) for t in MP.terms(p)])
 end
 
-function MP.coefficients(
-    p,
-    basis::AbstractMultipleOrthogonalBasis,
-)
+function MP.coefficients(p, basis::AbstractMultipleOrthogonalBasis)
     B = typeof(basis)
     return [
         LinearAlgebra.dot(p, el, B) / LinearAlgebra.dot(el, el, B) for

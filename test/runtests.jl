@@ -95,8 +95,17 @@ function coefficient_test(basis::AbstractPolynomialBasis, p, coefs; kwargs...)
     @test isapprox(p, polynomial(cc, basis); kwargs...)
 end
 
-function coefficient_test(basis::AbstractPolynomialBasis, coefs::AbstractVector; kwargs...)
-    coefficient_test(basis, sum(generators(basis) .* coefs), coefs; kwargs...)
+function coefficient_test(
+    basis::AbstractPolynomialBasis,
+    coefs::AbstractVector;
+    kwargs...,
+)
+    return coefficient_test(
+        basis,
+        sum(generators(basis) .* coefs),
+        coefs;
+        kwargs...,
+    )
 end
 
 function coefficient_test(B::Type{<:AbstractPolynomialBasis}, coefs; kwargs...)

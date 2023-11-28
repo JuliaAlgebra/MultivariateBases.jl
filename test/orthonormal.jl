@@ -4,9 +4,8 @@ using DynamicPolynomials
 
 @polyvar x y
 
-
 @testset "Polynomials" begin
-    gens = [1 + x + y + x*y, 1 - x + y - x*y] / 2
+    gens = [1 + x + y + x * y, 1 - x + y - x * y] / 2
     basis = OrthonormalCoefficientsBasis(gens)
     @test iszero(dot(gens[1], gens[2], OrthonormalCoefficientsBasis))
     coefficient_test(basis, [2, -3])
@@ -30,8 +29,10 @@ using DynamicPolynomials
     @test extdegree(basis, y) == (0, 1)
     @test variables(basis) == [x, y]
     @test nvariables(basis) == 2
-    @test sprint(show, basis) == "OrthonormalCoefficientsBasis([0.5 + 0.5y + 0.5x + 0.5xy, 0.5 + 0.5y - 0.5x - 0.5xy])"
-    @test sprint(print, basis) == "OrthonormalCoefficientsBasis([0.5 + 0.5*y + 0.5*x + 0.5*x*y, 0.5 + 0.5*y - 0.5*x - 0.5*x*y])"
+    @test sprint(show, basis) ==
+          "OrthonormalCoefficientsBasis([0.5 + 0.5y + 0.5x + 0.5xy, 0.5 + 0.5y - 0.5x - 0.5xy])"
+    @test sprint(print, basis) ==
+          "OrthonormalCoefficientsBasis([0.5 + 0.5*y + 0.5*x + 0.5*x*y, 0.5 + 0.5*y - 0.5*x - 0.5*x*y])"
     b2 = basis[2:2]
     @test length(b2) == 1
     @test b2[1] == gens[2]
@@ -56,7 +57,8 @@ end
 @testset "Complex" begin
     for a in [1, -1, im, -im]
         basis = OrthonormalCoefficientsBasis([a * x])
-        @test 5x^2 == @inferred polynomial(5ones(Int, 1, 1), basis, Complex{Int})
+        @test 5x^2 ==
+              @inferred polynomial(5ones(Int, 1, 1), basis, Complex{Int})
         @test 5x^2 == @inferred polynomial(5ones(Int, 1, 1), basis, Int)
         coefficient_test(basis, [2])
         coefficient_test(basis, [-2im])
