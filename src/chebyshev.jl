@@ -28,7 +28,7 @@ function degree_one_univariate_polynomial(
     MA.@rewrite(variable + 0)
 end
 
-function scalar_product_function(::Type{<:ChebyshevBasisFirstKind}, i::Int)
+function _scalar_product_function(::Type{<:ChebyshevBasisFirstKind}, i::Int)
     if i == 0
         return π
     elseif isodd(i)
@@ -57,7 +57,7 @@ function degree_one_univariate_polynomial(
     MA.@rewrite(2variable + 0)
 end
 
-function scalar_product_function(::Type{<:ChebyshevBasisSecondKind}, i::Int)
+function _scalar_product_function(::Type{<:ChebyshevBasisSecondKind}, i::Int)
     if i == 0
         return π / 2
     elseif isodd(i)

@@ -30,7 +30,7 @@ function degree_one_univariate_polynomial(
     MA.@rewrite(1variable)
 end
 
-function scalar_product_function(::Type{<:ProbabilistsHermiteBasis}, i::Int)
+function _scalar_product_function(::Type{<:ProbabilistsHermiteBasis}, i::Int)
     if i == 0
         return √(2 * π)
     elseif isodd(i)
@@ -60,7 +60,7 @@ function degree_one_univariate_polynomial(
     MA.@rewrite(2variable)
 end
 
-function scalar_product_function(::Type{<:PhysicistsHermiteBasis}, i::Int)
+function _scalar_product_function(::Type{<:PhysicistsHermiteBasis}, i::Int)
     if i == 0
         return √(π)
     elseif isodd(i)

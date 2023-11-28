@@ -159,7 +159,7 @@ function basis_covering_monomials(
     )
 end
 
-function scalar_product_function(
+function _scalar_product_function(
     ::Type{<:AbstractMultipleOrthogonalBasis},
     i::Int,
 ) end
@@ -176,14 +176,14 @@ function _integral(
     p::Number,
     basis_type::Type{<:AbstractMultipleOrthogonalBasis},
 )
-    return p * scalar_product_function(basis_type, 0)
+    return p * _scalar_product_function(basis_type, 0)
 end
 
 function _integral(
     p::MP.AbstractVariable,
     basis_type::Type{<:AbstractMultipleOrthogonalBasis},
 )
-    return scalar_product_function(basis_type, 1)
+    return _scalar_product_function(basis_type, 1)
 end
 
 function _integral(
@@ -191,7 +191,7 @@ function _integral(
     basis_type::Type{<:AbstractMultipleOrthogonalBasis},
 )
     return prod([
-        scalar_product_function(basis_type, i) for i in MP.exponents(p)
+        _scalar_product_function(basis_type, i) for i in MP.exponents(p)
     ])
 end
 

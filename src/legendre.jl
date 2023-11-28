@@ -36,7 +36,7 @@ function degree_one_univariate_polynomial(
     MA.@rewrite(variable + 0)
 end
 
-function scalar_product_function(::Type{<:LegendreBasis}, i::Int)
+function _scalar_product_function(::Type{<:LegendreBasis}, i::Int)
     if isodd(i)
         return 0
     else
