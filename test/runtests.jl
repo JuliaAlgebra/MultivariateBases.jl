@@ -12,6 +12,8 @@ function api_test(B::Type{<:AbstractPolynomialBasis}, degree)
     ]
         n = binomial(2 + degree, 2)
         @test length(basis) == n
+        @test firstindex(basis) == 1
+        @test lastindex(basis) == n
         @test typeof(copy(basis)) == typeof(basis)
         @test nvariables(basis) == 2
         @test variables(basis) == x
@@ -87,13 +89,31 @@ function orthogonal_test(
     end
 end
 
+function coefficient_test(basis::AbstractPolynomialBasis, p, coefs; kwargs...)
+    cc = coefficients(p, basis)
+    @test isapprox(coefs, cc; kwargs...)
+    @test isapprox(p, polynomial(cc, basis); kwargs...)
+end
+
+function coefficient_test(
+    basis::AbstractPolynomialBasis,
+    coefs::AbstractVector;
+    kwargs...,
+)
+    return coefficient_test(
+        basis,
+        sum(generators(basis) .* coefs),
+        coefs;
+        kwargs...,
+    )
+end
+
 function coefficient_test(B::Type{<:AbstractPolynomialBasis}, coefs; kwargs...)
     @polyvar x y
     p = x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2 + 1
     basis = basis_covering_monomials(B, monomials(p))
-    cc = coefficients(p, basis)
-    @test isapprox(coefs, cc; kwargs...)
-    @test isapprox(p, polynomial(cc, basis); kwargs...)
+    coefficient_test(basis, p, coefs; kwargs...)
+    return
 end
 
 @testset "Monomial" begin
@@ -104,6 +124,9 @@ end
 end
 @testset "Fixed" begin
     include("fixed.jl")
+end
+@testset "Orthonormal" begin
+    include("orthonormal.jl")
 end
 @testset "Hermite" begin
     include("hermite.jl")

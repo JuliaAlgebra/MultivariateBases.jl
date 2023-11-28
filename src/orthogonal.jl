@@ -209,16 +209,10 @@ function _integral(
     return sum([_integral(t, basis_type) for t in MP.terms(p)])
 end
 
-function MP.coefficients(
-    p,
-    basis::AbstractMultipleOrthogonalBasis;
-    check = true,
-)
+function MP.coefficients(p, basis::AbstractMultipleOrthogonalBasis)
     B = typeof(basis)
-    coeffs = [
+    return [
         LinearAlgebra.dot(p, el, B) / LinearAlgebra.dot(el, el, B) for
         el in basis
     ]
-    idx = findall(c -> !isapprox(c, 0; atol = 1e-10), coeffs)
-    return coeffs[idx]
 end
