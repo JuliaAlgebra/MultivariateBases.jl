@@ -10,6 +10,13 @@ using DynamicPolynomials
     @test coefficients(x + 4y, MonomialBasis) == [4, 1]
     @test basis[1] == y
     @test basis[2] == x
+    @test generators(basis) == [y, x]
+    @test collect(basis) == [y, x]
+    @test length(basis) == 2
+    @test firstindex(basis) == 1
+    @test lastindex(basis) == 2
+    @test variables(basis) == [x, y]
+    @test nvariables(basis) == 2
     @test sprint(show, basis) == "MonomialBasis([y, x])"
     @test sprint(show, MIME"text/print"(), basis) == "MonomialBasis([y, x])"
     @test sprint(show, MIME"text/plain"(), basis) == "MonomialBasis([y, x])"
@@ -33,6 +40,15 @@ end
 @testset "merge_bases" begin
     basis1 = MonomialBasis([x^2, y^2])
     basis2 = MonomialBasis([x * y, y^2])
+    @test mindegree(basis2) == 2
+    @test mindegree(basis2, x) == 0
+    @test mindegree(basis2, y) == 1
+    @test maxdegree(basis2) == 2
+    @test maxdegree(basis2, x) == 1
+    @test maxdegree(basis2, y) == 2
+    @test extdegree(basis2) == (2, 2)
+    @test extdegree(basis2, x) == (0, 1)
+    @test extdegree(basis2, y) == (1, 2)
     basis, I1, I2 = MultivariateBases.merge_bases(basis1, basis2)
     @test basis.monomials == [y^2, x * y, x^2]
     @test I1 == [1, 0, 2]
@@ -41,4 +57,12 @@ end
 
 @testset "API degree = $degree" for degree in 0:3
     api_test(MonomialBasis, degree)
+end
+
+@testset "Empty" begin
+    basis = MonomialBasis(typeof(x^2)[])
+    @test isempty(basis)
+    @test isempty(eachindex(basis))
+    p = @inferred polynomial(zeros(Int, 0, 0), basis, Int)
+    @test iszero(p)
 end

@@ -11,6 +11,42 @@ abstract type AbstractPolynomialBasis end
 
 generators(basis::AbstractPolynomialBasis) = basis.polynomials
 
+function Base.copy(basis::AbstractPolynomialBasis)
+    return typeof(basis)(copy(generators(basis)))
+end
+function Base.getindex(
+    basis::AbstractPolynomialBasis,
+    I::AbstractVector{<:Integer},
+)
+    return typeof(basis)(generators(basis)[I])
+end
+
+# Overload some of the `AbstractVector` interface for convenience
+Base.isempty(basis::AbstractPolynomialBasis) = isempty(generators(basis))
+Base.eachindex(basis::AbstractPolynomialBasis) = eachindex(generators(basis))
+Base.iterate(basis::AbstractPolynomialBasis) = iterate(generators(basis))
+Base.iterate(basis::AbstractPolynomialBasis, s) = iterate(generators(basis), s)
+Base.length(basis::AbstractPolynomialBasis) = length(generators(basis))
+Base.firstindex(basis::AbstractPolynomialBasis) = firstindex(generators(basis))
+Base.lastindex(basis::AbstractPolynomialBasis) = lastindex(generators(basis))
+Base.getindex(basis::AbstractPolynomialBasis, i::Int) = generators(basis)[i]
+
+# Overload some of the `MP` interface for convenience
+MP.mindegree(basis::AbstractPolynomialBasis) = MP.mindegree(generators(basis))
+MP.maxdegree(basis::AbstractPolynomialBasis) = MP.maxdegree(generators(basis))
+MP.extdegree(basis::AbstractPolynomialBasis) = MP.extdegree(generators(basis))
+function MP.mindegree(basis::AbstractPolynomialBasis, v)
+    return MP.mindegree(generators(basis), v)
+end
+function MP.maxdegree(basis::AbstractPolynomialBasis, v)
+    return MP.maxdegree(generators(basis), v)
+end
+function MP.extdegree(basis::AbstractPolynomialBasis, v)
+    return MP.extdegree(generators(basis), v)
+end
+MP.nvariables(basis::AbstractPolynomialBasis) = MP.nvariables(generators(basis))
+MP.variables(basis::AbstractPolynomialBasis) = MP.variables(generators(basis))
+
 function MP.polynomial(coefs::Vector, basis::AbstractPolynomialBasis)
     return MP.polynomial(i -> coefs[i], basis)
 end

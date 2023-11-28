@@ -3,18 +3,14 @@ abstract type AbstractMonomialBasis{
     MV<:AbstractVector{MT},
 } <: AbstractPolynomialBasis end
 
-Base.length(basis::AbstractMonomialBasis) = length(basis.monomials)
-Base.copy(basis::AbstractMonomialBasis) = typeof(basis)(copy(basis.monomials))
-Base.firstindex(basis::AbstractMonomialBasis) = 1
-Base.lastindex(basis::AbstractMonomialBasis) = length(basis)
+generators(basis::AbstractMonomialBasis) = basis.monomials
 
-MP.nvariables(basis::AbstractMonomialBasis) = MP.nvariables(basis.monomials)
-MP.variables(basis::AbstractMonomialBasis) = MP.variables(basis.monomials)
 MP.monomial_type(::Type{<:AbstractMonomialBasis{MT}}) where {MT} = MT
 
 function empty_basis(MB::Type{<:AbstractMonomialBasis{MT}}) where {MT}
     return MB(MP.empty_monomial_vector(MT))
 end
+
 function maxdegree_basis(
     B::Type{<:AbstractMonomialBasis},
     variables,
@@ -22,6 +18,7 @@ function maxdegree_basis(
 )
     return B(MP.monomials(variables, 0:maxdegree))
 end
+
 function basis_covering_monomials(
     B::Type{<:AbstractMonomialBasis},
     monos::AbstractVector{<:MP.AbstractMonomial},
@@ -51,8 +48,6 @@ function merge_bases(basis1::MB, basis2::MB) where {MB<:AbstractMonomialBasis}
     I2 = multi_findsorted(monos, basis2.monomials)
     return MB(monos), I1, I2
 end
-
-generators(basis::AbstractMonomialBasis) = basis.monomials
 
 """
     struct MonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractPolynomialBasis
@@ -89,6 +84,7 @@ function MP.polynomial_type(
 ) where {MT}
     return MP.polynomial_type(MT, T)
 end
+
 MP.polynomial(f::Function, mb::MonomialBasis) = MP.polynomial(f, mb.monomials)
 
 function MP.polynomial(Q::AbstractMatrix, mb::MonomialBasis, T::Type)

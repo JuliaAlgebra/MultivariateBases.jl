@@ -3,23 +3,6 @@ abstract type AbstractPolynomialVectorBasis{
     PV<:AbstractVector{PT},
 } <: AbstractPolynomialBasis end
 
-Base.length(basis::AbstractPolynomialVectorBasis) = length(basis.polynomials)
-function Base.copy(basis::AbstractPolynomialVectorBasis)
-    return typeof(basis)(copy(basis.polynomials))
-end
-
-Base.firstindex(basis::AbstractPolynomialVectorBasis) = 1
-Base.lastindex(basis::AbstractPolynomialVectorBasis) = length(basis)
-function Base.getindex(basis::AbstractPolynomialVectorBasis, i::Int)
-    return basis.polynomials[i]
-end
-
-function MP.nvariables(basis::AbstractPolynomialVectorBasis)
-    return MP.nvariables(basis.polynomials)
-end
-function MP.variables(basis::AbstractPolynomialVectorBasis)
-    return MP.variables(basis.polynomials)
-end
 function MP.monomial_type(
     ::Type{<:AbstractPolynomialVectorBasis{PT}},
 ) where {PT}
@@ -40,36 +23,54 @@ function MP.polynomial_type(
     V = MA.promote_operation(+, U, U)
     return MP.polynomial_type(PT, V)
 end
-function MP.polynomial(f::Function, basis::AbstractPolynomialVectorBasis)
-    return MP.polynomial(
-        mapreduce(
-            ip -> f(ip[1]) * ip[2],
-            MA.add!!,
-            enumerate(basis.polynomials),
-        ),
-    )
+function MP.polynomial(
+    f::Function,
+    basis::AbstractPolynomialVectorBasis{P},
+) where {P}
+    if isempty(generators(basis))
+        return zero(P)
+    else
+        return MP.polynomial(
+            mapreduce(
+                ip -> f(ip[1]) * ip[2],
+                MA.add!!,
+                enumerate(basis.polynomials),
+            ),
+        )
+    end
 end
+
+function _poly(::MA.Zero, ::Type{P}, ::Type{T}) where {P,T}
+    return zero(MP.polynomial_type(P, T))
+end
+
+_convert(::Type{P}, p) where {P} = convert(P, p)
+_convert(::Type{P}, ::MA.Zero) where {P} = zero(P)
 
 function MP.polynomial(
     Q::AbstractMatrix,
-    basis::AbstractPolynomialVectorBasis,
-    T::Type,
-)
+    basis::AbstractPolynomialVectorBasis{P},
+    ::Type{T},
+) where {P,T}
     n = length(basis)
     @assert size(Q) == (n, n)
-    return MP.polynomial(
+    PT = MP.polynomial_type(P, T)
+    return _convert(
+        PT,
         mapreduce(
-            row ->
+            row -> begin
                 adjoint(basis.polynomials[row]) * mapreduce(
                     col -> Q[row, col] * basis.polynomials[col],
                     MA.add!!,
-                    1:n,
-                ),
+                    1:n;
+                    init = MA.Zero(),
+                )
+            end,
             MA.add!!,
-            1:n,
+            1:n;
+            init = MA.Zero(),
         ),
-        T,
-    )
+    )::PT
 end
 
 """
