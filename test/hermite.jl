@@ -15,7 +15,7 @@ using MultivariateBases
     )
     univ_orthogonal_test(
         PhysicistsHermiteBasis,
-        i -> √(π) * factorial(i) * 2^i,
+        i -> √(π) * factorial(i) * 2^i;
         atol = 1e-12,
     ) #precision issue
 end
@@ -28,11 +28,20 @@ end
 @testset "Coefficients" begin
     coefficient_test(
         ProbabilistsHermiteBasis,
-        [4, 6, 6, 1, 9, 1, 1, 1],
+        [4, 6, 6, 1, 9, 1, 1, 1];
         atol = 1e-12,
     )
     coefficient_test(
         PhysicistsHermiteBasis,
-        reverse([0.015625, 0.015625, 0.03125, 0.1875, 0.03125, 0.1875, 0.1875, 1.0]),
+        reverse([
+            0.015625,
+            0.015625,
+            0.03125,
+            0.1875,
+            0.03125,
+            0.1875,
+            0.1875,
+            1.0,
+        ]),
     )
 end
