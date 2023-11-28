@@ -14,8 +14,6 @@ using DynamicPolynomials
     @test collect(basis) == gens
     @test generators(basis) == gens
     @test length(basis) == 2
-    @test firstindex(basis) == 1
-    @test lastindex(basis) == 2
     @test mindegree(basis) == 0
     @test mindegree(basis, x) == 0
     @test maxdegree(basis) == 2

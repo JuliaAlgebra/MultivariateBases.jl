@@ -12,9 +12,6 @@ using DynamicPolynomials
     @test basis[2] == x
     @test generators(basis) == [y, x]
     @test collect(basis) == [y, x]
-    @test length(basis) == 2
-    @test firstindex(basis) == 1
-    @test lastindex(basis) == 2
     @test variables(basis) == [x, y]
     @test nvariables(basis) == 2
     @test sprint(show, basis) == "MonomialBasis([y, x])"

@@ -15,6 +15,7 @@ AbstractPolynomialBasis
 maxdegree_basis
 basis_covering_monomials
 FixedPolynomialBasis
+OrthonormalCoefficientsBasis
 ```
 
 ## Monomial basis
