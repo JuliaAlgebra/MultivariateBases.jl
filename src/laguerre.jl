@@ -26,3 +26,7 @@ function degree_one_univariate_polynomial(
 )
     MA.@rewrite(1 - variable)
 end
+
+function _scalar_product_function(::Type{<:LaguerreBasis}, i::Int)
+    return factorial(i)
+end

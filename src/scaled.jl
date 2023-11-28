@@ -95,3 +95,6 @@ unscale_coef(t::MP.AbstractTerm) = MP.coefficient(t) / scaling(MP.monomial(t))
 function MP.coefficients(p, ::Type{<:ScaledMonomialBasis})
     return unscale_coef.(MP.terms(p))
 end
+function MP.coefficients(p, basis::ScaledMonomialBasis)
+    return MP.coefficients(p, basis.monomials) ./ scaling.(MP.monomials(p))
+end

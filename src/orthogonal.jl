@@ -158,3 +158,67 @@ function basis_covering_monomials(
         MP.monomial_vector(collect(m)),
     )
 end
+
+function _scalar_product_function(
+    ::Type{<:AbstractMultipleOrthogonalBasis},
+    i::Int,
+) end
+
+function LinearAlgebra.dot(
+    p,
+    q,
+    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+)
+    return _integral(p * q, basis_type)
+end
+
+function _integral(
+    p::Number,
+    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+)
+    return p * _scalar_product_function(basis_type, 0)
+end
+
+function _integral(
+    p::MP.AbstractVariable,
+    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+)
+    return _scalar_product_function(basis_type, 1)
+end
+
+function _integral(
+    p::MP.AbstractMonomial,
+    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+)
+    return prod([
+        _scalar_product_function(basis_type, i) for i in MP.exponents(p)
+    ])
+end
+
+function _integral(
+    p::MP.AbstractTerm,
+    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+)
+    return MP.coefficient(p) * _integral(MP.monomial(p), basis_type)
+end
+
+function _integral(
+    p::MP.AbstractPolynomial,
+    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+)
+    return sum([_integral(t, basis_type) for t in MP.terms(p)])
+end
+
+function MP.coefficients(
+    p,
+    basis::AbstractMultipleOrthogonalBasis;
+    check = true,
+)
+    B = typeof(basis)
+    coeffs = [
+        LinearAlgebra.dot(p, el, B) / LinearAlgebra.dot(el, el, B) for
+        el in basis
+    ]
+    idx = findall(c -> !isapprox(c, 0; atol = 1e-10), coeffs)
+    return coeffs[idx]
+end
