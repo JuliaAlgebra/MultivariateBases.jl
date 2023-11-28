@@ -34,6 +34,8 @@ Base.getindex(basis::AbstractPolynomialBasis, i::Int) = generators(basis)[i]
 # Overload some of the `MP` interface for convenience
 MP.mindegree(basis::AbstractPolynomialBasis) = MP.mindegree(generators(basis))
 MP.maxdegree(basis::AbstractPolynomialBasis) = MP.maxdegree(generators(basis))
+MP.mindegree(basis::AbstractPolynomialBasis, v) = MP.mindegree(generators(basis), v)
+MP.maxdegree(basis::AbstractPolynomialBasis, v) = MP.maxdegree(generators(basis), v)
 MP.nvariables(basis::AbstractPolynomialBasis) = MP.nvariables(generators(basis))
 MP.variables(basis::AbstractPolynomialBasis) = MP.variables(generators(basis))
 

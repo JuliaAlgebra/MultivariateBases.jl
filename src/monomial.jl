@@ -49,8 +49,6 @@ function merge_bases(basis1::MB, basis2::MB) where {MB<:AbstractMonomialBasis}
     return MB(monos), I1, I2
 end
 
-generators(basis::AbstractMonomialBasis) = basis.monomials
-
 """
     struct MonomialBasis{MT<:MP.AbstractMonomial, MV<:AbstractVector{MT}} <: AbstractPolynomialBasis
         monomials::MV
