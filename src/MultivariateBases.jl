@@ -13,6 +13,7 @@ include("monomial.jl")
 include("scaled.jl")
 
 export FixedPolynomialBasis,
+    OrthonormalCoefficientsBasis,
     AbstractMultipleOrthogonalBasis,
     ProbabilistsHermiteBasis,
     PhysicistsHermiteBasis,
@@ -31,6 +32,7 @@ export generators,
 include("fixed.jl")
 
 import LinearAlgebra
+include("orthonormal.jl")
 include("orthogonal.jl")
 include("hermite.jl")
 include("laguerre.jl")
