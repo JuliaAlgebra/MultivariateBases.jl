@@ -11,10 +11,3 @@ MutableArithmetics = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
 MultivariatePolynomials = "0.5.3"
 MutableArithmetics = "1"
 julia = "1.6"
-
-[extras]
-DynamicPolynomials = "7c1d4256-1411-5781-91ec-d7bc3513ac07"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test", "DynamicPolynomials"]

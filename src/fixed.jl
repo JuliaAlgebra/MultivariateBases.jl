@@ -23,7 +23,10 @@ function MP.polynomial_type(
     V = MA.promote_operation(+, U, U)
     return MP.polynomial_type(PT, V)
 end
-function MP.polynomial(f::Function, basis::AbstractPolynomialVectorBasis{P}) where {P}
+function MP.polynomial(
+    f::Function,
+    basis::AbstractPolynomialVectorBasis{P},
+) where {P}
     if isempty(generators(basis))
         return zero(P)
     else
@@ -61,7 +64,8 @@ function MP.polynomial(
                     MA.add!!,
                     1:n;
                     init = MA.Zero(),
-                   ); end,
+                )
+            end,
             MA.add!!,
             1:n;
             init = MA.Zero(),

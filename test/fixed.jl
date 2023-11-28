@@ -5,11 +5,25 @@ using DynamicPolynomials
 @polyvar x y
 
 @testset "Polynomials" begin
-    basis = FixedPolynomialBasis([1 - x^2, x^2 + 2])
+    gens = [1 - x^2, x^2 + 2]
+    basis = FixedPolynomialBasis(gens)
     @test polynomial_type(basis, Int) == polynomial_type(x, Int)
     @test polynomial(one, basis) == 3
     @test basis[1] == 1 - x^2
     @test basis[2] == x^2 + 2
+    @test collect(basis) == gens
+    @test generators(basis) == gens
+    @test length(basis) == 2
+    @test firstindex(basis) == 1
+    @test lastindex(basis) == 2
+    @test mindegree(basis) == 0
+    @test mindegree(basis, x) == 0
+    @test maxdegree(basis) == 2
+    @test maxdegree(basis, x) == 2
+    @test extdegree(basis) == (0, 2)
+    @test extdegree(basis, x) == (0, 2)
+    @test variables(basis) == [x]
+    @test nvariables(basis) == 1
     @test sprint(show, basis) == "FixedPolynomialBasis([1 - x², 2 + x²])"
     @test sprint(print, basis) == "FixedPolynomialBasis([1 - x^2, 2 + x^2])"
     b2 = basis[2:2]
@@ -53,6 +67,8 @@ end
 end
 @testset "Empty" begin
     basis = FixedPolynomialBasis(typeof(x + 1)[])
+    @test isempty(basis)
+    @test isempty(eachindex(basis))
     p = @inferred polynomial(zeros(Int, 0, 0), basis, Int)
     @test iszero(p)
 end
