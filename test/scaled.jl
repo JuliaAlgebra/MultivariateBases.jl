@@ -39,8 +39,5 @@ end
 end
 
 @testset "Coefficients" begin
-    coefficient_test(
-        ScaledMonomialBasis,
-        [1, -√3/√2, 1/√15, 1/√15],
-    )
+    coefficient_test(ScaledMonomialBasis, [1, -√3 / √2, 1 / √15, 1 / √15])
 end
