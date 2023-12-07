@@ -1,5 +1,5 @@
 """
-    abstract type AbstractMultipleOrthogonalBasis{P} <: AbstractPolynomialVectorBasis{P, Vector{P}} end
+    abstract type AbstractMultipleOrthogonal <: AbstractMonomialIndexed end
 
 Polynomial basis such that ``\\langle p_i(x), p_j(x) \\rangle = 0`` if ``i \\neq j`` where
 ```math
@@ -20,11 +20,10 @@ where [`reccurence_first_coef`](@ref) gives `a_k`,
 [`reccurence_third_coef`](@ref) gives `c_k` and
 [`reccurence_deno_coef`](@ref) gives `d_k`.
 """
-abstract type AbstractMultipleOrthogonalBasis{P} <:
-              AbstractPolynomialVectorBasis{P,Vector{P}} end
+abstract type AbstractMultipleOrthogonal <: AbstractMonomialIndexed end
 
 """
-    reccurence_first_coef(B::Type{<:AbstractMultipleOrthogonalBasis}, degree::Integer)
+    reccurence_first_coef(B::Type{<:AbstractMultipleOrthogonal}, degree::Integer)
 
 Return `a_{degree}` in recurrence equation
 ```math
@@ -34,7 +33,7 @@ d_k p_k(x_i) = (a_k x_i + b_k) p_{k-1}(x_i) + c_k p_{k-2}(x_i)
 function reccurence_first_coef end
 
 """
-    reccurence_second_coef(B::Type{<:AbstractMultipleOrthogonalBasis}, degree::Integer)
+    reccurence_second_coef(B::Type{<:AbstractMultipleOrthogonal}, degree::Integer)
 
 Return `b_{degree}` in recurrence equation
 ```math
@@ -44,7 +43,7 @@ d_k p_k(x_i) = (a_k x_i + b_k) p_{k-1}(x_i) + c_k p_{k-2}(x_i)
 function reccurence_second_coef end
 
 """
-    reccurence_third_coef(B::Type{<:AbstractMultipleOrthogonalBasis}, degree::Integer)
+    reccurence_third_coef(B::Type{<:AbstractMultipleOrthogonal}, degree::Integer)
 
 Return `c_{degree}` in recurrence equation
 ```math
@@ -54,7 +53,7 @@ d_k p_k(x_i) = (a_k x_i + b_k) p_{k-1}(x_i) + c_k p_{k-2}(x_i)
 function reccurence_third_coef end
 
 """
-    reccurence_deno_coef(B::Type{<:AbstractMultipleOrthogonalBasis}, degree::Integer)
+    reccurence_deno_coef(B::Type{<:AbstractMultipleOrthogonal}, degree::Integer)
 
 Return `d_{degree}` in recurrence equation
 ```math
@@ -64,20 +63,23 @@ d_k p_k(x_i) = (a_k x_i + b_k) p_{k-1}(x_i) + c_k p_{k-2}(x_i)
 function reccurence_deno_coef end
 
 """
-    univariate_orthogonal_basis(B::Type{<:AbstractMultipleOrthogonalBasis},
-                                variable::MP.AbstractVariable, degree::Integer)
+    univariate_orthogonal_basis(
+        B::Type{<:AbstractMultipleOrthogonal},
+        variable::MP.AbstractVariable,
+        degree::Integer,
+    )
 
 Return the vector of univariate polynomials of the basis `B` up to `degree`
 with variable `variable`.
 """
 function univariate_orthogonal_basis(
-    B::Type{<:AbstractMultipleOrthogonalBasis},
+    B::Type{<:AbstractMultipleOrthogonal},
     variable::MP.AbstractVariable,
     degree::Integer,
 )
     @assert degree >= 0
     if degree == 0
-        return MP.polynomial_type(B, typeof(variable))[one(variable)]
+        return MP.polynomial_type(Polynomial{B, MP.monomial_type(variable)}, Int)[one(variable)]
     elseif degree == 1
         return push!(
             univariate_orthogonal_basis(B, variable, 0),
@@ -100,44 +102,12 @@ function univariate_orthogonal_basis(
     end
 end
 
-function _basis_from_monomials(
-    B::Type{<:AbstractMultipleOrthogonalBasis},
-    variables,
-    monos,
-)
-    univariate = [
-        univariate_orthogonal_basis(
-            B,
-            variable,
-            maximum(mono -> MP.degree(mono, variable), monos),
-        ) for variable in variables
-    ]
-    return B([
-        prod(
-            i -> univariate[i][MP.degree(mono, variables[i])+1],
-            eachindex(variables),
-        ) for mono in monos
-    ])
-end
-
-function maxdegree_basis(
-    B::Type{<:AbstractMultipleOrthogonalBasis},
-    variables,
-    maxdegree::Int,
-)
-    return _basis_from_monomials(
-        B,
-        variables,
-        MP.monomials(variables, 0:maxdegree),
-    )
-end
-
 function basis_covering_monomials(
-    B::Type{<:AbstractMultipleOrthogonalBasis},
-    monos::AbstractVector{<:MP.AbstractMonomial},
-)
+    ::Type{B},
+    monos::AbstractVector{M},
+) where {B<:AbstractMultipleOrthogonal,M}
     to_add = collect(monos)
-    m = Set(monos)
+    m = Set{promote_type(M)}(monos)
     while !isempty(to_add)
         mono = pop!(to_add)
         for v in MP.variables(mono)
@@ -152,43 +122,39 @@ function basis_covering_monomials(
             end
         end
     end
-    return _basis_from_monomials(
-        B,
-        MP.variables(monos),
-        MP.monomial_vector(collect(m)),
-    )
+    return SubBasis{B}(MP.monomial_vector(collect(m)))
 end
 
 function _scalar_product_function(
-    ::Type{<:AbstractMultipleOrthogonalBasis},
+    ::Type{<:AbstractMultipleOrthogonal},
     i::Int,
 ) end
 
 function LinearAlgebra.dot(
     p,
     q,
-    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+    basis_type::Type{<:AbstractMultipleOrthogonal},
 )
     return _integral(p * q, basis_type)
 end
 
 function _integral(
     p::Number,
-    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+    basis_type::Type{<:AbstractMultipleOrthogonal},
 )
     return p * _scalar_product_function(basis_type, 0)
 end
 
 function _integral(
-    p::MP.AbstractVariable,
-    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+    ::MP.AbstractVariable,
+    basis_type::Type{<:AbstractMultipleOrthogonal},
 )
     return _scalar_product_function(basis_type, 1)
 end
 
 function _integral(
     p::MP.AbstractMonomial,
-    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+    basis_type::Type{<:AbstractMultipleOrthogonal},
 )
     return prod([
         _scalar_product_function(basis_type, i) for i in MP.exponents(p)
@@ -197,22 +163,28 @@ end
 
 function _integral(
     p::MP.AbstractTerm,
-    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+    basis_type::Type{<:AbstractMultipleOrthogonal},
 )
     return MP.coefficient(p) * _integral(MP.monomial(p), basis_type)
 end
 
 function _integral(
     p::MP.AbstractPolynomial,
-    basis_type::Type{<:AbstractMultipleOrthogonalBasis},
+    basis_type::Type{<:AbstractMultipleOrthogonal},
 )
     return sum([_integral(t, basis_type) for t in MP.terms(p)])
 end
 
-function MP.coefficients(p, basis::AbstractMultipleOrthogonalBasis)
-    B = typeof(basis)
-    return [
-        LinearAlgebra.dot(p, el, B) / LinearAlgebra.dot(el, el, B) for
-        el in basis
-    ]
+function MP.coefficients(p, basis::SubBasis{B,M}) where {B<:AbstractMultipleOrthogonal,M}
+    return map(basis) do el
+        q = MP.polynomial(el)
+        LinearAlgebra.dot(p, q, B) / LinearAlgebra.dot(q, q, B)
+    end
+end
+
+function MP.polynomial(p::Polynomial{B}) where{B<:AbstractMultipleOrthogonal}
+    return prod(
+        univariate_orthogonal_basis(B, var, deg)[deg+1]
+        for (var, deg) in MP.powers(p.monomial)
+    )
 end

@@ -21,24 +21,24 @@ OrthonormalCoefficientsBasis
 ## Monomial basis
 
 ```@docs
-MonomialBasis
-ScaledMonomialBasis
+MultivariateBases.Monomial
+MultivariateBases.ScaledMonomial
 ```
 
 ## Orthogonal basis
 
 ```@docs
-AbstractMultipleOrthogonalBasis
+MultivariateBases.AbstractMultipleOrthogonal
 univariate_orthogonal_basis
 reccurence_first_coef
 reccurence_second_coef
 reccurence_third_coef
 reccurence_deno_coef
-ProbabilistsHermiteBasis
-PhysicistsHermiteBasis
-LaguerreBasis
-AbstractGegenbauerBasis
-LegendreBasis
-ChebyshevBasisFirstKind
-ChebyshevBasisSecondKind
+MultivariateBases.ProbabilistsHermite
+MultivariateBases.PhysicistsHermite
+MultivariateBases.Laguerre
+MultivariateBases.AbstractGegenbauer
+MultivariateBases.Legendre
+MultivariateBases.ChebyshevFirstKind
+MultivariateBases.ChebyshevSecondKind
 ```
