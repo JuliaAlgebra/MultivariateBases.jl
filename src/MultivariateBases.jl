@@ -1,8 +1,8 @@
 module MultivariateBases
 
 import MutableArithmetics as MA
-
 import MultivariatePolynomials as MP
+import StarAlgebras as SA
 
 export AbstractPolynomialBasis
 export maxdegree_basis, basis_covering_monomials, empty_basis
