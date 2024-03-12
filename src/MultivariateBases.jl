@@ -1,7 +1,7 @@
 module MultivariateBases
 
 import MutableArithmetics as MA
-
+import StarAlgebras as SA
 import MultivariatePolynomials as MP
 
 export AbstractPolynomialBasis

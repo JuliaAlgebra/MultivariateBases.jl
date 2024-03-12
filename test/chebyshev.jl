@@ -1,5 +1,18 @@
 using Test
 using MultivariateBases
+using DynamicPolynomials
+
+@testset "StarAlgebras" begin
+    @polyvar x
+    a = MultivariateBases.Polynomial{Chebyshev}(x)
+    b = a * a
+    @show b.coeffs
+    #@test length(b.coeffs.basis_elements) == 2
+    c = b * b
+    @show c.coeffs
+    # TODO after __canonicalize, it should be smaller
+    #@test length(c.coeffs.basis_elements) == 8
+end
 
 @testset "Orthogonal" begin
     orthogonal_test(

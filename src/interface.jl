@@ -9,11 +9,13 @@ Society for Industrial and Applied Mathematics, **2012**.
 """
 abstract type AbstractPolynomialBasis end
 
+# TODO breaking Should be underscore and only for internal use
 generators(basis::AbstractPolynomialBasis) = basis.polynomials
 
 function Base.copy(basis::AbstractPolynomialBasis)
     return typeof(basis)(copy(generators(basis)))
 end
+
 function Base.getindex(
     basis::AbstractPolynomialBasis,
     I::AbstractVector{<:Integer},
