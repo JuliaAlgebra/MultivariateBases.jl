@@ -3,17 +3,29 @@ Base.keytype(p::MP.AbstractPolynomial) = MP.monomial_type(p)
 Base.valtype(p::MP.AbstractPolynomial) = MP.coefficient_type(p)
 #Base.keys(p::MP.AbstractPolynomial) = MP.monomials(p)
 Base.pairs(p::MP.AbstractPolynomial) = MP.terms(p)
-function Base.similar(p::PT, ::Type{T}) where {PT<:MP._APL,T}
-    return convert(MP.similar_type(PT, T), copy(p))
+function Base.similar(p::PT, ::Type{T}) where {PT<:MP.AbstractPolynomial,T}
+    return convert(MP.similar_type(PT, T), copy(p)) # Missing the `copy` in MP
 end
-function Base.indexed_iterate(t::MP.Term, i::Int)
-    if i == 1
-        return MP.coefficient(t)
+Base.iterate(t::MP.Term) = iterate(t, 1)
+function Base.iterate(t::MP.Term, state)
+    if state == 1
+        return MP.monomial(t), 2
+    elseif state == 2
+        return MP.coefficient(t), 3
     else
-        return MP.monomial(t)
+        return nothing
     end
 end
+function MA.operate!(
+    ::SA.UnsafeAddMul{typeof(*)},
+    mc::MP.AbstractPolynomial,
+    val,
+    c::MP.AbstractPolynomial,
+)
+    return MA.operate!(MA.add_mul, mc, val, c)
+end
 
+function SA.__canonicalize!(::MP.AbstractPolynomial) end
 
 struct Polynomial{B,M<:MP.AbstractMonomial}
     monomial::M
