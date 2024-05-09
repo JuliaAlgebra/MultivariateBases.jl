@@ -10,6 +10,9 @@ Society for Industrial and Applied Mathematics, **2012**.
 abstract type AbstractPolynomialBasis end
 
 generators(basis::AbstractPolynomialBasis) = basis.polynomials
+function Base.:(==)(a::AbstractPolynomialBasis, b::AbstractPolynomialBasis)
+    return generators(a) == generators(b)
+end
 
 function Base.copy(basis::AbstractPolynomialBasis)
     return typeof(basis)(copy(generators(basis)))

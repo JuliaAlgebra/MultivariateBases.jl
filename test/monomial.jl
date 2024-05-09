@@ -5,6 +5,8 @@ using DynamicPolynomials
 
 @testset "Linear" begin
     basis = MonomialBasis([x, y])
+    @test basis == MonomialBasis([y, x])
+    @test basis != MonomialBasis([y, y^2, x])
     @test polynomial_type(basis, Int) == polynomial_type(x, Int)
     @test polynomial(i -> i^2, basis) == 4x + y
     @test coefficients(x + 4y, MonomialBasis) == [4, 1]
