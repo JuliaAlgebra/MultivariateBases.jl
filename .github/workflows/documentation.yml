@@ -14,15 +14,15 @@ jobs:
         with:
           # Build documentation on latest release
           version: '1'
-      - name: dev
-        shell: julia --project=@. {0}
+      - name: Install dependencies
+        shell: julia --project=docs/ {0}
         run: |
           using Pkg
           Pkg.add([
               PackageSpec(name="StarAlgebras", rev="mk/non_monomial_basis"),
+              PackageSpec(path=pwd()),
           ])
-      - name: Install dependencies
-        run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+          Pkg.instantiate()
       - name: Build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # For authentication with GitHub Actions token
