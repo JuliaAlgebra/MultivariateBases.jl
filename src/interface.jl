@@ -11,9 +11,6 @@ abstract type AbstractPolynomialBasis end
 
 # TODO breaking Should be underscore and only for internal use
 generators(basis::AbstractPolynomialBasis) = basis.polynomials
-function Base.:(==)(a::AbstractPolynomialBasis, b::AbstractPolynomialBasis)
-    return generators(a) == generators(b)
-end
 
 function Base.getindex(
     basis::AbstractPolynomialBasis,
@@ -47,8 +44,8 @@ julia> using DynamicPolynomials
 julia> @polyvar x
 (x,)
 
-julia> basis_covering_monomials(ChebyshevBasis, [x^2, x^4])
-ChebyshevBasisFirstKind([1.0, -1.0 + 2.0x², 1.0 - 8.0x² + 8.0x⁴])
+julia> basis_covering_monomials(Chebyshev, [x^2, x^4])
+SubBasis{ChebyshevFirstKind}([1, x², x⁴])
 ```
 """
 function basis_covering_monomials end

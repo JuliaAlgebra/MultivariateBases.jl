@@ -13,9 +13,7 @@ include("polynomial.jl")
 include("monomial.jl")
 include("scaled.jl")
 
-export FixedPolynomialBasis,
-    OrthonormalCoefficientsBasis,
-    AbstractMultipleOrthogonal,
+export AbstractMultipleOrthogonal,
     ProbabilistsHermite,
     PhysicistsHermite,
     Laguerre

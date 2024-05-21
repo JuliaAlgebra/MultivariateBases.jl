@@ -1,5 +1,3 @@
-export ChebyshevFirstKind, Chebyshev
-
 abstract type AbstractChebyshev <: AbstractGegenbauer end
 
 _promote_div(::Type{I}) where {I<:Integer} = Rational{I}

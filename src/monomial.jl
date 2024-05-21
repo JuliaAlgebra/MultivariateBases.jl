@@ -109,6 +109,8 @@ function Base.copy(basis::SubBasis)
     return typeof(basis)(copy(basis.monomials))
 end
 
+Base.:(==)(a::SubBasis, b::SubBasis) = a.monomials == b.monomials
+
 function empty_basis(
     ::Type{<:SubBasis{B,M}},
 ) where {B<:AbstractMonomialIndexed,M}

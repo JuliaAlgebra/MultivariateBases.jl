@@ -14,31 +14,29 @@ based on the [MultivariatePolynomials](https://github.com/JuliaAlgebra/Multivari
 AbstractPolynomialBasis
 maxdegree_basis
 basis_covering_monomials
-FixedPolynomialBasis
-OrthonormalCoefficientsBasis
 ```
 
 ## Monomial basis
 
 ```@docs
-MultivariateBases.Monomial
-MultivariateBases.ScaledMonomial
+Monomial
+ScaledMonomial
 ```
 
 ## Orthogonal basis
 
 ```@docs
-MultivariateBases.AbstractMultipleOrthogonal
+AbstractMultipleOrthogonal
 univariate_orthogonal_basis
 reccurence_first_coef
 reccurence_second_coef
 reccurence_third_coef
 reccurence_deno_coef
-MultivariateBases.ProbabilistsHermite
-MultivariateBases.PhysicistsHermite
-MultivariateBases.Laguerre
-MultivariateBases.AbstractGegenbauer
-MultivariateBases.Legendre
-MultivariateBases.ChebyshevFirstKind
-MultivariateBases.ChebyshevSecondKind
+ProbabilistsHermite
+PhysicistsHermite
+Laguerre
+AbstractGegenbauer
+Legendre
+ChebyshevFirstKind
+ChebyshevSecondKind
 ```
