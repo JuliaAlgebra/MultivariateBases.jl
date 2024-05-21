@@ -4,7 +4,7 @@ using DynamicPolynomials
 
 @testset "StarAlgebras" begin
     @polyvar x
-    a = MultivariateBases.Polynomial{Chebyshev}(x)
+    a = MB.Polynomial{MB.Chebyshev}(x)
     b = a * a
     @test b.coeffs == 1 // 2 + 1 // 2 * x^2
     c = b * b

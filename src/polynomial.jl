@@ -1,8 +1,8 @@
 # TODO Add to MultivariatePolynomials
-Base.keytype(p::MP.AbstractPolynomial) = MP.monomial_type(p)
-Base.valtype(p::MP.AbstractPolynomial) = MP.coefficient_type(p)
+Base.keytype(p::MP.AbstractPolynomialLike) = MP.monomial_type(p)
+Base.valtype(p::MP.AbstractPolynomialLike) = MP.coefficient_type(p)
 #Base.keys(p::MP.AbstractPolynomial) = MP.monomials(p)
-SA.nonzero_pairs(p::MP.AbstractPolynomial) = MP.terms(p)
+SA.nonzero_pairs(p::MP.AbstractPolynomialLike) = MP.terms(p)
 function Base.similar(p::PT, ::Type{T}) where {PT<:MP.AbstractPolynomial,T}
     return convert(MP.similar_type(PT, T), copy(p)) # Missing the `copy` in MP
 end
@@ -24,8 +24,7 @@ function MA.operate!(
 )
     return MA.operate!(MA.add_mul, mc, val, c)
 end
-function MA.operate!(::typeof(SA.canonical), ::MP.AbstractPolynomial) end
-# TODO Move to SA
+MA.operate!(::typeof(SA.canonical), p::MP.AbstractPolynomial) = p
 function MA.promote_operation(
     ::typeof(SA.canonical),
     ::Type{P},
@@ -33,7 +32,9 @@ function MA.promote_operation(
     return P
 end
 
-struct Polynomial{B,M<:MP.AbstractMonomial}
+abstract type AbstractMonomialIndexed end
+
+struct Polynomial{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
     monomial::M
     function Polynomial{B}(mono::MP.AbstractMonomial) where {B}
         return new{B,typeof(mono)}(mono)
@@ -44,12 +45,11 @@ function Polynomial{B}(v::MP.AbstractVariable) where {B}
     return Polynomial{B}(MP.monomial(v))
 end
 
+MP.variables(p::Polynomial) = MP.variables(p.monomial)
+MP.nvariables(p::Polynomial) = MP.nvariables(p.monomial)
+
 function _algebra_element(p, ::Type{B}) where {B}
-    basis = FullBasis{B,MP.monomial_type(p)}()
-    return SA.AlgebraElement(
-        p,
-        SA.StarAlgebra(Polynomial{B}(MP.constant_monomial(p)), basis),
-    )
+    return SA.AlgebraElement(p, _algebra(FullBasis{B,MP.monomial_type(p)}()))
 end
 
 function Base.:*(a::Polynomial{B}, b::Polynomial{B}) where {B}
@@ -75,4 +75,4 @@ end
 
 Base.zero(p::Polynomial) = zero(typeof(p))
 
-struct Mul{B} <: SA.MultiplicativeStructure end
+struct Mul{B<:AbstractMonomialIndexed} <: SA.MultiplicativeStructure end
