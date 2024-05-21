@@ -1,5 +1,3 @@
-abstract type AbstractMonomialIndexed end
-
 struct FullBasis{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial} <:
        SA.ImplicitBasis{Polynomial{B,M},M} end
 
@@ -50,13 +48,20 @@ function Base.getindex(basis::SubBasis, index::Int)
     return parent(basis)[basis.monomials[index]]
 end
 
-function Base.getindex(basis::SubBasis{B,M}, value::Polynomial{B,M}) where {B,M}
-    j = parent(basis)[value]
-    i = searchsortedfirst(basis.indices, j)
-    if i in eachindex(basis.indices) && basis.indices[i] == j
+function monomial_index(basis::SubBasis, mono::MP.AbstractMonomial)
+    i = searchsortedfirst(basis.monomials, mono)
+    if i in eachindex(basis.monomials) && basis.monomials[i] == mono
         return i
     end
-    throw(BoundsError(basis, value))
+    return
+end
+
+function Base.getindex(basis::SubBasis{B,M}, value::Polynomial{B,M}) where {B,M}
+    mono = monomial_index(basis, parent(basis)[value])
+    if isnothing(mono)
+        throw(BoundsError(basis, value))
+    end
+    return mono
 end
 
 MP.monomial_type(::Type{<:SubBasis{B,M}}) where {B,M} = M
@@ -110,6 +115,10 @@ function Base.copy(basis::SubBasis)
 end
 
 Base.:(==)(a::SubBasis, b::SubBasis) = a.monomials == b.monomials
+
+function _algebra(basis::Union{FullBasis{B,M},SubBasis{B,M}}) where {B,M}
+    return SA.StarAlgebra(Polynomial{B}(MP.constant_monomial(M)), basis)
+end
 
 function empty_basis(
     ::Type{<:SubBasis{B,M}},
@@ -221,6 +230,8 @@ Once normalized so as to be orthonormal with this scalar product,
 one get ths [`ScaledMonomial`](@ref).
 """
 struct Monomial <: AbstractMonomial end
+
+(::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial) = a * b
 
 MP.polynomial(p::Polynomial{Monomial}) = MP.polynomial(p.monomial)
 

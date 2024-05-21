@@ -4,6 +4,14 @@ const MB = MultivariateBases
 using DynamicPolynomials
 @polyvar x y
 
+@testset "StarAlgebras" begin
+    @polyvar x
+    a = MB.Polynomial{MB.Monomial}(x)
+    b = a * a
+    @test b.coeffs == x^2
+    @test typeof(b.coeffs) == typeof(x^2)
+end
+
 @testset "Linear" begin
     basis = SubBasis{MB.Monomial}([x, y])
     @test basis == SubBasis{MB.Monomial}([y, x])
