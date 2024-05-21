@@ -14,9 +14,7 @@ include("monomial.jl")
 include("scaled.jl")
 
 export AbstractMultipleOrthogonal,
-    ProbabilistsHermite,
-    PhysicistsHermite,
-    Laguerre
+    ProbabilistsHermite, PhysicistsHermite, Laguerre
 export AbstractGegenbauer,
     Legendre, Chebyshev, ChebyshevFirstKind, ChebyshevSecondKind
 export generators,
