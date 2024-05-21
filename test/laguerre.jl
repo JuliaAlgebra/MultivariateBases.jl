@@ -3,7 +3,7 @@ using MultivariateBases
 
 @testset "Orthogonal" begin
     orthogonal_test(
-        LaguerreBasis,
+        MB.Laguerre,
         x -> [
             1,
             1 - x,
@@ -14,16 +14,16 @@ using MultivariateBases
         false,
     )
 
-    univ_orthogonal_test(LaguerreBasis, i -> 1; atol = 1e-12) # there are precision issues
+    univ_orthogonal_test(MB.Laguerre, i -> 1; atol = 1e-12) # there are precision issues
 end
 
 @testset "API degree = $degree" for degree in 0:3
-    api_test(LaguerreBasis, degree)
+    api_test(MB.Laguerre, degree)
 end
 
 @testset "Coefficients" begin
     coefficient_test(
-        LaguerreBasis,
+        MB.Laguerre,
         reverse([
             48.0,
             48.0,

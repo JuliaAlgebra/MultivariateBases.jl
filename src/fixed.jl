@@ -14,6 +14,7 @@ function empty_basis(
 ) where {PT}
     return B(PT[])
 end
+
 function MP.polynomial_type(
     ::AbstractPolynomialVectorBasis{PT},
     T::Type,
@@ -22,22 +23,6 @@ function MP.polynomial_type(
     U = MA.promote_operation(*, C, T)
     V = MA.promote_operation(+, U, U)
     return MP.polynomial_type(PT, V)
-end
-function MP.polynomial(
-    f::Function,
-    basis::AbstractPolynomialVectorBasis{P},
-) where {P}
-    if isempty(generators(basis))
-        return zero(P)
-    else
-        return MP.polynomial(
-            mapreduce(
-                ip -> f(ip[1]) * ip[2],
-                MA.add!!,
-                enumerate(basis.polynomials),
-            ),
-        )
-    end
 end
 
 function _poly(::MA.Zero, ::Type{P}, ::Type{T}) where {P,T}

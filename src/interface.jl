@@ -9,49 +9,14 @@ Society for Industrial and Applied Mathematics, **2012**.
 """
 abstract type AbstractPolynomialBasis end
 
+# TODO breaking Should be underscore and only for internal use
 generators(basis::AbstractPolynomialBasis) = basis.polynomials
-function Base.:(==)(a::AbstractPolynomialBasis, b::AbstractPolynomialBasis)
-    return generators(a) == generators(b)
-end
 
-function Base.copy(basis::AbstractPolynomialBasis)
-    return typeof(basis)(copy(generators(basis)))
-end
 function Base.getindex(
     basis::AbstractPolynomialBasis,
     I::AbstractVector{<:Integer},
 )
     return typeof(basis)(generators(basis)[I])
-end
-
-# Overload some of the `AbstractVector` interface for convenience
-Base.isempty(basis::AbstractPolynomialBasis) = isempty(generators(basis))
-Base.eachindex(basis::AbstractPolynomialBasis) = eachindex(generators(basis))
-Base.iterate(basis::AbstractPolynomialBasis) = iterate(generators(basis))
-Base.iterate(basis::AbstractPolynomialBasis, s) = iterate(generators(basis), s)
-Base.length(basis::AbstractPolynomialBasis) = length(generators(basis))
-Base.firstindex(basis::AbstractPolynomialBasis) = firstindex(generators(basis))
-Base.lastindex(basis::AbstractPolynomialBasis) = lastindex(generators(basis))
-Base.getindex(basis::AbstractPolynomialBasis, i::Int) = generators(basis)[i]
-
-# Overload some of the `MP` interface for convenience
-MP.mindegree(basis::AbstractPolynomialBasis) = MP.mindegree(generators(basis))
-MP.maxdegree(basis::AbstractPolynomialBasis) = MP.maxdegree(generators(basis))
-MP.extdegree(basis::AbstractPolynomialBasis) = MP.extdegree(generators(basis))
-function MP.mindegree(basis::AbstractPolynomialBasis, v)
-    return MP.mindegree(generators(basis), v)
-end
-function MP.maxdegree(basis::AbstractPolynomialBasis, v)
-    return MP.maxdegree(generators(basis), v)
-end
-function MP.extdegree(basis::AbstractPolynomialBasis, v)
-    return MP.extdegree(generators(basis), v)
-end
-MP.nvariables(basis::AbstractPolynomialBasis) = MP.nvariables(generators(basis))
-MP.variables(basis::AbstractPolynomialBasis) = MP.variables(generators(basis))
-
-function MP.polynomial(coefs::Vector, basis::AbstractPolynomialBasis)
-    return MP.polynomial(i -> coefs[i], basis)
 end
 
 """
@@ -79,47 +44,8 @@ julia> using DynamicPolynomials
 julia> @polyvar x
 (x,)
 
-julia> basis_covering_monomials(ChebyshevBasis, [x^2, x^4])
-ChebyshevBasisFirstKind([1.0, -1.0 + 2.0x², 1.0 - 8.0x² + 8.0x⁴])
+julia> basis_covering_monomials(Chebyshev, [x^2, x^4])
+SubBasis{ChebyshevFirstKind}([1, x², x⁴])
 ```
 """
 function basis_covering_monomials end
-
-function _show(io::IO, mime::MIME, basis::AbstractPolynomialBasis)
-    T = typeof(basis)
-    print(io, nameof(T))
-    print(io, "([")
-    first = true
-    # TODO use Base.show_vector here, maybe by wrapping the `generator` vector
-    #      into something that spits objects wrapped with the `mime` type
-    for g in generators(basis)
-        if !first
-            print(io, ", ")
-        end
-        first = false
-        show(io, mime, g)
-    end
-    return print(io, "])")
-end
-
-function Base.show(
-    io::IO,
-    mime::MIME"text/plain",
-    basis::AbstractPolynomialBasis,
-)
-    return _show(io, mime, basis)
-end
-function Base.show(
-    io::IO,
-    mime::MIME"text/print",
-    basis::AbstractPolynomialBasis,
-)
-    return _show(io, mime, basis)
-end
-
-function Base.print(io::IO, basis::AbstractPolynomialBasis)
-    return show(io, MIME"text/print"(), basis)
-end
-function Base.show(io::IO, basis::AbstractPolynomialBasis)
-    return show(io, MIME"text/plain"(), basis)
-end

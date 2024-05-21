@@ -12,7 +12,7 @@ polynomial basis for cubic polynomials in the variable `x`.
 struct OrthonormalCoefficientsBasis{
     PT<:MP.AbstractPolynomialLike,
     PV<:AbstractVector{PT},
-} <: AbstractPolynomialVectorBasis{PT,PV}
+} <: AbstractBasis{PT,PV}
     polynomials::PV
 end
 

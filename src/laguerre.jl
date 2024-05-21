@@ -1,32 +1,33 @@
 """
-    struct LaguerreBasis{P} <: AbstractMultipleOrthogonalBasis{P}
-        polynomials::Vector{P}
-    end
+    struct LaguerreBasis <: AbstractMultipleOrthogonal end
 
 Orthogonal polynomial with respect to the univariate weight function ``w(x) = \\exp(-x)`` over the interval ``[0, \\infty]``.
 """
-struct LaguerreBasis{P} <: AbstractMultipleOrthogonalBasis{P}
-    polynomials::Vector{P}
+struct Laguerre <: AbstractMultipleOrthogonal end
+
+# TODO implement multiplication with https://www.jstor.org/stable/2002985
+
+function MP.polynomial_type(
+    ::Type{Polynomial{Laguerre,M}},
+    ::Type{T},
+) where {M,T}
+    return MP.polynomial_type(M, float(T))
 end
 
-function MP.polynomial_type(::Type{<:LaguerreBasis}, V::Type)
-    return MP.polynomial_type(V, Float64)
-end
+even_odd_separated(::Type{Laguerre}) = false
 
-even_odd_separated(::Type{<:LaguerreBasis}) = false
-
-reccurence_first_coef(::Type{<:LaguerreBasis}, degree) = -1
-reccurence_second_coef(::Type{<:LaguerreBasis}, degree) = (2degree - 1)
-reccurence_third_coef(::Type{<:LaguerreBasis}, degree) = -(degree - 1)
-reccurence_deno_coef(::Type{<:LaguerreBasis}, degree) = degree
+reccurence_first_coef(::Type{Laguerre}, degree) = -1
+reccurence_second_coef(::Type{Laguerre}, degree) = (2degree - 1)
+reccurence_third_coef(::Type{Laguerre}, degree) = -(degree - 1)
+reccurence_deno_coef(::Type{Laguerre}, degree) = degree
 
 function degree_one_univariate_polynomial(
-    ::Type{<:LaguerreBasis},
+    ::Type{Laguerre},
     variable::MP.AbstractVariable,
 )
     MA.@rewrite(1 - variable)
 end
 
-function _scalar_product_function(::Type{<:LaguerreBasis}, i::Int)
+function _scalar_product_function(::Type{Laguerre}, i::Int)
     return factorial(i)
 end

@@ -3,36 +3,36 @@ using MultivariateBases
 
 @testset "Orthogonal" begin
     orthogonal_test(
-        ProbabilistsHermiteBasis,
+        MB.ProbabilistsHermite,
         x -> [1, x, x^2 - 1, x^3 - 3x, x^4 - 6x^2 + 3],
         true,
     )
-    univ_orthogonal_test(ProbabilistsHermiteBasis, i -> √(2 * π) * factorial(i))
+    univ_orthogonal_test(MB.ProbabilistsHermite, i -> √(2 * π) * factorial(i))
     orthogonal_test(
-        PhysicistsHermiteBasis,
+        MB.PhysicistsHermite,
         x -> [1, 2x, 4x^2 - 2, 8x^3 - 12x, 16x^4 - 48x^2 + 12],
         true,
     )
     univ_orthogonal_test(
-        PhysicistsHermiteBasis,
+        MB.PhysicistsHermite,
         i -> √(π) * factorial(i) * 2^i;
         atol = 1e-12,
     ) #precision issue
 end
 
 @testset "API degree = $degree" for degree in 0:3
-    api_test(ProbabilistsHermiteBasis, degree)
-    api_test(PhysicistsHermiteBasis, degree)
+    api_test(MB.ProbabilistsHermite, degree)
+    api_test(MB.PhysicistsHermite, degree)
 end
 
 @testset "Coefficients" begin
     coefficient_test(
-        ProbabilistsHermiteBasis,
+        MB.ProbabilistsHermite,
         [4, 6, 6, 1, 9, 1, 1, 1];
         atol = 1e-12,
     )
     coefficient_test(
-        PhysicistsHermiteBasis,
+        MB.PhysicistsHermite,
         reverse([
             0.015625,
             0.015625,

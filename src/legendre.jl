@@ -1,42 +1,39 @@
 """
-    struct AbstractGegenbauerBasis{P} <: AbstractMultipleOrthogonalBasis{P}
-        polynomials::Vector{P}
-    end
+    struct AbstractGegenbauer <: AbstractMultipleOrthogonal end
 
 Orthogonal polynomial with respect to the univariate weight function ``w(x) = (1 - x^2)^{\\alpha - 1/2}`` over the interval ``[-1, 1]``.
 """
-abstract type AbstractGegenbauerBasis{P} <: AbstractMultipleOrthogonalBasis{P} end
+abstract type AbstractGegenbauer <: AbstractMultipleOrthogonal end
 
-even_odd_separated(::Type{<:AbstractGegenbauerBasis}) = true
-reccurence_second_coef(::Type{<:AbstractGegenbauerBasis}, degree) = 0
+even_odd_separated(::Type{<:AbstractGegenbauer}) = true
+reccurence_second_coef(::Type{<:AbstractGegenbauer}, degree) = 0
 
 """
-    struct LegendreBasis{P} <: AbstractGegenbauerBasis{P}
-        polynomials::Vector{P}
-    end
+    struct Legendre <: AbstractGegenbauer end
 
 Orthogonal polynomial with respect to the univariate weight function ``w(x) = 1`` over the interval ``[-1, 1]``.
 """
-struct LegendreBasis{P} <: AbstractGegenbauerBasis{P}
-    polynomials::Vector{P}
+struct Legendre <: AbstractGegenbauer end
+
+function MP.polynomial_type(
+    ::Type{Polynomial{Legendre,M}},
+    ::Type{T},
+) where {M,T}
+    return MP.polynomial_type(M, float(T))
 end
 
-function MP.polynomial_type(::Type{<:LegendreBasis}, V::Type)
-    return MP.polynomial_type(V, Float64)
-end
-
-reccurence_first_coef(::Type{<:LegendreBasis}, degree) = (2degree - 1)
-reccurence_third_coef(::Type{<:LegendreBasis}, degree) = -(degree - 1)
-reccurence_deno_coef(::Type{<:LegendreBasis}, degree) = degree
+reccurence_first_coef(::Type{Legendre}, degree) = (2degree - 1)
+reccurence_third_coef(::Type{Legendre}, degree) = -(degree - 1)
+reccurence_deno_coef(::Type{Legendre}, degree) = degree
 
 function degree_one_univariate_polynomial(
-    ::Type{<:LegendreBasis},
+    ::Type{Legendre},
     variable::MP.AbstractVariable,
 )
     MA.@rewrite(variable + 0)
 end
 
-function _scalar_product_function(::Type{<:LegendreBasis}, i::Int)
+function _scalar_product_function(::Type{Legendre}, i::Int)
     if isodd(i)
         return 0
     else
