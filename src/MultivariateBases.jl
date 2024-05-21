@@ -20,10 +20,7 @@ export FixedPolynomialBasis,
     PhysicistsHermite,
     Laguerre
 export AbstractGegenbauer,
-    Legendre,
-    Chebyshev,
-    ChebyshevFirstKind,
-    ChebyshevSecondKind
+    Legendre, Chebyshev, ChebyshevFirstKind, ChebyshevSecondKind
 export generators,
     univariate_orthogonal_basis,
     reccurence_first_coef,

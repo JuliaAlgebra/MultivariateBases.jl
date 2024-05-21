@@ -18,8 +18,10 @@ using DynamicPolynomials
     @test variables(basis) == [x, y]
     @test nvariables(basis) == 2
     @test sprint(show, basis) == "SubBasis{Monomial}([y, x])"
-    @test sprint(show, MIME"text/print"(), basis) == "SubBasis{Monomial}([y, x])"
-    @test sprint(show, MIME"text/plain"(), basis) == "SubBasis{Monomial}([y, x])"
+    @test sprint(show, MIME"text/print"(), basis) ==
+          "SubBasis{Monomial}([y, x])"
+    @test sprint(show, MIME"text/plain"(), basis) ==
+          "SubBasis{Monomial}([y, x])"
     @test sprint(print, basis) == "SubBasis{Monomial}([y, x])"
 end
 @testset "Affine" begin

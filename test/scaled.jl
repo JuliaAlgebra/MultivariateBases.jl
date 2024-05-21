@@ -20,8 +20,7 @@ end
     basis = MB.SubBasis{MB.ScaledMonomial}([x^2, x * y, y^2])
     @test polynomial_type(basis, Int) == polynomial_type(x, Float64)
     @test polynomial(i -> i^2, basis) == 9x^2 + 4 * √2 * x * y + y^2
-    @test coefficients(x^2 + 4x * y + 9y^2, basis) ==
-          [9, 4 / √2, 1]
+    @test coefficients(x^2 + 4x * y + 9y^2, basis) == [9, 4 / √2, 1]
     @test polynomial(basis[1]) == y^2
     @test polynomial(basis[2]) == √2 * x * y
     @test polynomial(basis[3]) == x^2

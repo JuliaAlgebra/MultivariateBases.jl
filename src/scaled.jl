@@ -37,7 +37,10 @@ function MP.polynomial(p::Polynomial{ScaledMonomial})
     return scaling(p.monomial) * p.monomial
 end
 
-function MP.polynomial_type(::Type{FullBasis{ScaledMonomial,M}}, T::Type) where {M}
+function MP.polynomial_type(
+    ::Type{FullBasis{ScaledMonomial,M}},
+    T::Type,
+) where {M}
     return MP.polynomial_type(M, float(T))
 end
 function MP.polynomial(f::Function, basis::SubBasis{ScaledMonomial})

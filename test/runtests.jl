@@ -39,11 +39,7 @@ function univ_orthogonal_test(
     basis = maxdegree_basis(B, [x], 4)
     for i in eachindex(basis)
         p_i = polynomial(basis[i])
-        @test isapprox(
-            dot(p_i, p_i, B),
-            univ(maxdegree(p_i));
-            kwargs...,
-        )
+        @test isapprox(dot(p_i, p_i, B), univ(maxdegree(p_i)); kwargs...)
         for j in 1:i-1
             @test isapprox(dot(p_i, polynomial(basis[j]), B), 0.0; kwargs...)
         end
@@ -97,11 +93,7 @@ function coefficient_test(basis::SubBasis, p, coefs; kwargs...)
     @test isapprox(p, polynomial(cc, basis); kwargs...)
 end
 
-function coefficient_test(
-    basis::SubBasis,
-    coefs::AbstractVector;
-    kwargs...,
-)
+function coefficient_test(basis::SubBasis, coefs::AbstractVector; kwargs...)
     return coefficient_test(
         basis,
         sum(generators(basis) .* coefs),
@@ -110,7 +102,11 @@ function coefficient_test(
     )
 end
 
-function coefficient_test(B::Type{<:MB.AbstractMonomialIndexed}, coefs; kwargs...)
+function coefficient_test(
+    B::Type{<:MB.AbstractMonomialIndexed},
+    coefs;
+    kwargs...,
+)
     @polyvar x y
     p = x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2 + 1
     basis = basis_covering_monomials(B, monomials(p))

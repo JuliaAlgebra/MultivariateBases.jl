@@ -79,7 +79,10 @@ function univariate_orthogonal_basis(
 )
     @assert degree >= 0
     if degree == 0
-        return MP.polynomial_type(Polynomial{B, MP.monomial_type(variable)}, Int)[one(variable)]
+        return MP.polynomial_type(
+            Polynomial{B,MP.monomial_type(variable)},
+            Int,
+        )[one(variable)]
     elseif degree == 1
         return push!(
             univariate_orthogonal_basis(B, variable, 0),
@@ -125,23 +128,13 @@ function basis_covering_monomials(
     return SubBasis{B}(MP.monomial_vector(collect(m)))
 end
 
-function _scalar_product_function(
-    ::Type{<:AbstractMultipleOrthogonal},
-    i::Int,
-) end
+function _scalar_product_function(::Type{<:AbstractMultipleOrthogonal}, i::Int) end
 
-function LinearAlgebra.dot(
-    p,
-    q,
-    basis_type::Type{<:AbstractMultipleOrthogonal},
-)
+function LinearAlgebra.dot(p, q, basis_type::Type{<:AbstractMultipleOrthogonal})
     return _integral(p * q, basis_type)
 end
 
-function _integral(
-    p::Number,
-    basis_type::Type{<:AbstractMultipleOrthogonal},
-)
+function _integral(p::Number, basis_type::Type{<:AbstractMultipleOrthogonal})
     return p * _scalar_product_function(basis_type, 0)
 end
 
@@ -175,16 +168,19 @@ function _integral(
     return sum([_integral(t, basis_type) for t in MP.terms(p)])
 end
 
-function MP.coefficients(p, basis::SubBasis{B,M}) where {B<:AbstractMultipleOrthogonal,M}
+function MP.coefficients(
+    p,
+    basis::SubBasis{B,M},
+) where {B<:AbstractMultipleOrthogonal,M}
     return map(basis) do el
         q = MP.polynomial(el)
-        LinearAlgebra.dot(p, q, B) / LinearAlgebra.dot(q, q, B)
+        return LinearAlgebra.dot(p, q, B) / LinearAlgebra.dot(q, q, B)
     end
 end
 
-function MP.polynomial(p::Polynomial{B}) where{B<:AbstractMultipleOrthogonal}
+function MP.polynomial(p::Polynomial{B}) where {B<:AbstractMultipleOrthogonal}
     return prod(
-        univariate_orthogonal_basis(B, var, deg)[deg+1]
-        for (var, deg) in MP.powers(p.monomial)
+        univariate_orthogonal_basis(B, var, deg)[deg+1] for
+        (var, deg) in MP.powers(p.monomial)
     )
 end

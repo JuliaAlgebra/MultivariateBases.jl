@@ -6,9 +6,9 @@ using DynamicPolynomials
     @polyvar x
     a = MultivariateBases.Polynomial{Chebyshev}(x)
     b = a * a
-    @test b.coeffs == 1//2 + 1//2 * x^2
+    @test b.coeffs == 1 // 2 + 1 // 2 * x^2
     c = b * b
-    @test c.coeffs == 3//8 + 1//2 * x^2 + 1//8 * x^4
+    @test c.coeffs == 3 // 8 + 1 // 2 * x^2 + 1 // 8 * x^4
 end
 
 @testset "Orthogonal" begin

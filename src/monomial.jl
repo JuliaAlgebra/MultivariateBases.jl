@@ -1,6 +1,7 @@
 abstract type AbstractMonomialIndexed end
 
-struct FullBasis{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial} <: SA.ImplicitBasis{Polynomial{B,M},M} end
+struct FullBasis{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial} <:
+       SA.ImplicitBasis{Polynomial{B,M},M} end
 
 function Base.getindex(::FullBasis{B,M}, mono::M) where {B,M}
     return Polynomial{B}(mono)
@@ -13,10 +14,7 @@ end
 SA.mstructure(::FullBasis{B}) where {B} = Mul{B}()
 
 MP.monomial_type(::Type{<:FullBasis{B,M}}) where {B,M} = M
-function MP.polynomial_type(
-    basis::FullBasis{B,M},
-    ::Type{T},
-) where {B,M,T}
+function MP.polynomial_type(basis::FullBasis{B,M}, ::Type{T}) where {B,M,T}
     return MP.polynomial_type(typeof(basis), T)
 end
 
@@ -25,7 +23,8 @@ end
 #     implicit::B
 #     indices::V
 # end
-struct SubBasis{B<:AbstractMonomialIndexed,M,V<:AbstractVector{M}} <: SA.ExplicitBasis{Polynomial{B,M},Int}
+struct SubBasis{B<:AbstractMonomialIndexed,M,V<:AbstractVector{M}} <:
+       SA.ExplicitBasis{Polynomial{B,M},Int}
     monomials::V
 end
 
@@ -86,7 +85,10 @@ function merge_bases(basis1::MB, basis2::MB) where {MB<:SubBasis}
 end
 
 # Unsafe because we don't check that `monomials` is sorted and without duplicates
-function unsafe_basis(::Type{B}, monomials::AbstractVector{M}) where {B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
+function unsafe_basis(
+    ::Type{B},
+    monomials::AbstractVector{M},
+) where {B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
     return SubBasis{B,M,typeof(monomials)}(monomials)
 end
 
@@ -94,15 +96,22 @@ function Base.getindex(::FullBasis{B,M}, monomials::AbstractVector) where {B,M}
     return unsafe_basis(B, MP.monomial_vector(monomials)::AbstractVector{M})
 end
 
-function SubBasis{B}(monomials::AbstractVector) where {B<:AbstractMonomialIndexed}
-    return unsafe_basis(B, MP.monomial_vector(monomials)::AbstractVector{<:MP.AbstractMonomial})
+function SubBasis{B}(
+    monomials::AbstractVector,
+) where {B<:AbstractMonomialIndexed}
+    return unsafe_basis(
+        B,
+        MP.monomial_vector(monomials)::AbstractVector{<:MP.AbstractMonomial},
+    )
 end
 
 function Base.copy(basis::SubBasis)
     return typeof(basis)(copy(basis.monomials))
 end
 
-function empty_basis(::Type{<:SubBasis{B,M}}) where {B<:AbstractMonomialIndexed,M}
+function empty_basis(
+    ::Type{<:SubBasis{B,M}},
+) where {B<:AbstractMonomialIndexed,M}
     return unsafe_basis(B, MP.empty_monomial_vector(M))
 end
 
@@ -118,10 +127,7 @@ function MP.polynomial(coefs::Vector, basis::SubBasis)
     return MP.polynomial(Base.Fix1(getindex, coefs), basis)
 end
 
-function MP.polynomial(
-    f::Function,
-    basis::SubBasis,
-)
+function MP.polynomial(f::Function, basis::SubBasis)
     if isempty(basis)
         return zero(MP.polynomial_type(basis))
     else
@@ -138,11 +144,7 @@ end
 _convert(::Type{P}, p) where {P} = convert(P, p)
 _convert(::Type{P}, ::MA.Zero) where {P} = zero(P)
 
-function MP.polynomial(
-    Q::AbstractMatrix,
-    basis::SubBasis,
-    ::Type{T},
-) where {T}
+function MP.polynomial(Q::AbstractMatrix, basis::SubBasis, ::Type{T}) where {T}
     n = length(basis)
     @assert size(Q) == (n, n)
     PT = MP.polynomial_type(eltype(basis), T)
@@ -164,8 +166,6 @@ function MP.polynomial(
     )::PT
 end
 
-
-
 function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
     print(io, "SubBasis{$(nameof(B))}")
     print(io, "([")
@@ -182,19 +182,11 @@ function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
     return print(io, "])")
 end
 
-function Base.show(
-    io::IO,
-    mime::MIME"text/plain",
-    basis::SubBasis,
-)
+function Base.show(io::IO, mime::MIME"text/plain", basis::SubBasis)
     return _show(io, mime, basis)
 end
 
-function Base.show(
-    io::IO,
-    mime::MIME"text/print",
-    basis::SubBasis,
-)
+function Base.show(io::IO, mime::MIME"text/print", basis::SubBasis)
     return _show(io, mime, basis)
 end
 
@@ -237,10 +229,7 @@ function MP.polynomial_type(
     return MP.polynomial_type(FullBasis{B,M}, T)
 end
 
-function MP.polynomial_type(
-    ::Type{FullBasis{B,M}},
-    ::Type{T},
-) where {B,M,T}
+function MP.polynomial_type(::Type{FullBasis{B,M}}, ::Type{T}) where {B,M,T}
     return MP.polynomial_type(Polynomial{B,M}, T)
 end
 
@@ -251,7 +240,9 @@ function MP.polynomial_type(
     return MP.polynomial_type(M, T)
 end
 
-MP.polynomial(f::Function, mb::SubBasis{Monomial}) = MP.polynomial(f, mb.monomials)
+function MP.polynomial(f::Function, mb::SubBasis{Monomial})
+    return MP.polynomial(f, mb.monomials)
+end
 
 function MP.polynomial(Q::AbstractMatrix, mb::SubBasis{Monomial}, T::Type)
     return MP.polynomial(Q, mb.monomials, T)

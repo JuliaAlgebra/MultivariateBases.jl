@@ -1,6 +1,9 @@
 abstract type AbstractHermite <: AbstractMultipleOrthogonal end
 
-function MP.polynomial_type(::Type{Polynomial{B,M}}, ::Type{T}) where {B<:AbstractHermite,M,T}
+function MP.polynomial_type(
+    ::Type{Polynomial{B,M}},
+    ::Type{T},
+) where {B<:AbstractHermite,M,T}
     return MP.polynomial_type(M, float(T))
 end
 

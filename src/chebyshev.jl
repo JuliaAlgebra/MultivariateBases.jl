@@ -5,7 +5,10 @@ abstract type AbstractChebyshev <: AbstractGegenbauer end
 _promote_div(::Type{I}) where {I<:Integer} = Rational{I}
 _promote_div(::Type{T}) where {T} = MA.promote_operation(/, T, Int)
 
-function MP.polynomial_type(::Type{Polynomial{B,M}}, ::Type{T}) where {B<:AbstractChebyshev,M,T}
+function MP.polynomial_type(
+    ::Type{Polynomial{B,M}},
+    ::Type{T},
+) where {B<:AbstractChebyshev,M,T}
     return MP.polynomial_type(M, _promote_div(T))
 end
 
@@ -24,7 +27,7 @@ const Chebyshev = ChebyshevFirstKind
 # https://en.wikipedia.org/wiki/Chebyshev_polynomials#Properties
 # T_n * T_m = T_{n + m} / 2 + T_{|n - m|} / 2
 function (::Mul{Chebyshev})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
-    terms = [MP.term(1//1, MP.constant_monomial(a * b))]
+    terms = [MP.term(1 // 1, MP.constant_monomial(a * b))]
     vars_b = MP.variables(b)
     var_state_b = iterate(vars_b)
     for var_a in MP.variables(a)

@@ -15,7 +15,10 @@ Orthogonal polynomial with respect to the univariate weight function ``w(x) = 1`
 """
 struct Legendre <: AbstractGegenbauer end
 
-function MP.polynomial_type(::Type{Polynomial{Legendre,M}}, ::Type{T}) where {M,T}
+function MP.polynomial_type(
+    ::Type{Polynomial{Legendre,M}},
+    ::Type{T},
+) where {M,T}
     return MP.polynomial_type(M, float(T))
 end
 

@@ -26,7 +26,12 @@ function MA.operate!(
 end
 function MA.operate!(::typeof(SA.canonical), ::MP.AbstractPolynomial) end
 # TODO Move to SA
-MA.promote_operation(::typeof(SA.canonical), ::Type{P}) where {P<:MP.AbstractPolynomialLike} = P
+function MA.promote_operation(
+    ::typeof(SA.canonical),
+    ::Type{P},
+) where {P<:MP.AbstractPolynomialLike}
+    return P
+end
 
 struct Polynomial{B,M<:MP.AbstractMonomial}
     monomial::M
@@ -43,28 +48,25 @@ function _algebra_element(p, ::Type{B}) where {B}
     basis = FullBasis{B,MP.monomial_type(p)}()
     return SA.AlgebraElement(
         p,
-        SA.StarAlgebra(
-            Polynomial{B}(MP.constant_monomial(p)),
-            basis,
-        ),
+        SA.StarAlgebra(Polynomial{B}(MP.constant_monomial(p)), basis),
     )
 end
 
 function Base.:*(a::Polynomial{B}, b::Polynomial{B}) where {B}
-    _algebra_element(Mul{B}()(a.monomial, b.monomial), B)
+    return _algebra_element(Mul{B}()(a.monomial, b.monomial), B)
 end
 
 function _show(io::IO, mime::MIME, p::Polynomial{B}) where {B}
     print(io, B)
     print(io, "(")
     show(io, mime, p.monomial)
-    print(io, ")")
+    return print(io, ")")
 end
 function Base.show(io::IO, mime::MIME"text/plain", p::Polynomial)
-    _show(io, mime, p)
+    return _show(io, mime, p)
 end
 function Base.show(io::IO, p::Polynomial)
-    show(io, MIME"text/plain"(), p)
+    return show(io, MIME"text/plain"(), p)
 end
 
 function Base.zero(::Type{Polynomial{B,M}}) where {B,M}
