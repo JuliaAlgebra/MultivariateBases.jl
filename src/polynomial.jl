@@ -45,6 +45,10 @@ function Polynomial{B}(v::MP.AbstractVariable) where {B}
     return Polynomial{B}(MP.monomial(v))
 end
 
+function Base.:(==)(p::Polynomial{B}, q::Polynomial{B}) where {B}
+    return p.monomial == q.monomial
+end
+
 MP.variables(p::Polynomial) = MP.variables(p.monomial)
 MP.nvariables(p::Polynomial) = MP.nvariables(p.monomial)
 

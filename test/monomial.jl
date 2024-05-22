@@ -10,6 +10,7 @@ using DynamicPolynomials
     b = a * a
     @test b.coeffs == x^2
     @test typeof(b.coeffs) == typeof(x^2)
+    @test b == MB.Polynomial{MB.Monomial}(x^2)
 end
 
 @testset "Linear" begin
