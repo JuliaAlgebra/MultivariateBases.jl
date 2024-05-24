@@ -68,7 +68,10 @@ function orthogonal_test(
     end
 
     @testset "basis_covering_monomials" begin
-        basis = basis_covering_monomials(FullBasis{B,typeof(x * y)}(), monomial_vector([x^2 * y, y^2]))
+        basis = basis_covering_monomials(
+            FullBasis{B,typeof(x * y)}(),
+            monomial_vector([x^2 * y, y^2]),
+        )
         if even_odd_separated
             exps = [(0, 0), (0, 1), (0, 2), (2, 1)]
         else
@@ -78,7 +81,10 @@ function orthogonal_test(
             @test polynomial(basis[i]) ==
                   univariate_x[exps[i][1]+1] * univariate_y[exps[i][2]+1]
         end
-        basis = basis_covering_monomials(FullBasis{B,typeof(x^2)}(), monomial_vector([x^4, x^2, x]))
+        basis = basis_covering_monomials(
+            FullBasis{B,typeof(x^2)}(),
+            monomial_vector([x^4, x^2, x]),
+        )
         if even_odd_separated
             exps = [0, 1, 2, 4]
         else
