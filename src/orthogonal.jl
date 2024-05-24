@@ -106,11 +106,11 @@ function univariate_orthogonal_basis(
 end
 
 function basis_covering_monomials(
-    ::Type{B},
-    monos::AbstractVector{M},
+    ::FullBasis{B,M},
+    monos::AbstractVector,
 ) where {B<:AbstractMultipleOrthogonal,M}
     to_add = collect(monos)
-    m = Set{promote_type(M)}(monos)
+    m = Set{M}(monos)
     while !isempty(to_add)
         mono = pop!(to_add)
         for v in MP.variables(mono)

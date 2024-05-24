@@ -120,6 +120,10 @@ function _algebra(basis::Union{FullBasis{B,M},SubBasis{B,M}}) where {B,M}
     return SA.StarAlgebra(Polynomial{B}(MP.constant_monomial(M)), basis)
 end
 
+function explicit_basis_type(::Type{FullBasis{B,M}}) where {B,M}
+    return SubBasis{B,M,MP.monomial_vector_type(M)}
+end
+
 function empty_basis(
     ::Type{<:SubBasis{B,M}},
 ) where {B<:AbstractMonomialIndexed,M}
@@ -127,7 +131,7 @@ function empty_basis(
 end
 
 function maxdegree_basis(
-    ::Type{B},
+    ::FullBasis{B},
     variables,
     maxdegree::Int,
 ) where {B<:AbstractMonomialIndexed}
@@ -212,7 +216,7 @@ end
 abstract type AbstractMonomial <: AbstractMonomialIndexed end
 
 function basis_covering_monomials(
-    ::Type{B},
+    ::FullBasis{B},
     monos::AbstractVector,
 ) where {B<:AbstractMonomial}
     return SubBasis{B}(monos)
