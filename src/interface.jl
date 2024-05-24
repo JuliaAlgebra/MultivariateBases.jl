@@ -44,7 +44,7 @@ julia> using DynamicPolynomials
 julia> @polyvar x
 (x,)
 
-julia> basis_covering_monomials(Chebyshev, [x^2, x^4])
+julia> basis_covering_monomials(FullBasis{Chebyshev,typeof(x^2)}(), [x^2, x^4])
 SubBasis{ChebyshevFirstKind}([1, x², x⁴])
 ```
 """
