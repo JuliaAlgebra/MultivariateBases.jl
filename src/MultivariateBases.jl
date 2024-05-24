@@ -32,5 +32,6 @@ include("hermite.jl")
 include("laguerre.jl")
 include("legendre.jl")
 include("chebyshev.jl")
+include("quotient.jl")
 
 end # module
