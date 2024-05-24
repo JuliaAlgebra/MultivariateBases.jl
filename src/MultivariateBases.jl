@@ -8,7 +8,7 @@ export AbstractPolynomialBasis, FullBasis, SubBasis
 export maxdegree_basis, basis_covering_monomials, empty_basis
 include("interface.jl")
 
-export AbstractMonomialBasis, MonomialBasis, ScaledMonomialBasis
+export AbstractMonomialIndexed, Monomial, ScaledMonomial
 include("polynomial.jl")
 include("monomial.jl")
 include("scaled.jl")

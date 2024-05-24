@@ -7,10 +7,13 @@ using DynamicPolynomials
 
 function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
+    M = typeof(prod(x))
+    full_basis = FullBasis{B,M}()
     for basis in [
-        maxdegree_basis(B, x, degree),
-        basis_covering_monomials(B, monomials(x, 0:degree)),
+        maxdegree_basis(full_basis, x, degree),
+        basis_covering_monomials(full_basis, monomials(x, 0:degree)),
     ]
+        @test basis isa MB.explicit_basis_type(typeof(full_basis))
         n = binomial(2 + degree, 2)
         @test length(basis) == n
         @test firstindex(basis) == 1
@@ -36,7 +39,7 @@ function univ_orthogonal_test(
     kwargs...,
 )
     @polyvar x
-    basis = maxdegree_basis(B, [x], 4)
+    basis = maxdegree_basis(FullBasis{B,monomial_type(x)}(), [x], 4)
     for i in eachindex(basis)
         p_i = polynomial(basis[i])
         @test isapprox(dot(p_i, p_i, B), univ(maxdegree(p_i)); kwargs...)
@@ -58,14 +61,14 @@ function orthogonal_test(
 
     @testset "Univariate $var" for (var, univ) in
                                    [(x, univariate_x), (y, univariate_y)]
-        basis = maxdegree_basis(B, (var,), 4)
+        basis = maxdegree_basis(FullBasis{B,monomial_type(var)}(), (var,), 4)
         for i in 1:5
             @test polynomial(basis[i]) == univ[i]
         end
     end
 
     @testset "basis_covering_monomials" begin
-        basis = basis_covering_monomials(B, monomial_vector([x^2 * y, y^2]))
+        basis = basis_covering_monomials(FullBasis{B,typeof(x * y)}(), monomial_vector([x^2 * y, y^2]))
         if even_odd_separated
             exps = [(0, 0), (0, 1), (0, 2), (2, 1)]
         else
@@ -75,7 +78,7 @@ function orthogonal_test(
             @test polynomial(basis[i]) ==
                   univariate_x[exps[i][1]+1] * univariate_y[exps[i][2]+1]
         end
-        basis = basis_covering_monomials(B, monomial_vector([x^4, x^2, x]))
+        basis = basis_covering_monomials(FullBasis{B,typeof(x^2)}(), monomial_vector([x^4, x^2, x]))
         if even_odd_separated
             exps = [0, 1, 2, 4]
         else
@@ -109,7 +112,7 @@ function coefficient_test(
 )
     @polyvar x y
     p = x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2 + 1
-    basis = basis_covering_monomials(B, monomials(p))
+    basis = basis_covering_monomials(FullBasis{B,typeof(x * y)}(), monomials(p))
     coefficient_test(basis, p, coefs; kwargs...)
     return
 end
