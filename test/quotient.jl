@@ -12,7 +12,8 @@ end
 
 @testset "PlusMinusOne" begin
     @polyvar x y
-    basis = MB.QuotientBasis(MB.SubBasis{MB.Monomial}([1, y, x]), PlusMinusOne())
+    basis =
+        MB.QuotientBasis(MB.SubBasis{MB.Monomial}([1, y, x]), PlusMinusOne())
     @test length(basis) == 3
     @test coefficients(x^3 - 2x^2 * y + 3x^2, basis) == [3, -2, 1]
 end
