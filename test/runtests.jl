@@ -147,3 +147,6 @@ end
 @testset "Chebyshev" begin
     include("chebyshev.jl")
 end
+@testset "Quotient" begin
+    include("quotient.jl")
+end

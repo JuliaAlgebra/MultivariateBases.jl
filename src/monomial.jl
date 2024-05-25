@@ -265,12 +265,15 @@ function MP.polynomial(Q::AbstractMatrix, mb::SubBasis{Monomial}, T::Type)
     return MP.polynomial(Q, mb.monomials, T)
 end
 
-function MP.coefficients(p, basis::SubBasis{Monomial})
+function MP.coefficients(
+    p::MP.AbstractPolynomialLike,
+    basis::SubBasis{Monomial},
+)
     return MP.coefficients(p, basis.monomials)
 end
 
-function MP.coefficients(p, ::FullBasis{Monomial})
-    return MP.coefficients(p)
+function MP.coefficients(p::MP.AbstractPolynomialLike, ::FullBasis{Monomial})
+    return p
 end
 
 # Overload some of the `MP` interface for convenience
