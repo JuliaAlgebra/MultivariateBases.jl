@@ -1,5 +1,5 @@
 """
-    struct Scaled <: AbstractMonomial end
+    struct ScaledMonomial <: AbstractMonomial end
 
 *Scaled monomial basis* (see [Section 3.1.5, BPT12]) with the monomials of the vector `monomials`.
 Given a monomial ``x^\\alpha = x_1^{\\alpha_1} \\cdots x_n^{\\alpha_n}`` of degree ``d = \\sum_{i=1}^n \\alpha_i``,
@@ -32,6 +32,14 @@ Society for Industrial and Applied Mathematics (2012).
 Foundations of Computational Mathematics 7.2 (2007): 229-244.
 """
 struct ScaledMonomial <: AbstractMonomial end
+
+function (::Mul{ScaledMonomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
+    mono = a * b
+    α = prod(MP.variables(mono); init = inv(binomial(MP.degree(mono), MP.degree(a)))) do v
+        inv(binomial(MP.degree(mono, v), MP.degree(a, v)))
+    end
+    return MP.term(α, mono)
+end
 
 function MP.polynomial(p::Polynomial{ScaledMonomial})
     return scaling(p.monomial) * p.monomial
@@ -80,6 +88,10 @@ function scaling(m::MP.AbstractMonomial)
     return √(factorial(MP.degree(m)) / prod(factorial, MP.exponents(m)))
 end
 unscale_coef(t::MP.AbstractTerm) = MP.coefficient(t) / scaling(MP.monomial(t))
+function SA.coeffs(t::MP.AbstractTermLike, ::FullBasis{ScaledMonomial}, ::FullBasis{Monomial})
+    mono = MP.monomial(t)
+    return MP.term(mono * MP.coefficient(t), mono)
+end
 function MP.coefficients(p, ::FullBasis{ScaledMonomial})
     return unscale_coef.(MP.terms(p))
 end

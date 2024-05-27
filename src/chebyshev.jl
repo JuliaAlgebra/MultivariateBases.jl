@@ -1,7 +1,10 @@
 abstract type AbstractChebyshev <: AbstractGegenbauer end
 
 _promote_div(::Type{I}) where {I<:Integer} = Rational{I}
-_promote_div(::Type{T}) where {T} = MA.promote_operation(/, T, Int)
+_promote_div(::Type{T}) where {T<:Number} = MA.promote_operation(/, T, Int)
+# Could be for instance `MathOptInterface.ScalarAffineFunction{Float64}`
+# which does not support division with `Int`
+_promote_div(::Type{F}) where {F} = F
 
 function MP.polynomial_type(
     ::Type{Polynomial{B,M}},
@@ -56,6 +59,15 @@ function (::Mul{Chebyshev})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
         end
     end
     return MP.polynomial!(terms)
+end
+
+function SA.coeffs(coeffs, basis::FullBasis{Chebyshev}, ::FullBasis{Monomial})
+    res = zero(MP.polynomial_type(typeof(basis), valtype(coeffs)))
+    for (k, v) in SA.nonzero_pairs(coeffs)
+        MA.operate!(SA.UnsafeAddMul(*), res, v, MP.polynomial(basis[k]))
+    end
+    MA.operate!(SA.canonical, res)
+    return res
 end
 
 function degree_one_univariate_polynomial(

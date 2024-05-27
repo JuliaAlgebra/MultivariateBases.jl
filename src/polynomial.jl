@@ -20,7 +20,7 @@ function MA.operate!(
     ::SA.UnsafeAddMul{typeof(*)},
     mc::MP.AbstractPolynomial,
     val,
-    c::MP.AbstractPolynomial,
+    c::MP.AbstractPolynomialLike,
 )
     return MA.operate!(MA.add_mul, mc, val, c)
 end
@@ -52,8 +52,12 @@ end
 MP.variables(p::Polynomial) = MP.variables(p.monomial)
 MP.nvariables(p::Polynomial) = MP.nvariables(p.monomial)
 
-function _algebra_element(p, ::Type{B}) where {B}
-    return SA.AlgebraElement(p, _algebra(FullBasis{B,MP.monomial_type(p)}()))
+function _algebra_element(p, basis::SA.AbstractBasis)
+    return SA.AlgebraElement(p, _algebra(basis))
+end
+
+function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
+    return _algebra_element(p, FullBasis{B,MP.monomial_type(p)}())
 end
 
 function _algebra_element(p::Polynomial{B,M}) where {B,M}
@@ -65,12 +69,7 @@ function Base.:*(a::Polynomial{B}, b::Polynomial{B}) where {B}
 end
 
 function Base.:*(a::Polynomial{B}, b::SA.AlgebraElement) where {B}
-    aa =_algebra_element(a)
-    @show parent(aa).basis
-    @show parent(b).basis
-    @show parent(aa).basis == parent(b).basis
-    @show parent(aa) == parent(b)
-    return aa * b
+    return _algebra_element(a) * b
 end
 
 function _show(io::IO, mime::MIME, p::Polynomial{B}) where {B}
