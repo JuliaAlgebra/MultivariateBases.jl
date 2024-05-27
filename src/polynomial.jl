@@ -56,8 +56,21 @@ function _algebra_element(p, ::Type{B}) where {B}
     return SA.AlgebraElement(p, _algebra(FullBasis{B,MP.monomial_type(p)}()))
 end
 
+function _algebra_element(p::Polynomial{B,M}) where {B,M}
+    return _algebra_element(p.monomial, B)
+end
+
 function Base.:*(a::Polynomial{B}, b::Polynomial{B}) where {B}
     return _algebra_element(Mul{B}()(a.monomial, b.monomial), B)
+end
+
+function Base.:*(a::Polynomial{B}, b::SA.AlgebraElement) where {B}
+    aa =_algebra_element(a)
+    @show parent(aa).basis
+    @show parent(b).basis
+    @show parent(aa).basis == parent(b).basis
+    @show parent(aa) == parent(b)
+    return aa * b
 end
 
 function _show(io::IO, mime::MIME, p::Polynomial{B}) where {B}
@@ -78,5 +91,13 @@ function Base.zero(::Type{Polynomial{B,M}}) where {B,M}
 end
 
 Base.zero(p::Polynomial) = zero(typeof(p))
+
+function convert_basis(basis::SA.AbstractBasis, p::MP.AbstractPolynomialLike)
+    return convert_basis(basis, _algebra_element(p, Monomial))
+end
+
+function convert_basis(basis::SA.AbstractBasis, p::SA.AlgebraElement)
+    return SA.AlgebraElement(SA.coeffs(p, basis), _algebra(basis))
+end
 
 struct Mul{B<:AbstractMonomialIndexed} <: SA.MultiplicativeStructure end
