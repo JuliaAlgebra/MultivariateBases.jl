@@ -41,6 +41,10 @@ struct Polynomial{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
     end
 end
 
+# Needed for `BoundsError`
+Base.iterate(p::Polynomial) = p, nothing
+Base.iterate(::Polynomial, ::Nothing) = nothing
+
 function Polynomial{B}(v::MP.AbstractVariable) where {B}
     return Polynomial{B}(MP.monomial(v))
 end

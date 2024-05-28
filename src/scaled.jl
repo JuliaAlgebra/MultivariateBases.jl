@@ -68,7 +68,7 @@ end
 function change_basis(
     Q::AbstractMatrix,
     basis::SubBasis{ScaledMonomial,M},
-    ::Type{Monomial},
+    ::FullBasis{Monomial},
 ) where {M}
     n = length(basis)
     scalings = map(scaling, basis.monomials)
@@ -81,7 +81,7 @@ function MP.polynomial(
     basis::SubBasis{ScaledMonomial,M,V},
     ::Type{T},
 ) where {M,V<:AbstractVector{M},T}
-    return MP.polynomial(change_basis(Q, basis, Monomial)..., T)
+    return MP.polynomial(change_basis(Q, basis, FullBasis{Monomial,M}())..., T)
 end
 
 function scaling(m::MP.AbstractMonomial)
