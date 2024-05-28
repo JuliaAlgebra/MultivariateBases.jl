@@ -7,6 +7,8 @@ Base.iterate(basis::QuotientBasis) = iterate(basis.basis)
 Base.iterate(basis::QuotientBasis, s) = iterate(basis.basis, s)
 Base.length(basis::QuotientBasis) = length(basis.basis)
 
+_object(basis::QuotientBasis) = _object(basis.basis)
+
 function MP.coefficients(p, basis::QuotientBasis)
     return MP.coefficients(rem(p, basis.divisor), basis.basis)
 end

@@ -116,9 +116,11 @@ end
 
 Base.:(==)(a::SubBasis, b::SubBasis) = a.monomials == b.monomials
 
-function _algebra(basis::Union{FullBasis{B,M},SubBasis{B,M}}) where {B,M}
-    return SA.StarAlgebra(Polynomial{B}(MP.constant_monomial(M)), basis)
+function _object(::Union{FullBasis{B,M},SubBasis{B,M}}) where {B,M}
+    return Polynomial{B}(MP.constant_monomial(M))
 end
+
+_algebra(basis) = SA.StarAlgebra(_object(basis), basis)
 
 function explicit_basis_type(::Type{FullBasis{B,M}}) where {B,M}
     return SubBasis{B,M,MP.monomial_vector_type(M)}
