@@ -21,7 +21,15 @@ function SA.coeffs(coeffs, sub::SubBasis{Monomial}, basis::Union{SubBasis,FullBa
     return SA.coeffs(MP.polynomial(coeffs, sub.monomials), parent(sub), basis)
 end
 
-function SA.coeffs(coeffs, q::QuotientBasis, basis::Union{FullBasis, SubBasis})
-    # FIXME This is not correct, this is a hack for ConstraintPrimal of SumOfSquares but I should just throw there
-    return SA.coeffs(coeffs, q.basis, basis)
+function adjoint_coeffs(coeffs, dest::SubBasis{Monomial}, src::SubBasis{Monomial})
+    return SA.coeffs(coeffs, dest, src)
+end
+
+function adjoint_coeffs(coeffs, dest::QuotientBasis{<:Polynomial{Monomial}}, src::SubBasis{Monomial})
+    return map(src.monomials) do mono
+        return sum(
+            MP.coefficient(t) * coeffs[dest.basis[Polynomial{Monomial}(MP.monomial(t))]]
+            for t in MP.terms(rem(mono, dest.divisor))
+        )
+    end
 end
