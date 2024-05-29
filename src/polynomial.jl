@@ -60,6 +60,10 @@ function _algebra_element(p, basis::SA.AbstractBasis)
     return SA.AlgebraElement(p, _algebra(basis))
 end
 
+function MP.polynomial(coeffs, basis::SA.AbstractBasis)
+    return _algebra_element(coeffs, basis)
+end
+
 function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
     return _algebra_element(p, FullBasis{B,MP.monomial_type(p)}())
 end
