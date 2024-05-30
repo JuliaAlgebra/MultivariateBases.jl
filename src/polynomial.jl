@@ -105,3 +105,22 @@ function convert_basis(basis::SA.AbstractBasis, p::SA.AlgebraElement)
 end
 
 struct Mul{B<:AbstractMonomialIndexed} <: SA.MultiplicativeStructure end
+
+function Base.isapprox(p::MP.AbstractPolynomialLike, a::SA.AlgebraElement; kws...)
+    return isapprox(p, SA.coeffs(a, FullBasis{Monomial,promote_type(MP.monomial_type(p), MP.monomial_type(typeof(a)))}()); kws...)
+end
+
+MP.monomial_type(::Type{<:SA.AlgebraElement{A}}) where {A} = MP.monomial_type(A)
+MP.monomial_type(::Type{SA.StarAlgebra{O,T,B}}) where {O,T,B} = MP.monomial_type(B)
+
+function Base.isapprox(a::SA.AlgebraElement, b::SA.AlgebraElement; kws...)
+    return isapprox(SA.coeffs(a, FullBasis{Monomial,promote_type(MP.monomial_type(typeof(a)), MP.monomial_type(typeof(b)))}()), b; kws...)
+end
+
+function Base.isapprox(a::SA.AlgebraElement, p::MP.AbstractPolynomialLike; kws...)
+    return isapprox(p, a; kws...)
+end
+
+function Base.isapprox(a::SA.AlgebraElement, α::Number; kws...)
+    return isapprox(a, α * constant_algebra_element(typeof(SA.basis(a)), typeof(α)); kws...)
+end

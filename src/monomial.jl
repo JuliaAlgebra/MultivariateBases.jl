@@ -192,6 +192,8 @@ function basis_covering_monomials(
     return SubBasis{B}(monos)
 end
 
+Base.adjoint(p::Polynomial{B}) where {B<:AbstractMonomialIndexed} = Polynomial{B}(adjoint(p.monomial))
+
 """
     struct Monomial <: AbstractMonomialIndexed end
 
@@ -206,8 +208,6 @@ one get ths [`ScaledMonomial`](@ref).
 struct Monomial <: AbstractMonomial end
 
 (::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial) = a * b
-
-Base.adjoint(p::Polynomial{Monomial}) = Polynomial{Monomial}(adjoint(p.monomial))
 
 SA.coeffs(p::Polynomial{Monomial}, ::FullBasis{Monomial}) = p.monomial
 
