@@ -61,10 +61,10 @@ function (::Mul{Chebyshev})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
     return MP.polynomial!(terms)
 end
 
-function SA.coeffs(coeffs, basis::FullBasis{Chebyshev}, ::FullBasis{Monomial})
+function SA.coeffs(coeffs, basis::FullBasis{Chebyshev}, dest::FullBasis{Monomial})
     res = zero(MP.polynomial_type(typeof(basis), valtype(coeffs)))
     for (k, v) in SA.nonzero_pairs(coeffs)
-        MA.operate!(SA.UnsafeAddMul(*), res, v, MP.polynomial(basis[k]))
+        MA.operate!(SA.UnsafeAddMul(*), res, v, SA.coeffs(basis[k], dest))
     end
     MA.operate!(SA.canonical, res)
     return res

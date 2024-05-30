@@ -173,12 +173,12 @@ function MP.coefficients(
     basis::SubBasis{B,M},
 ) where {B<:AbstractMultipleOrthogonal,M}
     return map(basis) do el
-        q = MP.polynomial(el)
+        q = SA.coeffs(el, FullBasis{Monomial})
         return LinearAlgebra.dot(p, q, B) / LinearAlgebra.dot(q, q, B)
     end
 end
 
-function MP.polynomial(p::Polynomial{B}) where {B<:AbstractMultipleOrthogonal}
+function SA.coeffs(p::Polynomial{B}, ::FullBasis{Monomial}) where {B<:AbstractMultipleOrthogonal}
     return prod(
         univariate_orthogonal_basis(B, var, deg)[deg+1] for
         (var, deg) in MP.powers(p.monomial)

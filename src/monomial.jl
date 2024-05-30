@@ -140,47 +140,12 @@ function maxdegree_basis(
     return unsafe_basis(B, MP.monomials(variables, 0:maxdegree))
 end
 
-function MP.polynomial(coefs::Vector, basis::SubBasis)
-    return MP.polynomial(Base.Fix1(getindex, coefs), basis)
-end
-
 function MP.polynomial(f::Function, basis::SubBasis)
-    if isempty(basis)
-        return zero(MP.polynomial_type(basis))
-    else
-        return MP.polynomial(
-            mapreduce(
-                ip -> f(ip[1]) * MP.polynomial(ip[2]),
-                MA.add!!,
-                enumerate(basis),
-            ),
-        )
-    end
+    return MP.polynomial(map(f, eachindex(basis)), basis)
 end
 
-_convert(::Type{P}, p) where {P} = convert(P, p)
-_convert(::Type{P}, ::MA.Zero) where {P} = zero(P)
-
-function MP.polynomial(Q::AbstractMatrix, basis::SubBasis, ::Type{T}) where {T}
-    n = length(basis)
-    @assert size(Q) == (n, n)
-    PT = MP.polynomial_type(eltype(basis), T)
-    return _convert(
-        PT,
-        mapreduce(
-            row -> begin
-                adjoint(MP.polynomial(basis[row])) * mapreduce(
-                    col -> Q[row, col] * MP.polynomial(basis[col]),
-                    MA.add!!,
-                    1:n;
-                    init = MA.Zero(),
-                )
-            end,
-            MA.add!!,
-            1:n;
-            init = MA.Zero(),
-        ),
-    )::PT
+function constant_polynomial(::Type{<:SubBasis{B,M}}, ::Type{T}) where {B,M,T}
+    return MP.polynomial([one(T)], SubBasis{B,M}([MP.constant_monomial(M)]))
 end
 
 function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
@@ -239,7 +204,7 @@ struct Monomial <: AbstractMonomial end
 
 (::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial) = a * b
 
-MP.polynomial(p::Polynomial{Monomial}) = MP.polynomial(p.monomial)
+SA.coeffs(p::Polynomial{Monomial}, ::FullBasis{Monomial}) = p.monomial
 
 function MP.polynomial_type(
     ::Union{SubBasis{B,M},Type{<:SubBasis{B,M}}},

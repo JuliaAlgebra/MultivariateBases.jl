@@ -1,4 +1,5 @@
 # TODO Add to MultivariatePolynomials
+MP.variables(p::SA.AlgebraElement) = MP.variables(SA.basis(p))
 Base.keytype(p::MP.AbstractPolynomialLike) = MP.monomial_type(p)
 Base.valtype(p::MP.AbstractPolynomialLike) = MP.coefficient_type(p)
 #Base.keys(p::MP.AbstractPolynomial) = MP.monomials(p)
@@ -56,16 +57,12 @@ end
 MP.variables(p::Polynomial) = MP.variables(p.monomial)
 MP.nvariables(p::Polynomial) = MP.nvariables(p.monomial)
 
-function _algebra_element(p, basis::SA.AbstractBasis)
+function MP.polynomial(p, basis::SA.AbstractBasis)
     return SA.AlgebraElement(p, _algebra(basis))
 end
 
-function MP.polynomial(coeffs, basis::SA.AbstractBasis)
-    return _algebra_element(coeffs, basis)
-end
-
 function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
-    return _algebra_element(p, FullBasis{B,MP.monomial_type(p)}())
+    return MP.polynomial(p, FullBasis{B,MP.monomial_type(p)}())
 end
 
 function _algebra_element(p::Polynomial{B,M}) where {B,M}

@@ -41,7 +41,7 @@ function (::Mul{ScaledMonomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
     return MP.term(α, mono)
 end
 
-function MP.polynomial(p::Polynomial{ScaledMonomial})
+function SA.coeffs(p::Polynomial{ScaledMonomial}, ::FullBasis{Monomial})
     return scaling(p.monomial) * p.monomial
 end
 
