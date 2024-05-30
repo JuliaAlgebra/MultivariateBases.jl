@@ -120,7 +120,10 @@ function _object(::Union{FullBasis{B,M},SubBasis{B,M}}) where {B,M}
     return Polynomial{B}(MP.constant_monomial(M))
 end
 
-_algebra(basis) = SA.StarAlgebra(_object(basis), basis)
+SA.algebra(basis::Union{FullBasis,SubBasis}) = SA.StarAlgebra(_object(basis), basis)
+function algebra_type(::Type{BT}) where {B,M,BT<:Union{FullBasis{B,M},SubBasis{B,M}}}
+    return SA.StarAlgebra{Polynomial{B,M},Polynomial{B,M},BT}
+end
 
 function explicit_basis_type(::Type{FullBasis{B,M}}) where {B,M}
     return SubBasis{B,M,MP.monomial_vector_type(M)}
@@ -140,12 +143,12 @@ function maxdegree_basis(
     return unsafe_basis(B, MP.monomials(variables, 0:maxdegree))
 end
 
-function MP.polynomial(f::Function, basis::SubBasis)
-    return MP.polynomial(map(f, eachindex(basis)), basis)
+function algebra_element(f::Function, basis::SubBasis)
+    return algebra_element(map(f, eachindex(basis)), basis)
 end
 
-function constant_polynomial(::Type{<:SubBasis{B,M}}, ::Type{T}) where {B,M,T}
-    return MP.polynomial([one(T)], SubBasis{B,M}([MP.constant_monomial(M)]))
+function constant_algebra_element(::Type{<:SubBasis{B,M}}, ::Type{T}) where {B,M,T}
+    return algebra_element([one(T)], SubBasis{B}([MP.constant_monomial(M)]))
 end
 
 function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
@@ -204,6 +207,8 @@ struct Monomial <: AbstractMonomial end
 
 (::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial) = a * b
 
+Base.adjoint(p::Polynomial{Monomial}) = Polynomial{Monomial}(adjoint(p.monomial))
+
 SA.coeffs(p::Polynomial{Monomial}, ::FullBasis{Monomial}) = p.monomial
 
 function MP.polynomial_type(
@@ -241,6 +246,11 @@ end
 
 function MP.coefficients(p::MP.AbstractPolynomialLike, ::FullBasis{Monomial})
     return p
+end
+
+function MA.operate!(::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement, α, x::Polynomial{Monomial}, y::Polynomial{Monomial}, z::Polynomial{Monomial})
+    SA.unsafe_push!(a, Polynomial{Monomial}(x.monomial * y.monomial * z.monomial), α)
+    return a
 end
 
 # Overload some of the `MP` interface for convenience

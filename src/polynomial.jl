@@ -57,12 +57,12 @@ end
 MP.variables(p::Polynomial) = MP.variables(p.monomial)
 MP.nvariables(p::Polynomial) = MP.nvariables(p.monomial)
 
-function MP.polynomial(p, basis::SA.AbstractBasis)
-    return SA.AlgebraElement(p, _algebra(basis))
+function algebra_element(p, basis::SA.AbstractBasis)
+    return SA.AlgebraElement(p, SA.algebra(basis))
 end
 
 function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
-    return MP.polynomial(p, FullBasis{B,MP.monomial_type(p)}())
+    return algebra_element(p, FullBasis{B,MP.monomial_type(p)}())
 end
 
 function _algebra_element(p::Polynomial{B,M}) where {B,M}
@@ -101,7 +101,7 @@ function convert_basis(basis::SA.AbstractBasis, p::MP.AbstractPolynomialLike)
 end
 
 function convert_basis(basis::SA.AbstractBasis, p::SA.AlgebraElement)
-    return SA.AlgebraElement(SA.coeffs(p, basis), _algebra(basis))
+    return SA.AlgebraElement(SA.coeffs(p, basis), SA.algebra(basis))
 end
 
 struct Mul{B<:AbstractMonomialIndexed} <: SA.MultiplicativeStructure end
