@@ -120,9 +120,8 @@ function _object(::Union{FullBasis{B,M},SubBasis{B,M}}) where {B,M}
     return Polynomial{B}(MP.constant_monomial(M))
 end
 
-SA.algebra(basis::Union{FullBasis,SubBasis}) = SA.StarAlgebra(_object(basis), basis)
 function algebra_type(::Type{BT}) where {B,M,BT<:Union{FullBasis{B,M},SubBasis{B,M}}}
-    return SA.StarAlgebra{Polynomial{B,M},Polynomial{B,M},BT}
+    return Algebra{BT,B,M}
 end
 
 function explicit_basis_type(::Type{FullBasis{B,M}}) where {B,M}
@@ -248,8 +247,21 @@ function MP.coefficients(p::MP.AbstractPolynomialLike, ::FullBasis{Monomial})
     return p
 end
 
-function MA.operate!(::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement, α, x::Polynomial{Monomial}, y::Polynomial{Monomial}, z::Polynomial{Monomial})
-    SA.unsafe_push!(a, Polynomial{Monomial}(x.monomial * y.monomial * z.monomial), α)
+function _assert_constant(α) end
+
+function _assert_constant(x::Union{Polynomial,SA.AlgebraElement,MP.AbstractPolynomialLike})
+    error("Expected constant element, got type `$(typeof(x))`")
+end
+
+function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement, α, x::Polynomial{Monomial}, y::Polynomial{Monomial}, z::Polynomial{Monomial})
+    _assert_constant(α)
+    MA.operate!(op, a, α, Polynomial{Monomial}(x.monomial * y.monomial * z.monomial))
+    return a
+end
+
+function MA.operate!(::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement{<:Algebra{<:Union{SubBasis,FullBasis},Monomial}}, α, x::Polynomial{Monomial})
+    _assert_constant(α)
+    SA.unsafe_push!(a, x, α)
     return a
 end
 

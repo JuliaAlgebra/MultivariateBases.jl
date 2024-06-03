@@ -21,6 +21,15 @@ function SA.coeffs(coeffs, sub::SubBasis{Monomial}, basis::Union{SubBasis,FullBa
     return SA.coeffs(MP.polynomial(coeffs, sub.monomials), parent(sub), basis)
 end
 
+function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement{<:Algebra{<:QuotientBasis,Monomial}}, α, p::Polynomial{Monomial})
+    _assert_constant(α)
+    for t in MP.terms(rem(p.monomial, SA.basis(a).divisor))
+        MA.operate!(op, algebra_element(SA.coeffs(a), SA.basis(a).basis), α * MP.coefficient(t), Polynomial{Monomial}(MP.monomial(t)))
+        #SA.unsafe_push!(SA.coeffs(a), SA.basis(a).basis[Polynomial{Monomial}(MP.monomial(k))], α * MP.coefficient(t))
+    end
+    return a
+end
+
 function adjoint_coeffs(coeffs, dest::SubBasis{Monomial}, src::SubBasis{Monomial})
     return SA.coeffs(coeffs, dest, src)
 end
