@@ -98,3 +98,6 @@ end
 function MP.coefficients(p, basis::SubBasis{ScaledMonomial})
     return MP.coefficients(p, basis.monomials) ./ scaling.(MP.monomials(p))
 end
+function SA.coeffs(p::MP.AbstractPolynomialLike, ::FullBasis{Monomial}, basis::FullBasis{ScaledMonomial})
+    return MP.polynomial(MP.coefficients(p, basis), MP.monomials(p))
+end
