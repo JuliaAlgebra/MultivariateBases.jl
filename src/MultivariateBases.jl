@@ -11,8 +11,12 @@ include("interface.jl")
 export AbstractMonomialIndexed, Monomial, ScaledMonomial
 include("polynomial.jl")
 MP.monomial_type(::Type{<:SA.AlgebraElement{A}}) where {A} = MP.monomial_type(A)
-const Algebra{BT,B,M} = SA.StarAlgebra{Polynomial{B,M},Polynomial{B,M},BT}
+struct Algebra{BT,B,M} <: SA.AbstractStarAlgebra{Polynomial{B,M},Polynomial{B,M}}
+    basis::BT
+end
 MP.monomial_type(::Type{<:Algebra{B}}) where {B} = MP.monomial_type(B)
+SA.basis(a::Algebra) = a.basis
+MA.promote_operation(::typeof(SA.basis), ::Type{<:Algebra{B}}) where {B} = B
 include("monomial.jl")
 include("scaled.jl")
 
@@ -37,6 +41,8 @@ include("legendre.jl")
 include("chebyshev.jl")
 include("quotient.jl")
 
-SA.algebra(basis::Union{QuotientBasis,FullBasis,SubBasis}) = SA.StarAlgebra(_object(basis), basis)
+function SA.algebra(basis::Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}}) where {B,M}
+    return Algebra{typeof(basis),B,M}(basis)
+end
 
 end # module

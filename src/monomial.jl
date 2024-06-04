@@ -124,6 +124,9 @@ function algebra_type(::Type{BT}) where {B,M,BT<:Union{FullBasis{B,M},SubBasis{B
     return Algebra{BT,B,M}
 end
 
+implicit_basis(::SubBasis{B,M}) where {B,M} = FullBasis{B,M}()
+implicit_basis(basis::FullBasis) = basis
+
 function explicit_basis_type(::Type{FullBasis{B,M}}) where {B,M}
     return SubBasis{B,M,MP.monomial_vector_type(M)}
 end
@@ -140,6 +143,10 @@ function maxdegree_basis(
     maxdegree::Int,
 ) where {B<:AbstractMonomialIndexed}
     return unsafe_basis(B, MP.monomials(variables, 0:maxdegree))
+end
+
+function algebra_element(p::Polynomial{B,M}) where {B,M}
+    return algebra_element(p.monomial, FullBasis{B,M}())
 end
 
 function algebra_element(f::Function, basis::SubBasis)
@@ -251,6 +258,10 @@ function _assert_constant(α) end
 
 function _assert_constant(x::Union{Polynomial,SA.AlgebraElement,MP.AbstractPolynomialLike})
     error("Expected constant element, got type `$(typeof(x))`")
+end
+
+function MA.operate!(::SA.UnsafeAddMul{<:Mul{Monomial}}, p::MP.AbstractPolynomial, args::Vararg{Any,N}) where {N}
+    return MA.operate!(MA.add_mul, p, args...)
 end
 
 function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement, α, x::Polynomial{Monomial}, y::Polynomial{Monomial}, z::Polynomial{Monomial})

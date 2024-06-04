@@ -7,6 +7,9 @@ SA.nonzero_pairs(p::MP.AbstractPolynomialLike) = MP.terms(p)
 function Base.similar(p::PT, ::Type{T}) where {PT<:MP.AbstractPolynomial,T}
     return convert(MP.similar_type(PT, T), copy(p)) # Missing the `copy` in MP
 end
+function Base.getindex(p::MP.AbstractPolynomialLike, mono::MP.AbstractMonomial)
+    return MP.coefficient(p, mono)
+end
 Base.iterate(t::MP.Term) = iterate(t, 1)
 function Base.iterate(t::MP.Term, state)
     if state == 1
@@ -16,6 +19,13 @@ function Base.iterate(t::MP.Term, state)
     else
         return nothing
     end
+end
+function SA.unsafe_push!(
+    p::MP.AbstractPolynomial,
+    mono::MP.AbstractMonomial,
+    α,
+)
+    return MA.operate!(MA.add_mul, p, α, mono)
 end
 function MA.operate!(
     ::SA.UnsafeAddMul{typeof(*)},
@@ -105,6 +115,17 @@ function convert_basis(basis::SA.AbstractBasis, p::SA.AlgebraElement)
 end
 
 struct Mul{B<:AbstractMonomialIndexed} <: SA.MultiplicativeStructure end
+
+function MA.operate_to!(
+    p::MP.AbstractPolynomial,
+    op::Mul,
+    args::Vararg{MP.AbstractPolynomialLike,N},
+) where {N}
+    MA.operate!(zero, p)
+    MA.operate!(SA.UnsafeAddMul(op), p, args...)
+    MA.operate!(SA.canonical, p)
+    return p
+end
 
 function Base.isapprox(p::MP.AbstractPolynomialLike, a::SA.AlgebraElement; kws...)
     return isapprox(p, SA.coeffs(a, FullBasis{Monomial,promote_type(MP.monomial_type(p), MP.monomial_type(typeof(a)))}()); kws...)
