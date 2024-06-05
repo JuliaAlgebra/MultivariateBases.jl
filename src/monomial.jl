@@ -145,8 +145,12 @@ function maxdegree_basis(
     return unsafe_basis(B, MP.monomials(variables, 0:maxdegree))
 end
 
+function _term(α, mono::MP.AbstractMonomial)
+    return SA.SparseCoefficients((mono,), (α,))
+end
+
 function algebra_element(p::Polynomial{B,M}) where {B,M}
-    return algebra_element(p.monomial, FullBasis{B,M}())
+    return algebra_element(_term(1, p.monomial), FullBasis{B,M}())
 end
 
 function algebra_element(f::Function, basis::SubBasis)
@@ -264,11 +268,28 @@ function MA.operate!(::SA.UnsafeAddMul{<:Mul{Monomial}}, p::MP.AbstractPolynomia
     return MA.operate!(MA.add_mul, p, args...)
 end
 
-function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement, α, x::Polynomial{Monomial}, y::Polynomial{Monomial}, z::Polynomial{Monomial})
-    _assert_constant(α)
-    MA.operate!(op, a, α, Polynomial{Monomial}(x.monomial * y.monomial * z.monomial))
-    return a
-end
+#function MA.operate!(
+#    ::SA.UnsafeAddMul{Mul{B}},
+#    res::SA.AbstractCoefficients,
+#    v::SA.AbstractCoefficients,
+#    w::SA.AbstractCoefficients,
+#) where {B<:MB.AbstractMonomial}
+#    for (kv, a) in nonzero_pairs(v)
+#        for (kw, b) in nonzero_pairs(w)
+#            SA.unsafe_push!(res, kv * kw, a * b)
+#            c = ms.structure(kv, kw)
+#            for (k, v) in nonzero_pairs(c)
+#            end
+#        end
+#    end
+#    return res
+#end
+
+#function MA.operate!(op::SA.UnsafeAddMul{Mul{B}}, a::SA.AbstractCoefficients, α, b::SA.AbstractCoefficients) where {B<:MB.AbstractMonomial}
+#    for
+#    MA.operate!(op, a, α, Polynomial{Monomial}(x.monomial * y.monomial * z.monomial))
+#    return a
+#end
 
 function MA.operate!(::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement{<:Algebra{<:Union{SubBasis,FullBasis},Monomial}}, α, x::Polynomial{Monomial})
     _assert_constant(α)

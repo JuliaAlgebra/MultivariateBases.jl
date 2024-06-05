@@ -38,7 +38,7 @@ function (::Mul{ScaledMonomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
     α = prod(MP.variables(mono); init = inv(binomial(MP.degree(mono), MP.degree(a)))) do v
         inv(binomial(MP.degree(mono, v), MP.degree(a, v)))
     end
-    return MP.term(α, mono)
+    return _term(α, mono)
 end
 
 function SA.coeffs(p::Polynomial{ScaledMonomial}, ::FullBasis{Monomial})
