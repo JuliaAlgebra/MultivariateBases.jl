@@ -30,7 +30,7 @@ function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement{<:Alge
     return a
 end
 
-function adjoint_coeffs(coeffs, dest::SubBasis{Monomial}, src::SubBasis{Monomial})
+function adjoint_coeffs(coeffs, dest::SubBasis{B}, src::SubBasis{B}) where {B<:AbstractMonomial}
     return SA.coeffs(coeffs, dest, src)
 end
 

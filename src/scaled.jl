@@ -36,9 +36,9 @@ struct ScaledMonomial <: AbstractMonomial end
 function (::Mul{ScaledMonomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
     mono = a * b
     α = prod(MP.variables(mono); init = inv(binomial(MP.degree(mono), MP.degree(a)))) do v
-        inv(binomial(MP.degree(mono, v), MP.degree(a, v)))
+        binomial(MP.degree(mono, v), MP.degree(a, v))
     end
-    return _term(α, mono)
+    return _term(√α, mono)
 end
 
 function SA.coeffs(p::Polynomial{ScaledMonomial}, ::FullBasis{Monomial})
@@ -93,11 +93,13 @@ function SA.coeffs(t::MP.AbstractTermLike, ::FullBasis{ScaledMonomial}, ::FullBa
     return MP.term(mono * MP.coefficient(t), mono)
 end
 function MP.coefficients(p, ::FullBasis{ScaledMonomial})
+    @show @__LINE__
     return unscale_coef.(MP.terms(p))
 end
 function MP.coefficients(p, basis::SubBasis{ScaledMonomial})
     return MP.coefficients(p, basis.monomials) ./ scaling.(MP.monomials(p))
 end
 function SA.coeffs(p::MP.AbstractPolynomialLike, ::FullBasis{Monomial}, basis::FullBasis{ScaledMonomial})
+    @show @__LINE__
     return MP.polynomial(MP.coefficients(p, basis), MP.monomials(p))
 end

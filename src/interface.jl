@@ -27,6 +27,7 @@ Return the explicit version of `basis`generating all polynomials of degree up to
 """
 function maxdegree_basis end
 
+# TODO remove, not needed anymore
 """
     basis_covering_monomials(basis::StarAlgebras.AbstractBasis, monos::AbstractVector{<:AbstractMonomial})
 
