@@ -67,12 +67,14 @@ end
 MP.variables(p::Polynomial) = MP.variables(p.monomial)
 MP.nvariables(p::Polynomial) = MP.nvariables(p.monomial)
 
+MP.monomial_type(::Type{<:SA.SparseCoefficients{K}}) where {K} = K
+
 function algebra_element(p, basis::SA.AbstractBasis)
     return SA.AlgebraElement(p, SA.algebra(basis))
 end
 
 function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
-    return algebra_element(p, FullBasis{B,MP.monomial_type(p)}())
+    return algebra_element(p, FullBasis{B,MP.monomial_type(typeof(p))}())
 end
 
 function _algebra_element(p::Polynomial{B,M}) where {B,M}

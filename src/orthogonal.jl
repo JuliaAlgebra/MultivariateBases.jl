@@ -105,12 +105,12 @@ function univariate_orthogonal_basis(
     end
 end
 
-function basis_covering_monomials(
+function explicit_basis_covering(
     ::FullBasis{B,M},
-    monos::AbstractVector,
+    monos::SubBasis{Monomial,M},
 ) where {B<:AbstractMultipleOrthogonal,M}
-    to_add = collect(monos)
-    m = Set{M}(monos)
+    to_add = collect(monos.monomials)
+    m = Set{M}(to_add)
     while !isempty(to_add)
         mono = pop!(to_add)
         for v in MP.variables(mono)
@@ -173,14 +173,19 @@ function MP.coefficients(
     basis::SubBasis{B,M},
 ) where {B<:AbstractMultipleOrthogonal,M}
     return map(basis) do el
-        q = SA.coeffs(el, FullBasis{Monomial})
+        q = SA.coeffs(el, FullBasis{Monomial,M}())
         return LinearAlgebra.dot(p, q, B) / LinearAlgebra.dot(q, q, B)
     end
 end
 
+function SA.coeffs(p::Polynomial{B}, basis::SubBasis{Monomial}) where {B<:AbstractMultipleOrthogonal}
+    full = implicit_basis(basis)
+    return SA.coeffs(algebra_element(SA.coeffs(p, full), full), basis)
+end
+
 function SA.coeffs(p::Polynomial{B}, ::FullBasis{Monomial}) where {B<:AbstractMultipleOrthogonal}
-    return prod(
+    return sparse_coefficients(prod(
         univariate_orthogonal_basis(B, var, deg)[deg+1] for
         (var, deg) in MP.powers(p.monomial)
-    )
+    ))
 end

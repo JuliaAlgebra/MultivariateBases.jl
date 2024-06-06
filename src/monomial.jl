@@ -64,6 +64,8 @@ function Base.getindex(basis::SubBasis{B,M}, value::Polynomial{B,M}) where {B,M}
     return mono
 end
 
+const MonomialIndexedBasis{B,M} = Union{SubBasis{B,M},FullBasis{B,M}}
+
 MP.monomial_type(::Type{<:SubBasis{B,M}}) where {B,M} = M
 
 # The `i`th index of output is the index of occurence of `x[i]` in `y`,
@@ -116,11 +118,7 @@ end
 
 Base.:(==)(a::SubBasis, b::SubBasis) = a.monomials == b.monomials
 
-function _object(::Union{FullBasis{B,M},SubBasis{B,M}}) where {B,M}
-    return Polynomial{B}(MP.constant_monomial(M))
-end
-
-function algebra_type(::Type{BT}) where {B,M,BT<:Union{FullBasis{B,M},SubBasis{B,M}}}
+function algebra_type(::Type{BT}) where {B,M,BT<:MonomialIndexedBasis{B,M}}
     return Algebra{BT,B,M}
 end
 
@@ -145,12 +143,18 @@ function maxdegree_basis(
     return unsafe_basis(B, MP.monomials(variables, 0:maxdegree))
 end
 
-function _term(α, mono::MP.AbstractMonomial)
-    return SA.SparseCoefficients((mono,), (α,))
+MP.variables(c::SA.AbstractCoefficients) = MP.variables(SA.keys(c))
+
+function sparse_coefficients(p::MP.AbstractPolynomial)
+    return SA.SparseCoefficients(MP.monomials(p), MP.coefficients(p))
+end
+
+function sparse_coefficients(t::MP.AbstractTerm)
+    return SA.SparseCoefficients((MP.monomial(t),), (MP.coefficient(t),))
 end
 
 function algebra_element(p::Polynomial{B,M}) where {B,M}
-    return algebra_element(_term(1, p.monomial), FullBasis{B,M}())
+    return algebra_element(sparse_coefficients(MP.term(1, p.monomial)), FullBasis{B,M}())
 end
 
 function algebra_element(f::Function, basis::SubBasis)
@@ -264,9 +268,9 @@ function _assert_constant(x::Union{Polynomial,SA.AlgebraElement,MP.AbstractPolyn
     error("Expected constant element, got type `$(typeof(x))`")
 end
 
-function MA.operate!(::SA.UnsafeAddMul{<:Mul{Monomial}}, p::MP.AbstractPolynomial, args::Vararg{Any,N}) where {N}
-    return MA.operate!(MA.add_mul, p, args...)
-end
+#function MA.operate!(::SA.UnsafeAddMul{<:Mul{Monomial}}, p::MP.AbstractPolynomial, args::Vararg{Any,N}) where {N}
+#    return MA.operate!(MA.add_mul, p, args...)
+#end
 
 #function MA.operate!(
 #    ::SA.UnsafeAddMul{Mul{B}},
@@ -291,7 +295,7 @@ end
 #    return a
 #end
 
-function MA.operate!(::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement{<:Algebra{<:Union{SubBasis,FullBasis},Monomial}}, α, x::Polynomial{Monomial})
+function MA.operate!(::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement{<:Algebra{<:MonomialIndexedBasis,Monomial}}, α, x::Polynomial{Monomial})
     _assert_constant(α)
     SA.unsafe_push!(a, x, α)
     return a

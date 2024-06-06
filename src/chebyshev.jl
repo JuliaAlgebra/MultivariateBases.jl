@@ -29,23 +29,26 @@ const Chebyshev = ChebyshevFirstKind
 # T_n * T_m = T_{n + m} / 2 + T_{|n - m|} / 2
 function (::Mul{Chebyshev})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
     terms = [MP.term(1 // 1, MP.constant_monomial(a * b))]
+    vars_a = MP.variables(a)
+    var_state_a = iterate(vars_a)
     vars_b = MP.variables(b)
     var_state_b = iterate(vars_b)
-    for var_a in MP.variables(a)
-        if isnothing(var_state_b)
-            break
-        end
-        var_b, state_b = var_state_b
-        if var_b > var_a
-            var_state_b = iterate(vars_b, state_b)
+    while !isnothing(var_state_a) || !isnothing(var_state_b)
+        if isnothing(var_state_a) || (!isnothing(var_state_b) && var_state_b[1] > var_state_a[1])
+            var_b, state_b = var_state_b
             for i in eachindex(terms)
                 terms[i] = MA.mul!!(terms[i], var_b^MP.degree(b, var_b))
             end
-        elseif var_a > var_b
+            var_state_b = iterate(vars_b, state_b)
+        elseif isnothing(var_state_b) || (!isnothing(var_state_a) && var_state_a[1] > var_state_b[1])
+            var_a, state_a = var_state_a
             for i in eachindex(terms)
                 terms[i] = MA.mul!!(terms[i], var_a^MP.degree(a, var_a))
             end
+            var_state_a = iterate(vars_a, state_a)
         else
+            var_a, state_a = var_state_a
+            var_b, state_b = var_state_b
             d_a = MP.degree(a, var_a)
             d_b = MP.degree(b, var_b)
             I = eachindex(terms)
@@ -56,18 +59,35 @@ function (::Mul{Chebyshev})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
                 α = MA.copy_if_mutable(MP.coefficient(terms[i]))
                 push!(terms, MP.term(α, mono))
             end
+            var_state_a = iterate(vars_a, state_a)
+            var_state_b = iterate(vars_b, state_b)
         end
     end
-    return MP.polynomial!(terms)
+    return sparse_coefficients(MP.polynomial!(terms))
 end
 
-function SA.coeffs(coeffs, basis::FullBasis{Chebyshev}, dest::FullBasis{Monomial})
-    res = zero(MP.polynomial_type(typeof(basis), valtype(coeffs)))
-    for (k, v) in SA.nonzero_pairs(coeffs)
-        MA.operate!(SA.UnsafeAddMul(*), res, v, SA.coeffs(basis[k], dest))
+function SA.coeffs!(res, cfs, source::MonomialIndexedBasis{Chebyshev}, target::SubBasis{Monomial})
+    MA.operate!(zero, res)
+    for (k, v) in SA.nonzero_pairs(cfs)
+        MA.operate!(MA.add_mul, res, v, SA.coeffs(source[k], target))
     end
-    MA.operate!(SA.canonical, res)
     return res
+end
+
+function SA.coeffs(cfs, source::SubBasis{Monomial}, target::FullBasis{Chebyshev})
+    sub = explicit_basis_covering(target, source)
+    # Need to make A square so that it's UpperTriangular
+    extended = SubBasis{Monomial}(sub.monomials)
+    A = zeros(Float64, length(extended), length(sub))
+    for (i, cheby) in enumerate(sub)
+        A[:, i] = SA.coeffs(algebra_element(cheby), extended)
+    end
+    ext = SA.coeffs(algebra_element(cfs, source), extended)
+    return SA.SparseCoefficients(sub.monomials, LinearAlgebra.UpperTriangular(A) \ ext)
+end
+
+function SA.coeffs(cfs, source::FullBasis{Monomial}, target::FullBasis{Chebyshev})
+    return SA.coeffs(SA.values(cfs), SubBasis{Monomial}(collect(SA.keys(cfs))), target)
 end
 
 function degree_one_univariate_polynomial(

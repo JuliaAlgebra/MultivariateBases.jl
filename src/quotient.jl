@@ -3,6 +3,8 @@ struct QuotientBasis{T,I,B<:SA.AbstractBasis{T,I},D} <: SA.ExplicitBasis{T,I}
     divisor::D
 end
 
+implicit_basis(basis::QuotientBasis) = implicit_basis(basis.basis)
+
 Base.iterate(basis::QuotientBasis) = iterate(basis.basis)
 Base.iterate(basis::QuotientBasis, s) = iterate(basis.basis, s)
 Base.length(basis::QuotientBasis) = length(basis.basis)
@@ -14,10 +16,10 @@ function MP.coefficients(p, basis::QuotientBasis)
 end
 
 function SA.coeffs(p, ::FullBasis{Monomial}, basis::Union{QuotientBasis,SubBasis})
-    return MP.coefficients(p, basis)
+    return MP.coefficients(MP.polynomial(p), basis)
 end
 
-function SA.coeffs(coeffs, sub::SubBasis{Monomial}, basis::Union{SubBasis,FullBasis,QuotientBasis})
+function SA.coeffs(coeffs, sub::SubBasis{Monomial}, basis::Union{MonomialIndexedBasis,QuotientBasis})
     return SA.coeffs(MP.polynomial(coeffs, sub.monomials), parent(sub), basis)
 end
 
