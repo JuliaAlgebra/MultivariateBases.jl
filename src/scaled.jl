@@ -65,25 +65,6 @@ function Base.promote_rule(
     return SubBasis{Monomial,M,V}
 end
 
-function change_basis(
-    Q::AbstractMatrix,
-    basis::SubBasis{ScaledMonomial,M},
-    ::FullBasis{Monomial},
-) where {M}
-    n = length(basis)
-    scalings = map(scaling, basis.monomials)
-    scaled_Q = [Q[i, j] * scalings[i] * scalings[j] for i in 1:n, j in 1:n]
-    return scaled_Q, SubBasis{Monomial}(basis.monomials)
-end
-
-function MP.polynomial(
-    Q::AbstractMatrix,
-    basis::SubBasis{ScaledMonomial,M,V},
-    ::Type{T},
-) where {M,V<:AbstractVector{M},T}
-    return MP.polynomial(change_basis(Q, basis, FullBasis{Monomial,M}())..., T)
-end
-
 function scaling(m::MP.AbstractMonomial)
     return √(factorial(MP.degree(m)) / prod(factorial, MP.exponents(m)))
 end
@@ -93,13 +74,21 @@ function SA.coeffs(t::MP.AbstractTermLike, ::FullBasis{ScaledMonomial}, ::FullBa
     return MP.term(mono * MP.coefficient(t), mono)
 end
 function MP.coefficients(p, ::FullBasis{ScaledMonomial})
-    @show @__LINE__
     return unscale_coef.(MP.terms(p))
 end
 function MP.coefficients(p, basis::SubBasis{ScaledMonomial})
     return MP.coefficients(p, basis.monomials) ./ scaling.(MP.monomials(p))
 end
 function SA.coeffs(p::MP.AbstractPolynomialLike, ::FullBasis{Monomial}, basis::FullBasis{ScaledMonomial})
-    @show @__LINE__
     return MP.polynomial(MP.coefficients(p, basis), MP.monomials(p))
+end
+
+function SA.coeffs!(res, cfs, source::Union{SubBasis{ScaledMonomial},FullBasis{ScaledMonomial}}, target::Union{SubBasis{Monomial},FullBasis{Monomial}})
+    MA.operate!(zero, res)
+    for (k, v) in SA.nonzero_pairs(cfs)
+        mono = source[k].monomial
+        SA.unsafe_push!(res, target[Polynomial{Monomial}(mono)], v * scaling(mono))
+    end
+    MA.operate!(SA.canonical, res)
+    return res
 end

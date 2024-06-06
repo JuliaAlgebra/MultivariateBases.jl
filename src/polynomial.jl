@@ -127,12 +127,14 @@ function MA.operate_to!(
     return p
 end
 
+MP.polynomial(a::SA.AbstractCoefficients) = MP.polynomial(SA.values(a), SA.keys(a))
+
 function Base.isapprox(p::MP.AbstractPolynomialLike, a::SA.AlgebraElement; kws...)
-    return isapprox(p, SA.coeffs(a, FullBasis{Monomial,promote_type(MP.monomial_type(p), MP.monomial_type(typeof(a)))}()); kws...)
+    return isapprox(p, MP.polynomial(SA.coeffs(a, FullBasis{Monomial,promote_type(MP.monomial_type(p), MP.monomial_type(typeof(a)))}())); kws...)
 end
 
 function Base.isapprox(a::SA.AlgebraElement, b::SA.AlgebraElement; kws...)
-    return isapprox(SA.coeffs(a, FullBasis{Monomial,promote_type(MP.monomial_type(typeof(a)), MP.monomial_type(typeof(b)))}()), b; kws...)
+    return isapprox(MP.polynomial(SA.coeffs(a, FullBasis{Monomial,promote_type(MP.monomial_type(typeof(a)), MP.monomial_type(typeof(b)))}())), b; kws...)
 end
 
 function Base.isapprox(a::SA.AlgebraElement, p::MP.AbstractPolynomialLike; kws...)
