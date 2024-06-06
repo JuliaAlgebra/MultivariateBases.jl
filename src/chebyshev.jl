@@ -66,11 +66,15 @@ function (::Mul{Chebyshev})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
     return sparse_coefficients(MP.polynomial!(terms))
 end
 
-function SA.coeffs!(res, cfs, source::MonomialIndexedBasis{Chebyshev}, target::SubBasis{Monomial})
+_op(_, ::SubBasis) = MA.add_mul
+_op(mul, ::FullBasis) = SA.UnsafeAddMul(mul)
+
+function SA.coeffs!(res, cfs, source::MonomialIndexedBasis{Chebyshev}, target::MonomialIndexedBasis{Monomial})
     MA.operate!(zero, res)
     for (k, v) in SA.nonzero_pairs(cfs)
-        MA.operate!(MA.add_mul, res, v, SA.coeffs(source[k], target))
+        MA.operate!(_op(Mul{Monomial}(), target), res, v, SA.coeffs(source[k], target))
     end
+    MA.operate!(SA.canonical, res)
     return res
 end
 
