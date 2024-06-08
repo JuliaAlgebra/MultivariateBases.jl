@@ -32,11 +32,7 @@ function MA.operate!(op::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement{<:Alge
     return a
 end
 
-function adjoint_coeffs(coeffs, dest::SubBasis{B}, src::SubBasis{B}) where {B<:AbstractMonomial}
-    return SA.coeffs(coeffs, dest, src)
-end
-
-function adjoint_coeffs(coeffs, dest::QuotientBasis{<:Polynomial{Monomial}}, src::SubBasis{Monomial})
+function SA.adjoint_coeffs(coeffs, src::SubBasis{Monomial}, dest::QuotientBasis{<:Polynomial{Monomial}})
     return map(src.monomials) do mono
         return sum(
             MP.coefficient(t) * coeffs[dest.basis[Polynomial{Monomial}(MP.monomial(t))]]
