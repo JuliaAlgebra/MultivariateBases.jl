@@ -17,6 +17,15 @@ end
 MP.monomial_type(::Type{<:Algebra{B}}) where {B} = MP.monomial_type(B)
 SA.basis(a::Algebra) = a.basis
 MA.promote_operation(::typeof(SA.basis), ::Type{<:Algebra{B}}) where {B} = B
+
+#Base.:(==)(::Algebra{BT1,B1,M}, ::Algebra{BT2,B2,M}) where {BT1,B1,BT2,B2,M} = true
+#Base.:(==)(::Algebra, ::Algebra) = false
+
+function Base.show(io::IO, ::Algebra{BT,B}) where {BT,B}
+    ioc = IOContext(io, :limit => true, :compact => true)
+    return print(ioc, "Polynomial algebra of $B basis")
+end
+
 include("monomial.jl")
 include("scaled.jl")
 
@@ -43,6 +52,17 @@ include("quotient.jl")
 
 function SA.algebra(basis::Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}}) where {B,M}
     return Algebra{typeof(basis),B,M}(basis)
+end
+
+function MA.promote_operation(
+    ::typeof(SA.algebra),
+    BT::Type{<:Union{
+        QuotientBasis{Polynomial{B,M}},
+        FullBasis{B,M},
+        SubBasis{B,M},
+    }},
+) where {B,M}
+    return Algebra{BT,B,M}
 end
 
 end # module
