@@ -52,6 +52,14 @@ struct Polynomial{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
     end
 end
 
+function Base.hash(p::Polynomial{B}, u::UInt) where {B}
+    return hash(B, hash(p.monomial, u))
+end
+
+function Base.isequal(p::Polynomial{B}, q::Polynomial{B}) where {B}
+    return isequal(p.monomial, q.monomial)
+end
+
 # Needed for `BoundsError`
 Base.iterate(p::Polynomial) = p, nothing
 Base.iterate(::Polynomial, ::Nothing) = nothing
