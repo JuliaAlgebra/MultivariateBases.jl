@@ -179,6 +179,10 @@ function MA.promote_operation(
     }
 end
 
+function algebra_element(p::MP.AbstractPolynomialLike)
+    return algebra_element(sparse_coefficients(p), FullBasis{Monomial,MP.monomial_type(p)}())
+end
+
 function algebra_element(p::Polynomial{B,M}) where {B,M}
     return algebra_element(sparse_coefficients(MP.term(1, p.monomial)), FullBasis{B,M}())
 end

@@ -98,17 +98,34 @@ function Base.:*(a::Polynomial{B}, b::SA.AlgebraElement) where {B}
 end
 
 function _show(io::IO, mime::MIME, p::Polynomial{B}) where {B}
-    print(io, B)
-    print(io, "(")
-    show(io, mime, p.monomial)
-    return print(io, ")")
+    if B != Monomial
+        print(io, B)
+        print(io, "(")
+    end
+    print(io, SA.trim_LaTeX(mime, sprint(show, mime, p.monomial)))
+    if B != Monomial
+        print(io, ")")
+    end
+    return
 end
+
+function Base.show(io::IO, mime::MIME"text/latex", p::Polynomial)
+    print(io, "\$\$ ")
+    _show(io, mime, p)
+    print(io, " \$\$")
+    return
+end
+
 function Base.show(io::IO, mime::MIME"text/plain", p::Polynomial)
     return _show(io, mime, p)
 end
-function Base.show(io::IO, p::Polynomial)
-    return show(io, MIME"text/plain"(), p)
+
+function Base.show(io::IO, mime::MIME"text/print", p::Polynomial)
+    return _show(io, mime, p)
 end
+
+Base.show(io::IO, p::Polynomial) = show(io, MIME"text/plain"(), p)
+Base.print(io::IO, p::Polynomial) = show(io, MIME"text/print"(), p)
 
 function Base.zero(::Type{Polynomial{B,M}}) where {B,M}
     return _algebra_element(zero(MP.polynomial_type(M, Rational{Int})), B)
@@ -139,12 +156,16 @@ end
 
 MP.polynomial(a::SA.AbstractCoefficients) = MP.polynomial(SA.values(a), SA.keys(a))
 
+function MP.polynomial(a::SA.AlgebraElement)
+    return MP.polynomial(SA.coeffs(a, FullBasis{Monomial,MP.monomial_type(typeof(a))}()))
+end
+
 function Base.isapprox(p::MP.AbstractPolynomialLike, a::SA.AlgebraElement; kws...)
-    return isapprox(p, MP.polynomial(SA.coeffs(a, FullBasis{Monomial,promote_type(MP.monomial_type(p), MP.monomial_type(typeof(a)))}())); kws...)
+    return isapprox(p, MP.polynomial(a); kws...)
 end
 
 function Base.isapprox(a::SA.AlgebraElement, b::SA.AlgebraElement; kws...)
-    return isapprox(MP.polynomial(SA.coeffs(a, FullBasis{Monomial,promote_type(MP.monomial_type(typeof(a)), MP.monomial_type(typeof(b)))}())), b; kws...)
+    return isapprox(MP.polynomial(a), b; kws...)
 end
 
 function Base.isapprox(a::SA.AlgebraElement, p::MP.AbstractPolynomialLike; kws...)
