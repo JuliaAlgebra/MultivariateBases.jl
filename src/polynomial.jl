@@ -20,11 +20,7 @@ function Base.iterate(t::MP.Term, state)
         return nothing
     end
 end
-function SA.unsafe_push!(
-    p::MP.AbstractPolynomial,
-    mono::MP.AbstractMonomial,
-    α,
-)
+function SA.unsafe_push!(p::MP.AbstractPolynomial, mono::MP.AbstractMonomial, α)
     return MA.operate!(MA.add_mul, p, α, mono)
 end
 function MA.operate!(
@@ -154,13 +150,21 @@ function MA.operate_to!(
     return p
 end
 
-MP.polynomial(a::SA.AbstractCoefficients) = MP.polynomial(SA.values(a), SA.keys(a))
-
-function MP.polynomial(a::SA.AlgebraElement)
-    return MP.polynomial(SA.coeffs(a, FullBasis{Monomial,MP.monomial_type(typeof(a))}()))
+function MP.polynomial(a::SA.AbstractCoefficients)
+    return MP.polynomial(SA.values(a), SA.keys(a))
 end
 
-function Base.isapprox(p::MP.AbstractPolynomialLike, a::SA.AlgebraElement; kws...)
+function MP.polynomial(a::SA.AlgebraElement)
+    return MP.polynomial(
+        SA.coeffs(a, FullBasis{Monomial,MP.monomial_type(typeof(a))}()),
+    )
+end
+
+function Base.isapprox(
+    p::MP.AbstractPolynomialLike,
+    a::SA.AlgebraElement;
+    kws...,
+)
     return isapprox(p, MP.polynomial(a); kws...)
 end
 
@@ -168,10 +172,18 @@ function Base.isapprox(a::SA.AlgebraElement, b::SA.AlgebraElement; kws...)
     return isapprox(MP.polynomial(a), b; kws...)
 end
 
-function Base.isapprox(a::SA.AlgebraElement, p::MP.AbstractPolynomialLike; kws...)
+function Base.isapprox(
+    a::SA.AlgebraElement,
+    p::MP.AbstractPolynomialLike;
+    kws...,
+)
     return isapprox(p, a; kws...)
 end
 
 function Base.isapprox(a::SA.AlgebraElement, α::Number; kws...)
-    return isapprox(a, α * constant_algebra_element(typeof(SA.basis(a)), typeof(α)); kws...)
+    return isapprox(
+        a,
+        α * constant_algebra_element(typeof(SA.basis(a)), typeof(α));
+        kws...,
+    )
 end

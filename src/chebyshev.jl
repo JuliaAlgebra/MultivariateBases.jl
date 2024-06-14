@@ -34,13 +34,15 @@ function (::Mul{Chebyshev})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
     vars_b = MP.variables(b)
     var_state_b = iterate(vars_b)
     while !isnothing(var_state_a) || !isnothing(var_state_b)
-        if isnothing(var_state_a) || (!isnothing(var_state_b) && var_state_b[1] > var_state_a[1])
+        if isnothing(var_state_a) ||
+           (!isnothing(var_state_b) && var_state_b[1] > var_state_a[1])
             var_b, state_b = var_state_b
             for i in eachindex(terms)
                 terms[i] = MA.mul!!(terms[i], var_b^MP.degree(b, var_b))
             end
             var_state_b = iterate(vars_b, state_b)
-        elseif isnothing(var_state_b) || (!isnothing(var_state_a) && var_state_a[1] > var_state_b[1])
+        elseif isnothing(var_state_b) ||
+               (!isnothing(var_state_a) && var_state_a[1] > var_state_b[1])
             var_a, state_a = var_state_a
             for i in eachindex(terms)
                 terms[i] = MA.mul!!(terms[i], var_a^MP.degree(a, var_a))
@@ -67,7 +69,7 @@ function (::Mul{Chebyshev})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
 end
 
 function _add_mul_scalar_vector!(res, ::SubBasis, scalar, vector)
-    MA.operate!(MA.add_mul, res, scalar, vector)
+    return MA.operate!(MA.add_mul, res, scalar, vector)
 end
 
 function _add_mul_scalar_vector!(res, ::FullBasis, scalar, vector)
@@ -76,7 +78,12 @@ function _add_mul_scalar_vector!(res, ::FullBasis, scalar, vector)
     end
 end
 
-function SA.coeffs!(res, cfs, source::MonomialIndexedBasis{Chebyshev}, target::MonomialIndexedBasis{Monomial})
+function SA.coeffs!(
+    res,
+    cfs,
+    source::MonomialIndexedBasis{Chebyshev},
+    target::MonomialIndexedBasis{Monomial},
+)
     MA.operate!(zero, res)
     for (k, v) in SA.nonzero_pairs(cfs)
         _add_mul_scalar_vector!(res, target, v, SA.coeffs(source[k], target))
@@ -85,7 +92,11 @@ function SA.coeffs!(res, cfs, source::MonomialIndexedBasis{Chebyshev}, target::M
     return res
 end
 
-function SA.coeffs(cfs, source::SubBasis{Monomial}, target::FullBasis{Chebyshev})
+function SA.coeffs(
+    cfs,
+    source::SubBasis{Monomial},
+    target::FullBasis{Chebyshev},
+)
     sub = explicit_basis_covering(target, source)
     # Need to make A square so that it's UpperTriangular
     extended = SubBasis{Monomial}(sub.monomials)
@@ -94,11 +105,22 @@ function SA.coeffs(cfs, source::SubBasis{Monomial}, target::FullBasis{Chebyshev}
         A[:, i] = SA.coeffs(algebra_element(cheby), extended)
     end
     ext = SA.coeffs(algebra_element(cfs, source), extended)
-    return SA.SparseCoefficients(sub.monomials, LinearAlgebra.UpperTriangular(A) \ ext)
+    return SA.SparseCoefficients(
+        sub.monomials,
+        LinearAlgebra.UpperTriangular(A) \ ext,
+    )
 end
 
-function SA.coeffs(cfs, source::FullBasis{Monomial}, target::FullBasis{Chebyshev})
-    return SA.coeffs(SA.values(cfs), SubBasis{Monomial}(collect(SA.keys(cfs))), target)
+function SA.coeffs(
+    cfs,
+    source::FullBasis{Monomial},
+    target::FullBasis{Chebyshev},
+)
+    return SA.coeffs(
+        SA.values(cfs),
+        SubBasis{Monomial}(collect(SA.keys(cfs))),
+        target,
+    )
 end
 
 function degree_one_univariate_polynomial(

@@ -125,7 +125,10 @@ end
 implicit_basis(::SubBasis{B,M}) where {B,M} = FullBasis{B,M}()
 implicit_basis(basis::FullBasis) = basis
 
-function MA.promote_operation(::typeof(implicit_basis), ::Type{<:Union{FullBasis{B,M},SubBasis{B,M}}}) where {B,M}
+function MA.promote_operation(
+    ::typeof(implicit_basis),
+    ::Type{<:Union{FullBasis{B,M},SubBasis{B,M}}},
+) where {B,M}
     return FullBasis{B,M}
 end
 
@@ -135,7 +138,9 @@ end
 
 _explicit_basis(_, basis::SubBasis) = basis
 
-explicit_basis(a::SA.AlgebraElement) = _explicit_basis(SA.coeffs(a), SA.basis(a))
+function explicit_basis(a::SA.AlgebraElement)
+    return _explicit_basis(SA.coeffs(a), SA.basis(a))
+end
 
 function explicit_basis_type(::Type{FullBasis{B,M}}) where {B,M}
     return SubBasis{B,M,MP.monomial_vector_type(M)}
@@ -171,31 +176,43 @@ function MA.promote_operation(
 ) where {P<:MP.AbstractPolynomialLike}
     M = MP.monomial_type(P)
     T = MP.coefficient_type(P)
-    return SA.SparseCoefficients{
-        M,
-        T,
-        MP.monomial_vector_type(M),
-        Vector{T},
-    }
+    return SA.SparseCoefficients{M,T,MP.monomial_vector_type(M),Vector{T}}
 end
 
 function algebra_element(p::MP.AbstractPolynomialLike)
-    return algebra_element(sparse_coefficients(p), FullBasis{Monomial,MP.monomial_type(p)}())
+    return algebra_element(
+        sparse_coefficients(p),
+        FullBasis{Monomial,MP.monomial_type(p)}(),
+    )
 end
 
 function algebra_element(p::Polynomial{B,M}) where {B,M}
-    return algebra_element(sparse_coefficients(MP.term(1, p.monomial)), FullBasis{B,M}())
+    return algebra_element(
+        sparse_coefficients(MP.term(1, p.monomial)),
+        FullBasis{B,M}(),
+    )
 end
 
 function algebra_element(f::Function, basis::SubBasis)
     return algebra_element(map(f, eachindex(basis)), basis)
 end
 
-function constant_algebra_element(::Type{FullBasis{B,M}}, ::Type{T}) where {B,M,T}
-    return algebra_element(sparse_coefficients(MP.polynomial(MP.term(one(T), MP.constant_monomial(M)))), FullBasis{B,M}())
+function constant_algebra_element(
+    ::Type{FullBasis{B,M}},
+    ::Type{T},
+) where {B,M,T}
+    return algebra_element(
+        sparse_coefficients(
+            MP.polynomial(MP.term(one(T), MP.constant_monomial(M))),
+        ),
+        FullBasis{B,M}(),
+    )
 end
 
-function constant_algebra_element(::Type{<:SubBasis{B,M}}, ::Type{T}) where {B,M,T}
+function constant_algebra_element(
+    ::Type{<:SubBasis{B,M}},
+    ::Type{T},
+) where {B,M,T}
     return algebra_element([one(T)], SubBasis{B}([MP.constant_monomial(M)]))
 end
 
@@ -240,7 +257,9 @@ function basis_covering_monomials(
     return SubBasis{B}(monos)
 end
 
-Base.adjoint(p::Polynomial{B}) where {B<:AbstractMonomialIndexed} = Polynomial{B}(adjoint(p.monomial))
+function Base.adjoint(p::Polynomial{B}) where {B<:AbstractMonomialIndexed}
+    return Polynomial{B}(adjoint(p.monomial))
+end
 
 """
     struct Monomial <: AbstractMonomialIndexed end
@@ -298,8 +317,10 @@ end
 
 function _assert_constant(α) end
 
-function _assert_constant(x::Union{Polynomial,SA.AlgebraElement,MP.AbstractPolynomialLike})
-    error("Expected constant element, got type `$(typeof(x))`")
+function _assert_constant(
+    x::Union{Polynomial,SA.AlgebraElement,MP.AbstractPolynomialLike},
+)
+    return error("Expected constant element, got type `$(typeof(x))`")
 end
 
 #function MA.operate!(::SA.UnsafeAddMul{<:Mul{Monomial}}, p::MP.AbstractPolynomial, args::Vararg{Any,N}) where {N}
@@ -329,7 +350,12 @@ end
 #    return a
 #end
 
-function MA.operate!(::SA.UnsafeAddMul{typeof(*)}, a::SA.AlgebraElement{<:Algebra{<:MonomialIndexedBasis,Monomial}}, α, x::Polynomial{Monomial})
+function MA.operate!(
+    ::SA.UnsafeAddMul{typeof(*)},
+    a::SA.AlgebraElement{<:Algebra{<:MonomialIndexedBasis,Monomial}},
+    α,
+    x::Polynomial{Monomial},
+)
     _assert_constant(α)
     SA.unsafe_push!(a, x, α)
     return a

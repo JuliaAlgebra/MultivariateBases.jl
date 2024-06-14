@@ -14,7 +14,8 @@ MP.monomial_type(::Type{<:SA.AlgebraElement{A}}) where {A} = MP.monomial_type(A)
 function MP.polynomial_type(::Type{<:SA.AlgebraElement{A,T}}) where {A,T}
     return MP.polynomial_type(A, T)
 end
-struct Algebra{BT,B,M} <: SA.AbstractStarAlgebra{Polynomial{B,M},Polynomial{B,M}}
+struct Algebra{BT,B,M} <:
+       SA.AbstractStarAlgebra{Polynomial{B,M},Polynomial{B,M}}
     basis::BT
 end
 MP.monomial_type(::Type{<:Algebra{B}}) where {B} = MP.monomial_type(B)
@@ -56,17 +57,17 @@ include("legendre.jl")
 include("chebyshev.jl")
 include("quotient.jl")
 
-function algebra(basis::Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}}) where {B,M}
+function algebra(
+    basis::Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
+) where {B,M}
     return Algebra{typeof(basis),B,M}(basis)
 end
 
 function MA.promote_operation(
     ::typeof(algebra),
-    BT::Type{<:Union{
-        QuotientBasis{Polynomial{B,M}},
-        FullBasis{B,M},
-        SubBasis{B,M},
-    }},
+    BT::Type{
+        <:Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
+    },
 ) where {B,M}
     return Algebra{BT,B,M}
 end

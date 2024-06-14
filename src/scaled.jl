@@ -35,8 +35,11 @@ struct ScaledMonomial <: AbstractMonomial end
 
 function (::Mul{ScaledMonomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
     mono = a * b
-    α = prod(MP.variables(mono); init = inv(binomial(MP.degree(mono), MP.degree(a)))) do v
-        binomial(MP.degree(mono, v), MP.degree(a, v))
+    α = prod(
+        MP.variables(mono);
+        init = inv(binomial(MP.degree(mono), MP.degree(a))),
+    ) do v
+        return binomial(MP.degree(mono, v), MP.degree(a, v))
     end
     return sparse_coefficients(MP.term(√α, mono))
 end
@@ -69,7 +72,11 @@ function scaling(m::MP.AbstractMonomial)
     return √(factorial(MP.degree(m)) / prod(factorial, MP.exponents(m)))
 end
 unscale_coef(t::MP.AbstractTerm) = MP.coefficient(t) / scaling(MP.monomial(t))
-function SA.coeffs(t::MP.AbstractTermLike, ::FullBasis{ScaledMonomial}, ::FullBasis{Monomial})
+function SA.coeffs(
+    t::MP.AbstractTermLike,
+    ::FullBasis{ScaledMonomial},
+    ::FullBasis{Monomial},
+)
     mono = MP.monomial(t)
     return MP.term(mono * MP.coefficient(t), mono)
 end
@@ -79,25 +86,47 @@ end
 function MP.coefficients(p, basis::SubBasis{ScaledMonomial})
     return MP.coefficients(p, basis.monomials) ./ scaling.(MP.monomials(p))
 end
-function SA.coeffs(p::MP.AbstractPolynomialLike, ::FullBasis{Monomial}, basis::FullBasis{ScaledMonomial})
+function SA.coeffs(
+    p::MP.AbstractPolynomialLike,
+    ::FullBasis{Monomial},
+    basis::FullBasis{ScaledMonomial},
+)
     return MP.polynomial(MP.coefficients(p, basis), MP.monomials(p))
 end
 
-function SA.coeffs!(res, cfs, source::MonomialIndexedBasis{ScaledMonomial}, target::MonomialIndexedBasis{Monomial})
+function SA.coeffs!(
+    res,
+    cfs,
+    source::MonomialIndexedBasis{ScaledMonomial},
+    target::MonomialIndexedBasis{Monomial},
+)
     MA.operate!(zero, res)
     for (k, v) in SA.nonzero_pairs(cfs)
         mono = source[k].monomial
-        SA.unsafe_push!(res, target[Polynomial{Monomial}(mono)], v * scaling(mono))
+        SA.unsafe_push!(
+            res,
+            target[Polynomial{Monomial}(mono)],
+            v * scaling(mono),
+        )
     end
     MA.operate!(SA.canonical, res)
     return res
 end
 
-function SA.coeffs!(res, cfs, source::MonomialIndexedBasis{Monomial}, target::MonomialIndexedBasis{ScaledMonomial})
+function SA.coeffs!(
+    res,
+    cfs,
+    source::MonomialIndexedBasis{Monomial},
+    target::MonomialIndexedBasis{ScaledMonomial},
+)
     MA.operate!(zero, res)
     for (k, v) in SA.nonzero_pairs(cfs)
         mono = source[k].monomial
-        SA.unsafe_push!(res, target[Polynomial{ScaledMonomial}(mono)], v / scaling(mono))
+        SA.unsafe_push!(
+            res,
+            target[Polynomial{ScaledMonomial}(mono)],
+            v / scaling(mono),
+        )
     end
     MA.operate!(SA.canonical, res)
     return res
