@@ -56,12 +56,12 @@ include("legendre.jl")
 include("chebyshev.jl")
 include("quotient.jl")
 
-function SA.algebra(basis::Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}}) where {B,M}
+function algebra(basis::Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}}) where {B,M}
     return Algebra{typeof(basis),B,M}(basis)
 end
 
 function MA.promote_operation(
-    ::typeof(SA.algebra),
+    ::typeof(algebra),
     BT::Type{<:Union{
         QuotientBasis{Polynomial{B,M}},
         FullBasis{B,M},

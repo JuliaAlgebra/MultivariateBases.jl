@@ -78,7 +78,7 @@ MP.nvariables(p::Polynomial) = MP.nvariables(p.monomial)
 MP.monomial_type(::Type{<:SA.SparseCoefficients{K}}) where {K} = K
 
 function algebra_element(p, basis::SA.AbstractBasis)
-    return SA.AlgebraElement(p, SA.algebra(basis))
+    return SA.AlgebraElement(p, algebra(basis))
 end
 
 function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
@@ -138,7 +138,7 @@ function convert_basis(basis::SA.AbstractBasis, p::MP.AbstractPolynomialLike)
 end
 
 function convert_basis(basis::SA.AbstractBasis, p::SA.AlgebraElement)
-    return SA.AlgebraElement(SA.coeffs(p, basis), SA.algebra(basis))
+    return SA.AlgebraElement(SA.coeffs(p, basis), algebra(basis))
 end
 
 struct Mul{B<:AbstractMonomialIndexed} <: SA.MultiplicativeStructure end
