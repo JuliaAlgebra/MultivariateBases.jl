@@ -1,5 +1,6 @@
 using Test
 
+import StarAlgebras as SA
 using MultivariateBases
 const MB = MultivariateBases
 using LinearAlgebra
