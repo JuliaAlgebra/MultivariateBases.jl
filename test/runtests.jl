@@ -13,7 +13,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     full_basis = FullBasis{B,M}()
     @test sprint(show, MB.algebra(full_basis)) ==
           "Polynomial algebra of $B basis"
-    @test typeof(MB.algebra(full_basis)) == MA.promote_operation(MB.algebra, typeof(full_basis))
+    @test typeof(MB.algebra(full_basis)) ==
+          MA.promote_operation(MB.algebra, typeof(full_basis))
     for basis in [
         maxdegree_basis(full_basis, x, degree),
         explicit_basis_covering(
@@ -25,7 +26,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
             MB.SubBasis{ScaledMonomial}(monomials(x, 0:degree)),
         ),
     ]
-        @test typeof(MB.algebra(basis)) == MA.promote_operation(MB.algebra, typeof(basis))
+        @test typeof(MB.algebra(basis)) ==
+              MA.promote_operation(MB.algebra, typeof(basis))
         @test basis isa MB.explicit_basis_type(typeof(full_basis))
         for i in eachindex(basis)
             mono = basis.monomials[i]

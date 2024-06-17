@@ -12,8 +12,7 @@ end
 
 @testset "ImRem" begin
     @polyvar x y
-    basis =
-        MB.QuotientBasis(MB.SubBasis{MB.Monomial}([1, y, x]), ImRem())
+    basis = MB.QuotientBasis(MB.SubBasis{MB.Monomial}([1, y, x]), ImRem())
     @test length(basis) == 3
     p = x^3 - 2x^2 * y + 3x^2
     coeffs = [3, 2, -1]
