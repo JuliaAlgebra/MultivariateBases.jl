@@ -9,6 +9,7 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
     M = typeof(prod(x))
     full_basis = FullBasis{B,M}()
+    @test sprint(show, MB.algebra(full_basis)) == "Polynomial algebra of $B basis"
     for basis in [
         maxdegree_basis(full_basis, x, degree),
         explicit_basis_covering(
@@ -34,6 +35,11 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         @test polynomial_type(basis, Float64) == polynomial_type(x[1], Float64)
         #@test polynomial(i -> 0.0, basis) isa polynomial_type(basis, Float64)
     end
+    p = MB.Polynomial{B}(x[1]^2)
+    @test polynomial_type(x[1]^2, String) == polynomial_type(typeof(p), String)
+    a = MB.algebra_element(p)
+    @test typeof(polynomial(a)) == polynomial_type(typeof(a))
+    @test typeof(polynomial(a)) == polynomial_type(typeof(p), Int)
 end
 
 function univ_orthogonal_test(

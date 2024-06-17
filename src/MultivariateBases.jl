@@ -23,7 +23,8 @@ function MP.polynomial_type(::Type{<:Algebra{B}}, ::Type{T}) where {B,T}
     return MP.polynomial_type(B, T)
 end
 SA.basis(a::Algebra) = a.basis
-MA.promote_operation(::typeof(SA.basis), ::Type{<:Algebra{B}}) where {B} = B
+# Is this needed ?
+#MA.promote_operation(::typeof(SA.basis), ::Type{<:Algebra{B}}) where {B} = B
 
 #Base.:(==)(::Algebra{BT1,B1,M}, ::Algebra{BT2,B2,M}) where {BT1,B1,BT2,B2,M} = true
 #Base.:(==)(::Algebra, ::Algebra) = false
@@ -64,13 +65,14 @@ function algebra(
     return Algebra{typeof(basis),B,M}(basis)
 end
 
-function MA.promote_operation(
-    ::typeof(algebra),
-    BT::Type{
-        <:Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
-    },
-) where {B,M}
-    return Algebra{BT,B,M}
-end
+# Needed ?
+#function MA.promote_operation(
+#    ::typeof(algebra),
+#    BT::Type{
+#        <:Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
+#    },
+#) where {B,M}
+#    return Algebra{BT,B,M}
+#end
 
 end # module
