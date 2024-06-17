@@ -9,7 +9,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
     M = typeof(prod(x))
     full_basis = FullBasis{B,M}()
-    @test sprint(show, MB.algebra(full_basis)) == "Polynomial algebra of $B basis"
+    @test sprint(show, MB.algebra(full_basis)) ==
+          "Polynomial algebra of $B basis"
     for basis in [
         maxdegree_basis(full_basis, x, degree),
         explicit_basis_covering(
