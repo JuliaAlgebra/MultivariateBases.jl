@@ -65,6 +65,18 @@ end
     @test basis.monomials == [y^2, x * y, x^2]
     @test I1 == [1, 0, 2]
     @test I2 == [1, 2, 0]
+    for i in eachindex(basis)
+        mono = basis.monomials[i]
+        @test monomial_index(basis, mono) == i
+        for (I, b) in [(I1, basis1), (I2, basis2)]
+            idx = monomial_index(b, basis.monomials[i])
+            if iszero(I[i])
+                @test isnothing(idx)
+            else
+                @test idx == I[i]
+            end
+        end
+    end
 end
 
 @testset "API degree = $degree" for degree in 0:3

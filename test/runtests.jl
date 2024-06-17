@@ -23,6 +23,12 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         ),
     ]
         @test basis isa MB.explicit_basis_type(typeof(full_basis))
+        for i in eachindex(basis)
+            mono = basis.monomials[i]
+            poly = MB.Polynomial{B}(mono)
+            @test basis[i] == poly
+            @test basis[poly] == i
+        end
         n = binomial(2 + degree, 2)
         @test length(basis) == n
         @test firstindex(basis) == 1
@@ -37,6 +43,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         #@test polynomial(i -> 0.0, basis) isa polynomial_type(basis, Float64)
     end
     p = MB.Polynomial{B}(x[1]^2)
+    @test full_basis[p] == x[1]^2
+    @test full_basis[x[1]^2] == p
     @test polynomial_type(x[1]^2, String) == polynomial_type(typeof(p), String)
     a = MB.algebra_element(p)
     @test typeof(polynomial(a)) == polynomial_type(typeof(a))

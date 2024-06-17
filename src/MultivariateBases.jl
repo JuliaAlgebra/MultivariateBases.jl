@@ -5,7 +5,7 @@ import StarAlgebras as SA
 import MultivariatePolynomials as MP
 
 export AbstractPolynomialBasis, FullBasis, SubBasis
-export maxdegree_basis, explicit_basis_covering, empty_basis
+export maxdegree_basis, explicit_basis_covering, empty_basis, monomial_index
 include("interface.jl")
 
 export AbstractMonomialIndexed, Monomial, ScaledMonomial
