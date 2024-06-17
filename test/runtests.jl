@@ -42,13 +42,27 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         @test polynomial_type(basis, Float64) == polynomial_type(x[1], Float64)
         #@test polynomial(i -> 0.0, basis) isa polynomial_type(basis, Float64)
     end
-    p = MB.Polynomial{B}(x[1]^2)
-    @test full_basis[p] == x[1]^2
-    @test full_basis[x[1]^2] == p
-    @test polynomial_type(x[1]^2, String) == polynomial_type(typeof(p), String)
+    mono = x[1]^2 * x[2]^3
+    p = MB.Polynomial{B}(mono)
+    @test full_basis[p] == mono
+    @test full_basis[mono] == p
+    @test polynomial_type(mono, String) == polynomial_type(typeof(p), String)
     a = MB.algebra_element(p)
     @test typeof(polynomial(a)) == polynomial_type(typeof(a))
     @test typeof(polynomial(a)) == polynomial_type(typeof(p), Int)
+    @test a ≈ a
+    if B == MB.Monomial
+        @test a ≈ p.monomial
+        @test p.monomial ≈ a
+    else
+        @test !(a ≈ p.monomial)
+        @test !(p.monomial ≈ a)
+    end
+    _wrap(s) = (B == MB.Monomial ? s : "$B($s)")
+    @test sprint(show, p) == _wrap(sprint(show, p.monomial))
+    @test sprint(print, p) == _wrap(sprint(print, p.monomial))
+    mime = MIME"text/latex"()
+    @test sprint(show, mime, p) == "\$\$ " * _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, p.monomial))) * " \$\$"
 end
 
 function univ_orthogonal_test(
