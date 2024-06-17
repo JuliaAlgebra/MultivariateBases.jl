@@ -267,7 +267,9 @@ one get ths [`ScaledMonomial`](@ref).
 """
 struct Monomial <: AbstractMonomial end
 
-(::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial) = sparse_coefficients(a * b)
+function (::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
+    return sparse_coefficients(a * b)
+end
 
 SA.coeffs(p::Polynomial{Monomial}, ::FullBasis{Monomial}) = p.monomial
 
@@ -278,10 +280,7 @@ function MP.polynomial_type(
     return MP.polynomial_type(FullBasis{B,M}, T)
 end
 
-function MP.polynomial_type(
-    ::Type{Polynomial{B,M}},
-    ::Type{T},
-) where {B,M,T}
+function MP.polynomial_type(::Type{Polynomial{B,M}}, ::Type{T}) where {B,M,T}
     return MP.polynomial_type(FullBasis{B,M}, T)
 end
 
@@ -366,15 +365,16 @@ end
 
 _promote_coef(::Type{T}, ::Type{Monomial}) where {T} = T
 
-function MP.polynomial_type(
-    ::Type{FullBasis{B,M}},
-    ::Type{T},
-) where {T,B,M}
+function MP.polynomial_type(::Type{FullBasis{B,M}}, ::Type{T}) where {T,B,M}
     return MP.polynomial_type(M, _promote_coef(T, B))
 end
 
 # Adapted from SA to incorporate `_promote_coef`
-function SA.coeffs(cfs, source::MonomialIndexedBasis{B}, target::MonomialIndexedBasis{Monomial}) where {B}
+function SA.coeffs(
+    cfs,
+    source::MonomialIndexedBasis{B},
+    target::MonomialIndexedBasis{Monomial},
+) where {B}
     source === target && return cfs
     source == target && return cfs
     res = SA.zero_coeffs(_promote_coef(valtype(cfs), B), target)

@@ -11,8 +11,14 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     full_basis = FullBasis{B,M}()
     for basis in [
         maxdegree_basis(full_basis, x, degree),
-        explicit_basis_covering(full_basis, MB.SubBasis{MB.Monomial}(monomials(x, 0:degree))),
-        explicit_basis_covering(full_basis, MB.SubBasis{ScaledMonomial}(monomials(x, 0:degree))),
+        explicit_basis_covering(
+            full_basis,
+            MB.SubBasis{MB.Monomial}(monomials(x, 0:degree)),
+        ),
+        explicit_basis_covering(
+            full_basis,
+            MB.SubBasis{ScaledMonomial}(monomials(x, 0:degree)),
+        ),
     ]
         @test basis isa MB.explicit_basis_type(typeof(full_basis))
         n = binomial(2 + degree, 2)
@@ -115,7 +121,10 @@ function coefficient_test(
 )
     @polyvar x y
     p = x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2 + 1
-    basis = explicit_basis_covering(FullBasis{B,typeof(x * y)}(), SubBasis{MB.Monomial}(monomials(p)))
+    basis = explicit_basis_covering(
+        FullBasis{B,typeof(x * y)}(),
+        SubBasis{MB.Monomial}(monomials(p)),
+    )
     coefficient_test(basis, p, coefs; kwargs...)
     return
 end

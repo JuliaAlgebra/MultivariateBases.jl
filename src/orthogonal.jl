@@ -176,7 +176,8 @@ function MP.coefficients(
     return map(basis) do el
         q = SA.coeffs(el, FullBasis{Monomial,M}())
         poly_q = MP.polynomial(q)
-        return LinearAlgebra.dot(poly_p, poly_q, B) / LinearAlgebra.dot(poly_q, poly_q, B)
+        return LinearAlgebra.dot(poly_p, poly_q, B) /
+               LinearAlgebra.dot(poly_q, poly_q, B)
     end
 end
 

@@ -6,7 +6,9 @@ _promote_div(::Type{T}) where {T<:Number} = MA.promote_operation(/, T, Int)
 # which does not support division with `Int`
 _promote_div(::Type{F}) where {F} = F
 
-_promote_coef(::Type{T}, ::Type{<:AbstractChebyshev}) where {T} = _promote_div(T)
+function _promote_coef(::Type{T}, ::Type{<:AbstractChebyshev}) where {T}
+    return _promote_div(T)
+end
 
 reccurence_first_coef(::Type{<:AbstractChebyshev}, degree) = 2
 reccurence_third_coef(::Type{<:AbstractChebyshev}, degree) = -1
@@ -106,11 +108,7 @@ function SA.coeffs(
     )
 end
 
-function SA.coeffs(
-    cfs,
-    ::FullBasis{Monomial},
-    target::FullBasis{Chebyshev},
-)
+function SA.coeffs(cfs, ::FullBasis{Monomial}, target::FullBasis{Chebyshev})
     return SA.coeffs(
         SA.values(cfs),
         SubBasis{Monomial}(collect(SA.keys(cfs))),

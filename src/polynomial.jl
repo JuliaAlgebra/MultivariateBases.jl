@@ -92,7 +92,7 @@ end
 function Base.:*(a::Polynomial{B}, b::Polynomial{B}) where {B}
     return algebra_element(
         Mul{B}()(a.monomial, b.monomial),
-        FullBasis{B,promote_type(typeof(a.monomial),typeof(b.monomial))}(),
+        FullBasis{B,promote_type(typeof(a.monomial), typeof(b.monomial))}(),
     )
 end
 

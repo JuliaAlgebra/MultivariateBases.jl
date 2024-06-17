@@ -15,19 +15,11 @@ function MP.coefficients(p, basis::QuotientBasis)
     return MP.coefficients(rem(p, basis.divisor), basis.basis)
 end
 
-function SA.coeffs(
-    p,
-    ::FullBasis{Monomial},
-    basis::QuotientBasis,
-)
+function SA.coeffs(p, ::FullBasis{Monomial}, basis::QuotientBasis)
     return MP.coefficients(MP.polynomial(p), basis)
 end
 
-function SA.coeffs(
-    coeffs,
-    sub::SubBasis{Monomial},
-    basis::QuotientBasis,
-)
+function SA.coeffs(coeffs, sub::SubBasis{Monomial}, basis::QuotientBasis)
     return SA.coeffs(MP.polynomial(coeffs, sub.monomials), parent(sub), basis)
 end
 
