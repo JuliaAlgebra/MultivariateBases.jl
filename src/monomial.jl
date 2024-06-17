@@ -166,7 +166,7 @@ function sparse_coefficients(p::MP.AbstractPolynomial)
     return SA.SparseCoefficients(MP.monomials(p), MP.coefficients(p))
 end
 
-function sparse_coefficients(t::MP.AbstractTerm)
+function sparse_coefficients(t::MP.AbstractTermLike)
     return SA.SparseCoefficients((MP.monomial(t),), (MP.coefficient(t),))
 end
 
@@ -183,13 +183,6 @@ function algebra_element(p::MP.AbstractPolynomialLike)
     return algebra_element(
         sparse_coefficients(p),
         FullBasis{Monomial,MP.monomial_type(p)}(),
-    )
-end
-
-function algebra_element(p::Polynomial{B,M}) where {B,M}
-    return algebra_element(
-        sparse_coefficients(MP.term(1, p.monomial)),
-        FullBasis{B,M}(),
     )
 end
 

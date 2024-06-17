@@ -26,10 +26,6 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         @test length(empty_basis(typeof(basis))) == 0
         @test polynomial_type(basis, Float64) == polynomial_type(x[1], Float64)
         @test polynomial(i -> 0.0, basis) isa polynomial_type(basis, Float64)
-        @test polynomial(zeros(n, n), basis, Float64) isa
-              polynomial_type(basis, Float64)
-        @test polynomial(ones(n, n), basis, Float64) isa
-              polynomial_type(basis, Float64)
     end
 end
 
@@ -99,7 +95,7 @@ end
 function coefficient_test(basis::SubBasis, p, coefs; kwargs...)
     cc = coefficients(p, basis)
     @test isapprox(coefs, cc; kwargs...)
-    @test isapprox(p, polynomial(cc, basis); kwargs...)
+    @test isapprox(p, algebra_element(cc, basis); kwargs...)
 end
 
 function coefficient_test(basis::SubBasis, coefs::AbstractVector; kwargs...)

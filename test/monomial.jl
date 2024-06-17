@@ -8,8 +8,8 @@ using DynamicPolynomials
     @polyvar x
     a = MB.Polynomial{MB.Monomial}(x)
     b = a * a
-    @test b.coeffs == x^2
-    @test typeof(b.coeffs) == typeof(x^2)
+    @test b.coeffs == sparse_coefficients(x^2)
+    @test typeof(b.coeffs) == typeof(sparse_coefficients(x^2))
     @test MB.Polynomial{MB.Monomial}(x^2) == MB.Polynomial{MB.Monomial}(x^2)
     @test MB.Polynomial{MB.Monomial}(x^3) != MB.Polynomial{MB.Monomial}(x^2)
 end

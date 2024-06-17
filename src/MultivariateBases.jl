@@ -40,7 +40,7 @@ export AbstractMultipleOrthogonal,
     ProbabilistsHermite, PhysicistsHermite, Laguerre
 export AbstractGegenbauer,
     Legendre, Chebyshev, ChebyshevFirstKind, ChebyshevSecondKind
-export generators,
+export algebra_element, sparse_coefficients,
     univariate_orthogonal_basis,
     reccurence_first_coef,
     reccurence_second_coef,

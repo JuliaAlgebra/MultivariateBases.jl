@@ -72,16 +72,17 @@ MP.variables(p::Polynomial) = MP.variables(p.monomial)
 MP.nvariables(p::Polynomial) = MP.nvariables(p.monomial)
 
 MP.monomial_type(::Type{<:SA.SparseCoefficients{K}}) where {K} = K
+MP.polynomial(p::Polynomial) = MP.polynomial(algebra_element(p))
 
 function algebra_element(p, basis::SA.AbstractBasis)
     return SA.AlgebraElement(p, algebra(basis))
 end
 
 function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
-    return algebra_element(p, FullBasis{B,MP.monomial_type(typeof(p))}())
+    return algebra_element(sparse_coefficients(p), FullBasis{B,MP.monomial_type(typeof(p))}())
 end
 
-function _algebra_element(p::Polynomial{B,M}) where {B,M}
+function algebra_element(p::Polynomial{B,M}) where {B,M}
     return _algebra_element(p.monomial, B)
 end
 
@@ -151,7 +152,7 @@ function MA.operate_to!(
 end
 
 function MP.polynomial(a::SA.AbstractCoefficients)
-    return MP.polynomial(SA.values(a), SA.keys(a))
+    return MP.polynomial(collect(SA.values(a)), collect(SA.keys(a)))
 end
 
 function MP.polynomial(a::SA.AlgebraElement)
