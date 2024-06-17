@@ -23,8 +23,6 @@ function MP.polynomial_type(::Type{<:Algebra{B}}, ::Type{T}) where {B,T}
     return MP.polynomial_type(B, T)
 end
 SA.basis(a::Algebra) = a.basis
-# Is this needed ?
-#MA.promote_operation(::typeof(SA.basis), ::Type{<:Algebra{B}}) where {B} = B
 
 #Base.:(==)(::Algebra{BT1,B1,M}, ::Algebra{BT2,B2,M}) where {BT1,B1,BT2,B2,M} = true
 #Base.:(==)(::Algebra, ::Algebra) = false
