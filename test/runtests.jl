@@ -1,5 +1,7 @@
 using Test
 
+import MutableArithmetics as MA
+import StarAlgebras as SA
 using MultivariateBases
 const MB = MultivariateBases
 using LinearAlgebra
@@ -9,11 +11,30 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
     M = typeof(prod(x))
     full_basis = FullBasis{B,M}()
+    @test sprint(show, MB.algebra(full_basis)) ==
+          "Polynomial algebra of $B basis"
+    @test typeof(MB.algebra(full_basis)) ==
+          MA.promote_operation(MB.algebra, typeof(full_basis))
     for basis in [
         maxdegree_basis(full_basis, x, degree),
-        basis_covering_monomials(full_basis, monomials(x, 0:degree)),
+        explicit_basis_covering(
+            full_basis,
+            MB.SubBasis{MB.Monomial}(monomials(x, 0:degree)),
+        ),
+        explicit_basis_covering(
+            full_basis,
+            MB.SubBasis{ScaledMonomial}(monomials(x, 0:degree)),
+        ),
     ]
+        @test typeof(MB.algebra(basis)) ==
+              MA.promote_operation(MB.algebra, typeof(basis))
         @test basis isa MB.explicit_basis_type(typeof(full_basis))
+        for i in eachindex(basis)
+            mono = basis.monomials[i]
+            poly = MB.Polynomial{B}(mono)
+            @test basis[i] == poly
+            @test basis[poly] == i
+        end
         n = binomial(2 + degree, 2)
         @test length(basis) == n
         @test firstindex(basis) == 1
@@ -25,12 +46,32 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         @test typeof(empty_basis(typeof(basis))) == typeof(basis)
         @test length(empty_basis(typeof(basis))) == 0
         @test polynomial_type(basis, Float64) == polynomial_type(x[1], Float64)
-        @test polynomial(i -> 0.0, basis) isa polynomial_type(basis, Float64)
-        @test polynomial(zeros(n, n), basis, Float64) isa
-              polynomial_type(basis, Float64)
-        @test polynomial(ones(n, n), basis, Float64) isa
-              polynomial_type(basis, Float64)
+        #@test polynomial(i -> 0.0, basis) isa polynomial_type(basis, Float64)
     end
+    mono = x[1]^2 * x[2]^3
+    p = MB.Polynomial{B}(mono)
+    @test full_basis[p] == mono
+    @test full_basis[mono] == p
+    @test polynomial_type(mono, String) == polynomial_type(typeof(p), String)
+    a = MB.algebra_element(p)
+    @test typeof(polynomial(a)) == polynomial_type(typeof(a))
+    @test typeof(polynomial(a)) == polynomial_type(typeof(p), Int)
+    @test a ≈ a
+    if B == MB.Monomial
+        @test a ≈ p.monomial
+        @test p.monomial ≈ a
+    else
+        @test !(a ≈ p.monomial)
+        @test !(p.monomial ≈ a)
+    end
+    _wrap(s) = (B == MB.Monomial ? s : "$B($s)")
+    @test sprint(show, p) == _wrap(sprint(show, p.monomial))
+    @test sprint(print, p) == _wrap(sprint(print, p.monomial))
+    mime = MIME"text/latex"()
+    @test sprint(show, mime, p) ==
+          "\$\$ " *
+          _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, p.monomial))) *
+          " \$\$"
 end
 
 function univ_orthogonal_test(
@@ -67,10 +108,10 @@ function orthogonal_test(
         end
     end
 
-    @testset "basis_covering_monomials" begin
-        basis = basis_covering_monomials(
+    @testset "explicit_basis_covering" begin
+        basis = explicit_basis_covering(
             FullBasis{B,typeof(x * y)}(),
-            monomial_vector([x^2 * y, y^2]),
+            SubBasis{MB.Monomial}(monomial_vector([x^2 * y, y^2])),
         )
         if even_odd_separated
             exps = [(0, 0), (0, 1), (0, 2), (2, 1)]
@@ -81,9 +122,9 @@ function orthogonal_test(
             @test polynomial(basis[i]) ==
                   univariate_x[exps[i][1]+1] * univariate_y[exps[i][2]+1]
         end
-        basis = basis_covering_monomials(
+        basis = explicit_basis_covering(
             FullBasis{B,typeof(x^2)}(),
-            monomial_vector([x^4, x^2, x]),
+            SubBasis{MB.Monomial}(monomial_vector([x^4, x^2, x])),
         )
         if even_odd_separated
             exps = [0, 1, 2, 4]
@@ -99,7 +140,7 @@ end
 function coefficient_test(basis::SubBasis, p, coefs; kwargs...)
     cc = coefficients(p, basis)
     @test isapprox(coefs, cc; kwargs...)
-    @test isapprox(p, polynomial(cc, basis); kwargs...)
+    @test isapprox(p, algebra_element(cc, basis); kwargs...)
 end
 
 function coefficient_test(basis::SubBasis, coefs::AbstractVector; kwargs...)
@@ -118,7 +159,10 @@ function coefficient_test(
 )
     @polyvar x y
     p = x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2 + 1
-    basis = basis_covering_monomials(FullBasis{B,typeof(x * y)}(), monomials(p))
+    basis = explicit_basis_covering(
+        FullBasis{B,typeof(x * y)}(),
+        SubBasis{MB.Monomial}(monomials(p)),
+    )
     coefficient_test(basis, p, coefs; kwargs...)
     return
 end

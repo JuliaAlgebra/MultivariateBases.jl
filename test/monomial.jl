@@ -8,8 +8,8 @@ using DynamicPolynomials
     @polyvar x
     a = MB.Polynomial{MB.Monomial}(x)
     b = a * a
-    @test b.coeffs == x^2
-    @test typeof(b.coeffs) == typeof(x^2)
+    @test b.coeffs == sparse_coefficients(x^2)
+    @test typeof(b.coeffs) == typeof(sparse_coefficients(x^2))
     @test MB.Polynomial{MB.Monomial}(x^2) == MB.Polynomial{MB.Monomial}(x^2)
     @test MB.Polynomial{MB.Monomial}(x^3) != MB.Polynomial{MB.Monomial}(x^2)
 end
@@ -65,6 +65,18 @@ end
     @test basis.monomials == [y^2, x * y, x^2]
     @test I1 == [1, 0, 2]
     @test I2 == [1, 2, 0]
+    for i in eachindex(basis)
+        mono = basis.monomials[i]
+        @test monomial_index(basis, mono) == i
+        for (I, b) in [(I1, basis1), (I2, basis2)]
+            idx = monomial_index(b, basis.monomials[i])
+            if iszero(I[i])
+                @test isnothing(idx)
+            else
+                @test idx == I[i]
+            end
+        end
+    end
 end
 
 @testset "API degree = $degree" for degree in 0:3

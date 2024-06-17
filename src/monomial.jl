@@ -64,6 +64,8 @@ function Base.getindex(basis::SubBasis{B,M}, value::Polynomial{B,M}) where {B,M}
     return mono
 end
 
+const MonomialIndexedBasis{B,M} = Union{SubBasis{B,M},FullBasis{B,M}}
+
 MP.monomial_type(::Type{<:SubBasis{B,M}}) where {B,M} = M
 
 # The `i`th index of output is the index of occurence of `x[i]` in `y`,
@@ -116,8 +118,28 @@ end
 
 Base.:(==)(a::SubBasis, b::SubBasis) = a.monomials == b.monomials
 
-function _algebra(basis::Union{FullBasis{B,M},SubBasis{B,M}}) where {B,M}
-    return SA.StarAlgebra(Polynomial{B}(MP.constant_monomial(M)), basis)
+function algebra_type(::Type{BT}) where {B,M,BT<:MonomialIndexedBasis{B,M}}
+    return Algebra{BT,B,M}
+end
+
+implicit_basis(::SubBasis{B,M}) where {B,M} = FullBasis{B,M}()
+implicit_basis(basis::FullBasis) = basis
+
+function MA.promote_operation(
+    ::typeof(implicit_basis),
+    ::Type{<:Union{FullBasis{B,M},SubBasis{B,M}}},
+) where {B,M}
+    return FullBasis{B,M}
+end
+
+function _explicit_basis(coeffs, ::FullBasis{B}) where {B}
+    return SubBasis{B}(SA.keys(coeffs))
+end
+
+_explicit_basis(_, basis::SubBasis) = basis
+
+function explicit_basis(a::SA.AlgebraElement)
+    return _explicit_basis(SA.coeffs(a), SA.basis(a))
 end
 
 function explicit_basis_type(::Type{FullBasis{B,M}}) where {B,M}
@@ -138,47 +160,53 @@ function maxdegree_basis(
     return unsafe_basis(B, MP.monomials(variables, 0:maxdegree))
 end
 
-function MP.polynomial(coefs::Vector, basis::SubBasis)
-    return MP.polynomial(Base.Fix1(getindex, coefs), basis)
+MP.variables(c::SA.AbstractCoefficients) = MP.variables(SA.keys(c))
+
+function sparse_coefficients(p::MP.AbstractPolynomial)
+    return SA.SparseCoefficients(MP.monomials(p), MP.coefficients(p))
 end
 
-function MP.polynomial(f::Function, basis::SubBasis)
-    if isempty(basis)
-        return zero(MP.polynomial_type(basis))
-    else
-        return MP.polynomial(
-            mapreduce(
-                ip -> f(ip[1]) * MP.polynomial(ip[2]),
-                MA.add!!,
-                enumerate(basis),
-            ),
-        )
-    end
+function sparse_coefficients(t::MP.AbstractTermLike)
+    return SA.SparseCoefficients((MP.monomial(t),), (MP.coefficient(t),))
 end
 
-_convert(::Type{P}, p) where {P} = convert(P, p)
-_convert(::Type{P}, ::MA.Zero) where {P} = zero(P)
+function MA.promote_operation(
+    ::typeof(sparse_coefficients),
+    ::Type{P},
+) where {P<:MP.AbstractPolynomialLike}
+    M = MP.monomial_type(P)
+    T = MP.coefficient_type(P)
+    return SA.SparseCoefficients{M,T,MP.monomial_vector_type(M),Vector{T}}
+end
 
-function MP.polynomial(Q::AbstractMatrix, basis::SubBasis, ::Type{T}) where {T}
-    n = length(basis)
-    @assert size(Q) == (n, n)
-    PT = MP.polynomial_type(eltype(basis), T)
-    return _convert(
-        PT,
-        mapreduce(
-            row -> begin
-                adjoint(MP.polynomial(basis[row])) * mapreduce(
-                    col -> Q[row, col] * MP.polynomial(basis[col]),
-                    MA.add!!,
-                    1:n;
-                    init = MA.Zero(),
-                )
-            end,
-            MA.add!!,
-            1:n;
-            init = MA.Zero(),
+function algebra_element(p::MP.AbstractPolynomialLike)
+    return algebra_element(
+        sparse_coefficients(p),
+        FullBasis{Monomial,MP.monomial_type(p)}(),
+    )
+end
+
+function algebra_element(f::Function, basis::SubBasis)
+    return algebra_element(map(f, eachindex(basis)), basis)
+end
+
+function constant_algebra_element(
+    ::Type{FullBasis{B,M}},
+    ::Type{T},
+) where {B,M,T}
+    return algebra_element(
+        sparse_coefficients(
+            MP.polynomial(MP.term(one(T), MP.constant_monomial(M))),
         ),
-    )::PT
+        FullBasis{B,M}(),
+    )
+end
+
+function constant_algebra_element(
+    ::Type{<:SubBasis{B,M}},
+    ::Type{T},
+) where {B,M,T}
+    return algebra_element([one(T)], SubBasis{B}([MP.constant_monomial(M)]))
 end
 
 function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
@@ -215,11 +243,15 @@ end
 
 abstract type AbstractMonomial <: AbstractMonomialIndexed end
 
-function basis_covering_monomials(
+function explicit_basis_covering(
     ::FullBasis{B},
-    monos::AbstractVector,
+    target::SubBasis{<:AbstractMonomial},
 ) where {B<:AbstractMonomial}
-    return SubBasis{B}(monos)
+    return SubBasis{B}(target.monomials)
+end
+
+function Base.adjoint(p::Polynomial{B}) where {B<:AbstractMonomialIndexed}
+    return Polynomial{B}(adjoint(p.monomial))
 end
 
 """
@@ -235,9 +267,11 @@ one get ths [`ScaledMonomial`](@ref).
 """
 struct Monomial <: AbstractMonomial end
 
-(::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial) = a * b
+function (::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
+    return sparse_coefficients(a * b)
+end
 
-MP.polynomial(p::Polynomial{Monomial}) = MP.polynomial(p.monomial)
+SA.coeffs(p::Polynomial{Monomial}, ::FullBasis{Monomial}) = p.monomial
 
 function MP.polynomial_type(
     ::Union{SubBasis{B,M},Type{<:SubBasis{B,M}}},
@@ -246,15 +280,8 @@ function MP.polynomial_type(
     return MP.polynomial_type(FullBasis{B,M}, T)
 end
 
-function MP.polynomial_type(::Type{FullBasis{B,M}}, ::Type{T}) where {B,M,T}
-    return MP.polynomial_type(Polynomial{B,M}, T)
-end
-
-function MP.polynomial_type(
-    ::Type{Polynomial{Monomial,M}},
-    ::Type{T},
-) where {M,T}
-    return MP.polynomial_type(M, T)
+function MP.polynomial_type(::Type{Polynomial{B,M}}, ::Type{T}) where {B,M,T}
+    return MP.polynomial_type(FullBasis{B,M}, T)
 end
 
 function MP.polynomial(f::Function, mb::SubBasis{Monomial})
@@ -276,6 +303,52 @@ function MP.coefficients(p::MP.AbstractPolynomialLike, ::FullBasis{Monomial})
     return p
 end
 
+function _assert_constant(α) end
+
+function _assert_constant(
+    x::Union{Polynomial,SA.AlgebraElement,MP.AbstractPolynomialLike},
+)
+    return error("Expected constant element, got type `$(typeof(x))`")
+end
+
+#function MA.operate!(::SA.UnsafeAddMul{<:Mul{Monomial}}, p::MP.AbstractPolynomial, args::Vararg{Any,N}) where {N}
+#    return MA.operate!(MA.add_mul, p, args...)
+#end
+
+#function MA.operate!(
+#    ::SA.UnsafeAddMul{Mul{B}},
+#    res::SA.AbstractCoefficients,
+#    v::SA.AbstractCoefficients,
+#    w::SA.AbstractCoefficients,
+#) where {B<:MB.AbstractMonomial}
+#    for (kv, a) in nonzero_pairs(v)
+#        for (kw, b) in nonzero_pairs(w)
+#            SA.unsafe_push!(res, kv * kw, a * b)
+#            c = ms.structure(kv, kw)
+#            for (k, v) in nonzero_pairs(c)
+#            end
+#        end
+#    end
+#    return res
+#end
+
+#function MA.operate!(op::SA.UnsafeAddMul{Mul{B}}, a::SA.AbstractCoefficients, α, b::SA.AbstractCoefficients) where {B<:MB.AbstractMonomial}
+#    for
+#    MA.operate!(op, a, α, Polynomial{Monomial}(x.monomial * y.monomial * z.monomial))
+#    return a
+#end
+
+function MA.operate!(
+    ::SA.UnsafeAddMul{typeof(*)},
+    a::SA.AlgebraElement{<:Algebra{<:MonomialIndexedBasis,Monomial}},
+    α,
+    x::Polynomial{Monomial},
+)
+    _assert_constant(α)
+    SA.unsafe_push!(a, x, α)
+    return a
+end
+
 # Overload some of the `MP` interface for convenience
 MP.mindegree(basis::SubBasis{Monomial}) = MP.mindegree(basis.monomials)
 MP.maxdegree(basis::SubBasis) = MP.maxdegree(basis.monomials)
@@ -288,4 +361,22 @@ function MP.maxdegree(basis::SubBasis, v)
 end
 function MP.extdegree(basis::SubBasis{Monomial}, v)
     return MP.extdegree(basis.monomials, v)
+end
+
+_promote_coef(::Type{T}, ::Type{Monomial}) where {T} = T
+
+function MP.polynomial_type(::Type{FullBasis{B,M}}, ::Type{T}) where {T,B,M}
+    return MP.polynomial_type(M, _promote_coef(T, B))
+end
+
+# Adapted from SA to incorporate `_promote_coef`
+function SA.coeffs(
+    cfs,
+    source::MonomialIndexedBasis{B},
+    target::MonomialIndexedBasis{Monomial},
+) where {B}
+    source === target && return cfs
+    source == target && return cfs
+    res = SA.zero_coeffs(_promote_coef(valtype(cfs), B), target)
+    return SA.coeffs!(res, cfs, source, target)
 end

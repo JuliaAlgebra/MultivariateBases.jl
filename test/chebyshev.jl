@@ -6,9 +6,12 @@ using DynamicPolynomials
     @polyvar x
     a = MB.Polynomial{MB.Chebyshev}(x)
     b = a * a
-    @test b.coeffs == 1 // 2 + 1 // 2 * x^2
+    @test b.coeffs == MB.sparse_coefficients(1 // 2 + 1 // 2 * x^2)
     c = b * b
-    @test c.coeffs == 3 // 8 + 1 // 2 * x^2 + 1 // 8 * x^4
+    @test c.coeffs ==
+          MB.sparse_coefficients(3 // 8 + 1 // 2 * x^2 + 1 // 8 * x^4)
+    @test a * MB.Polynomial{MB.Chebyshev}(constant_monomial(typeof(x))) ==
+          a * MB.Polynomial{MB.Chebyshev}(x^0)
 end
 
 @testset "Orthogonal" begin

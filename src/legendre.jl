@@ -15,12 +15,7 @@ Orthogonal polynomial with respect to the univariate weight function ``w(x) = 1`
 """
 struct Legendre <: AbstractGegenbauer end
 
-function MP.polynomial_type(
-    ::Type{Polynomial{Legendre,M}},
-    ::Type{T},
-) where {M,T}
-    return MP.polynomial_type(M, float(T))
-end
+_promote_coef(::Type{T}, ::Type{<:Legendre}) where {T} = _float(T)
 
 reccurence_first_coef(::Type{Legendre}, degree) = (2degree - 1)
 reccurence_third_coef(::Type{Legendre}, degree) = -(degree - 1)

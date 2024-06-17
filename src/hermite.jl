@@ -1,11 +1,6 @@
 abstract type AbstractHermite <: AbstractMultipleOrthogonal end
 
-function MP.polynomial_type(
-    ::Type{Polynomial{B,M}},
-    ::Type{T},
-) where {B<:AbstractHermite,M,T}
-    return MP.polynomial_type(M, float(T))
-end
+_promote_coef(::Type{T}, ::Type{<:AbstractHermite}) where {T} = _float(T)
 
 even_odd_separated(::Type{<:AbstractHermite}) = true
 
