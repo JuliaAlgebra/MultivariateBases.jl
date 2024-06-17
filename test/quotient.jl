@@ -19,7 +19,7 @@ end
     coeffs = [3, -2, 1]
     @test coefficients(p, basis) == coeffs
     a = MB.algebra_element(p)
-    @test StarAlgebras.coeffs(a, basis) == coeffs
+    @test SA.coeffs(a, basis) == coeffs
     explicit = MB.explicit_basis(a)
     exp = MB.algebra_element(SA.coeffs(a, explicit), explicit)
     @test SA.coeffs(exp, basis) == coeffs

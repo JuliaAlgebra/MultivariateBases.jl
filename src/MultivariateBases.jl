@@ -65,14 +65,13 @@ function algebra(
     return Algebra{typeof(basis),B,M}(basis)
 end
 
-# Needed ?
-#function MA.promote_operation(
-#    ::typeof(algebra),
-#    BT::Type{
-#        <:Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
-#    },
-#) where {B,M}
-#    return Algebra{BT,B,M}
-#end
+function MA.promote_operation(
+    ::typeof(algebra),
+    BT::Type{
+        <:Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
+    },
+) where {B,M}
+    return Algebra{BT,B,M}
+end
 
 end # module
