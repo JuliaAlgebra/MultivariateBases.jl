@@ -18,7 +18,7 @@ end
 function SA.coeffs(
     p,
     ::FullBasis{Monomial},
-    basis::Union{QuotientBasis,SubBasis},
+    basis::QuotientBasis,
 )
     return MP.coefficients(MP.polynomial(p), basis)
 end
@@ -26,7 +26,7 @@ end
 function SA.coeffs(
     coeffs,
     sub::SubBasis{Monomial},
-    basis::Union{MonomialIndexedBasis,QuotientBasis},
+    basis::QuotientBasis,
 )
     return SA.coeffs(MP.polynomial(coeffs, sub.monomials), parent(sub), basis)
 end

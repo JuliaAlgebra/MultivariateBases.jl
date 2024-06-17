@@ -107,7 +107,7 @@ end
 
 function explicit_basis_covering(
     ::FullBasis{B,M},
-    monos::SubBasis{Monomial,M},
+    monos::SubBasis{<:AbstractMonomial,M},
 ) where {B<:AbstractMultipleOrthogonal,M}
     to_add = collect(monos.monomials)
     m = Set{M}(to_add)
@@ -172,9 +172,11 @@ function MP.coefficients(
     p,
     basis::SubBasis{B,M},
 ) where {B<:AbstractMultipleOrthogonal,M}
+    poly_p = MP.polynomial(p)
     return map(basis) do el
         q = SA.coeffs(el, FullBasis{Monomial,M}())
-        return LinearAlgebra.dot(p, q, B) / LinearAlgebra.dot(q, q, B)
+        poly_q = MP.polynomial(q)
+        return LinearAlgebra.dot(poly_p, poly_q, B) / LinearAlgebra.dot(poly_q, poly_q, B)
     end
 end
 

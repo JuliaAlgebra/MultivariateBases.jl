@@ -79,7 +79,10 @@ function algebra_element(p, basis::SA.AbstractBasis)
 end
 
 function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
-    return algebra_element(sparse_coefficients(p), FullBasis{B,MP.monomial_type(typeof(p))}())
+    return algebra_element(
+        sparse_coefficients(p),
+        FullBasis{B,MP.monomial_type(typeof(p))}(),
+    )
 end
 
 function algebra_element(p::Polynomial{B,M}) where {B,M}
@@ -87,7 +90,10 @@ function algebra_element(p::Polynomial{B,M}) where {B,M}
 end
 
 function Base.:*(a::Polynomial{B}, b::Polynomial{B}) where {B}
-    return _algebra_element(Mul{B}()(a.monomial, b.monomial), B)
+    return algebra_element(
+        Mul{B}()(a.monomial, b.monomial),
+        FullBasis{B,promote_type(typeof(a.monomial),typeof(b.monomial))}(),
+    )
 end
 
 function Base.:*(a::Polynomial{B}, b::SA.AlgebraElement) where {B}

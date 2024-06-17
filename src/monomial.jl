@@ -243,11 +243,11 @@ end
 
 abstract type AbstractMonomial <: AbstractMonomialIndexed end
 
-function basis_covering_monomials(
+function explicit_basis_covering(
     ::FullBasis{B},
-    monos::AbstractVector,
+    target::SubBasis{<:AbstractMonomial},
 ) where {B<:AbstractMonomial}
-    return SubBasis{B}(monos)
+    return SubBasis{B}(target.monomials)
 end
 
 function Base.adjoint(p::Polynomial{B}) where {B<:AbstractMonomialIndexed}
@@ -267,7 +267,7 @@ one get ths [`ScaledMonomial`](@ref).
 """
 struct Monomial <: AbstractMonomial end
 
-(::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial) = a * b
+(::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial) = sparse_coefficients(a * b)
 
 SA.coeffs(p::Polynomial{Monomial}, ::FullBasis{Monomial}) = p.monomial
 
@@ -278,15 +278,11 @@ function MP.polynomial_type(
     return MP.polynomial_type(FullBasis{B,M}, T)
 end
 
-function MP.polynomial_type(::Type{FullBasis{B,M}}, ::Type{T}) where {B,M,T}
-    return MP.polynomial_type(Polynomial{B,M}, T)
-end
-
 function MP.polynomial_type(
-    ::Type{Polynomial{Monomial,M}},
+    ::Type{Polynomial{B,M}},
     ::Type{T},
-) where {M,T}
-    return MP.polynomial_type(M, T)
+) where {B,M,T}
+    return MP.polynomial_type(FullBasis{B,M}, T)
 end
 
 function MP.polynomial(f::Function, mb::SubBasis{Monomial})
@@ -366,4 +362,21 @@ function MP.maxdegree(basis::SubBasis, v)
 end
 function MP.extdegree(basis::SubBasis{Monomial}, v)
     return MP.extdegree(basis.monomials, v)
+end
+
+_promote_coef(::Type{T}, ::Type{Monomial}) where {T} = T
+
+function MP.polynomial_type(
+    ::Type{FullBasis{B,M}},
+    ::Type{T},
+) where {T,B,M}
+    return MP.polynomial_type(M, _promote_coef(T, B))
+end
+
+# Adapted from SA to incorporate `_promote_coef`
+function SA.coeffs(cfs, source::MonomialIndexedBasis{B}, target::MonomialIndexedBasis{Monomial}) where {B}
+    source === target && return cfs
+    source == target && return cfs
+    res = SA.zero_coeffs(_promote_coef(valtype(cfs), B), target)
+    return SA.coeffs!(res, cfs, source, target)
 end

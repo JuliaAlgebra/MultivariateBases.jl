@@ -7,12 +7,7 @@ struct Laguerre <: AbstractMultipleOrthogonal end
 
 # TODO implement multiplication with https://www.jstor.org/stable/2002985
 
-function MP.polynomial_type(
-    ::Type{Polynomial{Laguerre,M}},
-    ::Type{T},
-) where {M,T}
-    return MP.polynomial_type(M, float(T))
-end
+_promote_coef(::Type{T}, ::Type{<:Laguerre}) where {T} = _float(T)
 
 even_odd_separated(::Type{Laguerre}) = false
 

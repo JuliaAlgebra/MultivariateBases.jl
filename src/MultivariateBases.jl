@@ -5,7 +5,7 @@ import StarAlgebras as SA
 import MultivariatePolynomials as MP
 
 export AbstractPolynomialBasis, FullBasis, SubBasis
-export maxdegree_basis, basis_covering_monomials, empty_basis
+export maxdegree_basis, explicit_basis_covering, empty_basis
 include("interface.jl")
 
 export AbstractMonomialIndexed, Monomial, ScaledMonomial
@@ -40,7 +40,8 @@ export AbstractMultipleOrthogonal,
     ProbabilistsHermite, PhysicistsHermite, Laguerre
 export AbstractGegenbauer,
     Legendre, Chebyshev, ChebyshevFirstKind, ChebyshevSecondKind
-export algebra_element, sparse_coefficients,
+export algebra_element,
+    sparse_coefficients,
     univariate_orthogonal_basis,
     reccurence_first_coef,
     reccurence_second_coef,

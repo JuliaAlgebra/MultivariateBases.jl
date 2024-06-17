@@ -48,12 +48,13 @@ function SA.coeffs(p::Polynomial{ScaledMonomial}, ::FullBasis{Monomial})
     return scaling(p.monomial) * p.monomial
 end
 
-function MP.polynomial_type(
-    ::Type{FullBasis{ScaledMonomial,M}},
-    T::Type,
-) where {M}
-    return MP.polynomial_type(M, float(T))
-end
+_float(::Type{T}) where {T<:Number} = float(T)
+# Could be for instance `MathOptInterface.ScalarAffineFunction{Float64}`
+# which does not implement `float`
+_float(::Type{F}) where {F} = F
+
+_promote_coef(::Type{T}, ::Type{ScaledMonomial}) where {T} = _float(T)
+
 function MP.polynomial(f::Function, basis::SubBasis{ScaledMonomial})
     return MP.polynomial(
         i -> scaling(basis.monomials[i]) * f(i),

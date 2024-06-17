@@ -13,7 +13,7 @@ based on the [MultivariatePolynomials](https://github.com/JuliaAlgebra/Multivari
 ```@docs
 AbstractPolynomialBasis
 maxdegree_basis
-basis_covering_monomials
+explicit_basis_covering
 ```
 
 ## Monomial basis
