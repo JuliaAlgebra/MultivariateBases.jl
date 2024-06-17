@@ -62,7 +62,10 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @test sprint(show, p) == _wrap(sprint(show, p.monomial))
     @test sprint(print, p) == _wrap(sprint(print, p.monomial))
     mime = MIME"text/latex"()
-    @test sprint(show, mime, p) == "\$\$ " * _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, p.monomial))) * " \$\$"
+    @test sprint(show, mime, p) ==
+          "\$\$ " *
+          _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, p.monomial))) *
+          " \$\$"
 end
 
 function univ_orthogonal_test(
