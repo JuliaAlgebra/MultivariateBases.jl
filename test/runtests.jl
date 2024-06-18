@@ -54,7 +54,7 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @test full_basis[mono] == p
     @test polynomial_type(mono, String) == polynomial_type(typeof(p), String)
     a = MB.algebra_element(p)
-    @test MP.variables(a) == p
+    @test variables(a) == p
     @test typeof(polynomial(a)) == polynomial_type(typeof(a))
     @test typeof(polynomial(a)) == polynomial_type(typeof(p), Int)
     @test a ≈ a
