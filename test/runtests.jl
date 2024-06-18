@@ -54,7 +54,7 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @test full_basis[mono] == p
     @test polynomial_type(mono, String) == polynomial_type(typeof(p), String)
     a = MB.algebra_element(p)
-    @test variables(a) == p
+    @test variables(a) == x
     @test typeof(polynomial(a)) == polynomial_type(typeof(a))
     @test typeof(polynomial(a)) == polynomial_type(typeof(p), Int)
     @test a ≈ a
@@ -73,6 +73,11 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
           "\$\$ " *
           _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, p.monomial))) *
           " \$\$"
+    const_mono = constant_monomial(prod(x))
+    @test const_mono + MB.algebra_element(MB.Polynomial{B}(const_mono)) == 2
+    @test MB.algebra_element(MB.Polynomial{B}(const_mono)) + const_mono == 2
+    @test iszero(const_mono - MB.algebra_element(MB.Polynomial{B}(const_mono)))
+    @test iszero(MB.algebra_element(MB.Polynomial{B}(const_mono)) - const_mono)
 end
 
 function univ_orthogonal_test(

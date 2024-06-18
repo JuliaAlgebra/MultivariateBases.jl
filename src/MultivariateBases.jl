@@ -72,4 +72,13 @@ function MA.promote_operation(
     return Algebra{BT,B,M}
 end
 
+const _APL = MP.AbstractPolynomialLike
+# We don't define it for all `AlgebraElement` as this would be type piracy
+const _AE = SA.AlgebraElement{<:Algebra}
+
+Base.:(+)(p::_APL, q::_AE) = +(p, MP.polynomial(q))
+Base.:(+)(p::_AE, q::_APL) = +(MP.polynomial(p), q)
+Base.:(-)(p::_APL, q::_AE) = -(p, MP.polynomial(q))
+Base.:(-)(p::_AE, q::_APL) = -(MP.polynomial(p), q)
+
 end # module
