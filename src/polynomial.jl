@@ -1,5 +1,5 @@
 # TODO Add to MultivariatePolynomials
-MP.variables(p::SA.AlgebraElement) = MP.variables(SA.basis(p))
+MP.variables(p::SA.AlgebraElement) = MP.variables(explicit_basis(p))
 Base.keytype(p::MP.AbstractPolynomialLike) = MP.monomial_type(p)
 Base.valtype(p::MP.AbstractPolynomialLike) = MP.coefficient_type(p)
 #Base.keys(p::MP.AbstractPolynomial) = MP.monomials(p)

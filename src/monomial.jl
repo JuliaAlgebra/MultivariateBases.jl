@@ -112,6 +112,8 @@ function SubBasis{B}(
     )
 end
 
+SubBasis{B}(monos::Tuple) where {B} = SubBasis{B}([monos...])
+
 function Base.copy(basis::SubBasis)
     return typeof(basis)(copy(basis.monomials))
 end
