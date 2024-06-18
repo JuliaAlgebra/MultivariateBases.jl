@@ -78,6 +78,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @test MB.algebra_element(MB.Polynomial{B}(const_mono)) + const_mono == 2
     @test iszero(const_mono - MB.algebra_element(MB.Polynomial{B}(const_mono)))
     @test iszero(MB.algebra_element(MB.Polynomial{B}(const_mono)) - const_mono)
+    @test typeof(MB.sparse_coefficients(sum(x))) == MA.promote_operation(MB.sparse_coefficients, typeof(sum(x)))
+    @test typeof(MB.algebra_element(sum(x))) == MA.promote_operation(MB.algebra_element, typeof(sum(x)))
 end
 
 function univ_orthogonal_test(

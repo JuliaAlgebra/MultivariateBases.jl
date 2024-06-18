@@ -164,8 +164,14 @@ end
 
 MP.variables(c::SA.AbstractCoefficients) = MP.variables(SA.keys(c))
 
+_lazy_collect(v::AbstractVector) = collect(v)
+_lazy_collect(v::Vector) = v
+
 function sparse_coefficients(p::MP.AbstractPolynomial)
-    return SA.SparseCoefficients(MP.monomials(p), MP.coefficients(p))
+    return SA.SparseCoefficients(
+        _lazy_collect(MP.monomials(p)),
+        _lazy_collect(MP.coefficients(p)),
+    )
 end
 
 function sparse_coefficients(t::MP.AbstractTermLike)
@@ -178,7 +184,7 @@ function MA.promote_operation(
 ) where {P<:MP.AbstractPolynomialLike}
     M = MP.monomial_type(P)
     T = MP.coefficient_type(P)
-    return SA.SparseCoefficients{M,T,MP.monomial_vector_type(M),Vector{T}}
+    return SA.SparseCoefficients{M,T,Vector{M},Vector{T}}
 end
 
 function algebra_element(p::MP.AbstractPolynomialLike)
