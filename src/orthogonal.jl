@@ -195,10 +195,10 @@ function SA.coeffs(
 ) where {B<:AbstractMultipleOrthogonal,M}
     return sparse_coefficients(
         prod(
-            MP.powers(p.monomial),
-            init = MP.constant_monomial(M)
+            MP.powers(p.monomial);
+            init = MP.constant_monomial(M),
         ) do (var, deg)
-            univariate_orthogonal_basis(B, var, deg)[deg+1]
-        end
+            return univariate_orthogonal_basis(B, var, deg)[deg+1]
+        end,
     )
 end

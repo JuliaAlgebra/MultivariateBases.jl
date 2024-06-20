@@ -70,7 +70,9 @@ function Base.promote_rule(
 end
 
 function scaling(m::MP.AbstractMonomial)
-    return √(factorial(MP.degree(m)) / prod(factorial, MP.exponents(m), init = 1))
+    return √(
+        factorial(MP.degree(m)) / prod(factorial, MP.exponents(m); init = 1),
+    )
 end
 unscale_coef(t::MP.AbstractTerm) = MP.coefficient(t) / scaling(MP.monomial(t))
 function SA.coeffs(
