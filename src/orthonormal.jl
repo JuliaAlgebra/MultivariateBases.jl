@@ -1,20 +1,33 @@
 """
-    struct OrthonormalCoefficientsBasis{PT<:MP.AbstractPolynomialLike, PV<:AbstractVector{PT}} <: AbstractPolynomialBasis
-        polynomials::PV
+    struct OrthonormalCoefficientsBasis{T,M<:AbstractMatrix{T},B} <: SA.ExplicitBasis
+        matrix::M
+        basis::B
     end
 
-Polynomial basis with the polynomials of the vector `polynomials` that are
-orthonormal with respect to the inner produce derived from the inner product
-of their coefficients.
-For instance, `FixedPolynomialBasis([1, x, 2x^2-1, 4x^3-3x])` is the Chebyshev
-polynomial basis for cubic polynomials in the variable `x`.
+Polynomial basis with the polynomials `algebra_element(matrix[i, :], basis)` for
+each row `i` of `matrix`. The basis is orthonormal with respect to the inner
+product derived from the inner product of their coefficients.
+For instance,
+```jldoctest
+julia> OrthonormalCoefficientsBasis(
+    [1 0 0 0
+     0 1 0 0
+    -1 0 2 0
+      -3   4],
+    SubBasis{Monomial}([1, x, x^2, x^3]),
+)
+```
+is the Chebyshev polynomial basis for cubic polynomials in the variable `x`.
 """
-struct OrthonormalCoefficientsBasis{
-    PT<:MP.AbstractPolynomialLike,
-    PV<:AbstractVector{PT},
-} <: AbstractBasis{PT,PV}
-    polynomials::PV
+struct OrthonormalCoefficientsBasis{T,B,M,V} <: SA.ExplicitBasis{
+    SA.AlgebraElement{Algebra{SubBasis{B,M,V},B,M},T,Vector{T}},
+    Int,
+}
+    matrix::Matrix{T}
+    basis::SubBasis{B,M,V}
 end
+
+Base.length(basis::OrthonormalCoefficientsBasis) = size(basis.matrix, 1)
 
 function LinearAlgebra.dot(
     p::MP.AbstractPolynomialLike{S},

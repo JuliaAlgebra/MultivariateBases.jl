@@ -1,8 +1,16 @@
 using Test
 using MultivariateBases
 using DynamicPolynomials
+import StarAlgebras as SA
 
 @polyvar x y
+
+struct ClassicalMul <: SA.MultiplicativeStructure end
+(::ClassicalMul)(a, b) = a * b
+
+gens = [algebra_element(1 - x^2), algebra_element(x^2 + 2)]
+basis = SA.FixedBasis(gens, ClassicalMul())
+a = SA.AlgebraElement([2, 3], basis)
 
 @testset "Polynomials" begin
     gens = [1 - x^2, x^2 + 2]

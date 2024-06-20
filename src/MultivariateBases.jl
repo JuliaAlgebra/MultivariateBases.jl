@@ -56,6 +56,8 @@ include("laguerre.jl")
 include("legendre.jl")
 include("chebyshev.jl")
 include("quotient.jl")
+include("orthonormal.jl")
+include("multi.jl")
 
 function algebra(
     basis::Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
