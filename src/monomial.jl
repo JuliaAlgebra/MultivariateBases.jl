@@ -201,10 +201,7 @@ end
 _one_if_type(α) = α
 _one_if_type(::Type{T}) where {T} = one(T)
 
-function constant_algebra_element(
-    ::Type{FullBasis{B,M}},
-    α,
-) where {B,M}
+function constant_algebra_element(::Type{FullBasis{B,M}}, α) where {B,M}
     return algebra_element(
         sparse_coefficients(
             MP.polynomial(MP.term(_one_if_type(α), MP.constant_monomial(M))),
@@ -213,11 +210,11 @@ function constant_algebra_element(
     )
 end
 
-function constant_algebra_element(
-    ::Type{<:SubBasis{B,M}},
-    α,
-) where {B,M}
-    return algebra_element([_one_if_type(α)], SubBasis{B}([MP.constant_monomial(M)]))
+function constant_algebra_element(::Type{<:SubBasis{B,M}}, α) where {B,M}
+    return algebra_element(
+        [_one_if_type(α)],
+        SubBasis{B}([MP.constant_monomial(M)]),
+    )
 end
 
 function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}

@@ -8,9 +8,15 @@ Base.:(-)(p::_APL, q::_AE) = -(p, MP.polynomial(q))
 Base.:(-)(p::_AE, q::_APL) = -(MP.polynomial(p), q)
 
 Base.:(+)(p, q::_AE) = +(constant_algebra_element(typeof(SA.basis(q)), p), q)
-Base.:(+)(p::_AE, q) = +(MP.polynomial(p), constant_algebra_element(typeof(SA.basis(p)), q))
-Base.:(-)(p, q::_AE) = -(constant_algebra_element(typeof(SA.basis(q)), p), MP.polynomial(q))
-Base.:(-)(p::_AE, q) = -(MP.polynomial(p), constant_algebra_element(typeof(SA.basis(p)), q))
+function Base.:(+)(p::_AE, q)
+    return +(MP.polynomial(p), constant_algebra_element(typeof(SA.basis(p)), q))
+end
+function Base.:(-)(p, q::_AE)
+    return -(constant_algebra_element(typeof(SA.basis(q)), p), MP.polynomial(q))
+end
+function Base.:(-)(p::_AE, q)
+    return -(MP.polynomial(p), constant_algebra_element(typeof(SA.basis(p)), q))
+end
 
 function Base.:(+)(p::_AE, q::_AE)
     return MA.operate_to!(SA._preallocate_output(+, p, q), +, p, q)
