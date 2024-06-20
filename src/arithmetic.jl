@@ -25,3 +25,8 @@ end
 function Base.:(-)(p::_AE, q::_AE)
     return MA.operate_to!(SA._preallocate_output(-, p, q), -, p, q)
 end
+
+Base.:(*)(p::Union{_APL,_AE}, q::Polynomial{B}) where {B} = *(p, algebra_element(q))
+function Base.:(*)(α, p::Polynomial{B}) where {B}
+    return _algebra_element(MP.term(α, p.monomial), B)
+end
