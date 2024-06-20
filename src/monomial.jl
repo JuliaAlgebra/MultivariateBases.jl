@@ -198,13 +198,16 @@ function algebra_element(f::Function, basis::SubBasis)
     return algebra_element(map(f, eachindex(basis)), basis)
 end
 
+_one_if_type(α) = α
+_one_if_type(::Type{T}) where {T} = one(T)
+
 function constant_algebra_element(
     ::Type{FullBasis{B,M}},
-    ::Type{T},
-) where {B,M,T}
+    α,
+) where {B,M}
     return algebra_element(
         sparse_coefficients(
-            MP.polynomial(MP.term(one(T), MP.constant_monomial(M))),
+            MP.polynomial(MP.term(_one_if_type(α), MP.constant_monomial(M))),
         ),
         FullBasis{B,M}(),
     )
@@ -212,9 +215,9 @@ end
 
 function constant_algebra_element(
     ::Type{<:SubBasis{B,M}},
-    ::Type{T},
-) where {B,M,T}
-    return algebra_element([one(T)], SubBasis{B}([MP.constant_monomial(M)]))
+    α,
+) where {B,M}
+    return algebra_element([_one_if_type(α)], SubBasis{B}([MP.constant_monomial(M)]))
 end
 
 function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}

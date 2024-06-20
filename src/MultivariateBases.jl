@@ -25,7 +25,10 @@ end
 SA.basis(a::Algebra) = a.basis
 
 #Base.:(==)(::Algebra{BT1,B1,M}, ::Algebra{BT2,B2,M}) where {BT1,B1,BT2,B2,M} = true
-#Base.:(==)(::Algebra, ::Algebra) = false
+function Base.:(==)(a::Algebra, b::Algebra)
+    # `===` is a shortcut for speedup
+    return a.basis === b.basis || a.basis == b.basis
+end
 
 function Base.show(io::IO, ::Algebra{BT,B}) where {BT,B}
     ioc = IOContext(io, :limit => true, :compact => true)
@@ -72,13 +75,6 @@ function MA.promote_operation(
     return Algebra{BT,B,M}
 end
 
-const _APL = MP.AbstractPolynomialLike
-# We don't define it for all `AlgebraElement` as this would be type piracy
-const _AE = SA.AlgebraElement{<:Algebra}
-
-Base.:(+)(p::_APL, q::_AE) = +(p, MP.polynomial(q))
-Base.:(+)(p::_AE, q::_APL) = +(MP.polynomial(p), q)
-Base.:(-)(p::_APL, q::_AE) = -(p, MP.polynomial(q))
-Base.:(-)(p::_AE, q::_APL) = -(MP.polynomial(p), q)
+include("arithmetic.jl")
 
 end # module
