@@ -22,6 +22,9 @@ MP.monomial_type(::Type{<:Algebra{B}}) where {B} = MP.monomial_type(B)
 function MP.polynomial_type(::Type{<:Algebra{B}}, ::Type{T}) where {B,T}
     return MP.polynomial_type(B, T)
 end
+function MA.promote_operation(::typeof(SA.basis), ::Type{<:Algebra{B}}) where {B}
+    return B
+end
 SA.basis(a::Algebra) = a.basis
 
 #Base.:(==)(::Algebra{BT1,B1,M}, ::Algebra{BT2,B2,M}) where {BT1,B1,BT2,B2,M} = true

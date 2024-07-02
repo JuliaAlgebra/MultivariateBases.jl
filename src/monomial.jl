@@ -201,6 +201,14 @@ end
 _one_if_type(α) = α
 _one_if_type(::Type{T}) where {T} = one(T)
 
+function constant_algebra_element_type(
+    ::Type{BT},
+    ::Type{T},
+) where {B,M,BT<:FullBasis{B,M},T}
+    A = MA.promote_operation(algebra, BT)
+    return SA.AlgebraElement{A,T,SA.SparseCoefficients{M,T,Vector{M},Vector{T}}}
+end
+
 function constant_algebra_element(::Type{FullBasis{B,M}}, α) where {B,M}
     return algebra_element(
         sparse_coefficients(
@@ -208,6 +216,14 @@ function constant_algebra_element(::Type{FullBasis{B,M}}, α) where {B,M}
         ),
         FullBasis{B,M}(),
     )
+end
+
+function constant_algebra_element_type(
+    ::Type{B},
+    ::Type{T},
+) where {B<:SubBasis,T}
+    A = MA.promote_operation(algebra, B)
+    return SA.AlgebraElement{A,T,Vector{T}}
 end
 
 function constant_algebra_element(::Type{<:SubBasis{B,M}}, α) where {B,M}
