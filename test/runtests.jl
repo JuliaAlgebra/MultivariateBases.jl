@@ -7,6 +7,12 @@ const MB = MultivariateBases
 using LinearAlgebra
 using DynamicPolynomials
 
+function _test_op(op, args...)
+    result = @inferred op(args...)
+    @test typeof(result) == MA.promote_operation(op, typeof.(args)...)
+    return result
+end
+
 function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
     M = typeof(prod(x))
@@ -47,6 +53,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         @test length(empty_basis(typeof(basis))) == 0
         @test polynomial_type(basis, Float64) == polynomial_type(x[1], Float64)
         #@test polynomial(i -> 0.0, basis) isa polynomial_type(basis, Float64)
+        a = MB.algebra_element(ones(length(basis)), basis)
+        _test_op(MB.implicit, a)
     end
     mono = x[1]^2 * x[2]^3
     p = MB.Polynomial{B}(mono)
@@ -77,10 +85,10 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     const_poly = MB.Polynomial{B}(const_mono)
     const_alg_el = MB.algebra_element(const_poly)
     for other in (const_mono, 1, const_alg_el)
-        @test other + const_alg_el ≈ 2 * other
-        @test const_alg_el + other ≈ 2 * other
-        @test iszero(other - const_alg_el)
-        @test iszero(const_alg_el - other)
+        @test _test_op(+, other, const_alg_el) ≈ _test_op(*, 2, other)
+        @test _test_op(+, const_alg_el, other) ≈ _test_op(*, 2, other)
+        @test iszero(_test_op(-, other, const_alg_el))
+        @test iszero(_test_op(-, const_alg_el, other))
     end
     @test typeof(MB.sparse_coefficients(sum(x))) ==
           MA.promote_operation(MB.sparse_coefficients, typeof(sum(x)))
