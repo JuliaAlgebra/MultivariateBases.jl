@@ -24,20 +24,28 @@ end
 for op in [:+, :-]
     @eval begin
         function MA.promote_operation(::typeof($op), ::Type{P}, ::Type{Q}) where {P,Q<:_AE}
+            I = MA.promote_operation(implicit, Q)
             return MA.promote_operation(
                 $op,
-                constant_algebra_element_type(MA.promote_operation(SA.basis, Q), P),
-                Q,
+                constant_algebra_element_type(MA.promote_operation(SA.basis, I), P),
+                I,
             )
         end
-        Base.$op(p, q::_AE) = $op(constant_algebra_element(typeof(SA.basis(q)), p), q)
+        function Base.$op(p, q::_AE)
+            i = implicit(q)
+            return $op(constant_algebra_element(typeof(SA.basis(i)), p), i)
+        end
         function MA.promote_operation(::typeof($op), ::Type{P}, ::Type{Q}) where {P<:_AE,Q}
+            I = MA.promote_operation(implicit, P)
             return MA.promote_operation(
                 $op,
-                P,
-                constant_algebra_element_type(MA.promote_operation(SA.basis, P), Q),
+                I,
+                constant_algebra_element_type(MA.promote_operation(SA.basis, I), Q),
             )
         end
-        Base.$op(p::_AE, q) = $op(p, constant_algebra_element(typeof(SA.basis(p)), q))
+        function Base.$op(p::_AE, q)
+            i = implicit(p)
+            return $op(i, constant_algebra_element(typeof(SA.basis(i)), q))
+        end
     end
 end

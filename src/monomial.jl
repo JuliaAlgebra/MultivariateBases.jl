@@ -127,6 +127,21 @@ end
 implicit_basis(::SubBasis{B,M}) where {B,M} = FullBasis{B,M}()
 implicit_basis(basis::FullBasis) = basis
 
+function implicit(a::SA.AlgebraElement)
+    basis = implicit_basis(SA.basis(a))
+    return algebra_element(SA.coeffs(a, basis), basis)
+end
+
+function MA.promote_operation(
+    ::typeof(implicit),
+    ::Type{E},
+) where {AG,T,E<:SA.AlgebraElement{AG,T}}
+    BT = MA.promote_operation(implicit_basis, MA.promote_operation(SA.basis, E))
+    A = MA.promote_operation(algebra, BT)
+    M = MP.monomial_type(BT)
+    return SA.AlgebraElement{A,T,SA.SparseCoefficients{M,T,Vector{M},Vector{T}}}
+end
+
 function MA.promote_operation(
     ::typeof(implicit_basis),
     ::Type{<:Union{FullBasis{B,M},SubBasis{B,M}}},
@@ -393,14 +408,25 @@ function MP.polynomial_type(::Type{FullBasis{B,M}}, ::Type{T}) where {T,B,M}
     return MP.polynomial_type(M, _promote_coef(T, B))
 end
 
+_vec(v::Vector) = v
+_vec(v::AbstractVector) = collect(v)
+
 # Adapted from SA to incorporate `_promote_coef`
 function SA.coeffs(
     cfs,
-    source::MonomialIndexedBasis{B},
-    target::MonomialIndexedBasis{Monomial},
-) where {B}
+    source::MonomialIndexedBasis{B1},
+    target::MonomialIndexedBasis{B2},
+) where {B1,B2}
     source === target && return cfs
     source == target && return cfs
-    res = SA.zero_coeffs(_promote_coef(valtype(cfs), B), target)
-    return SA.coeffs!(res, cfs, source, target)
+    if B1 === B2 && target isa FullBasis
+        # The defaults initialize to zero and then sums which promotes
+        # `JuMP.VariableRef` to `JuMP.AffExpr`
+        return SA.SparseCoefficients(_vec(source.monomials), _vec(cfs))
+    elseif B2 === Monomial
+        res = SA.zero_coeffs(_promote_coef(valtype(cfs), B1), target)
+        return SA.coeffs!(res, cfs, source, target)
+    else
+        error("Convertion from $source to $target not implemented yet")
+    end
 end

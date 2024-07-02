@@ -7,9 +7,9 @@ const MB = MultivariateBases
 using LinearAlgebra
 using DynamicPolynomials
 
-function _test_op(op, a, b)
-    result = @inferred op(a, b)
-    @test typeof(result) == MA.promote_operation(op, typeof(a), typeof(b))
+function _test_op(op, args...)
+    result = @inferred op(args...)
+    @test typeof(result) == MA.promote_operation(op, typeof.(args)...)
     return result
 end
 
@@ -53,6 +53,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         @test length(empty_basis(typeof(basis))) == 0
         @test polynomial_type(basis, Float64) == polynomial_type(x[1], Float64)
         #@test polynomial(i -> 0.0, basis) isa polynomial_type(basis, Float64)
+        a = MB.algebra_element(ones(length(basis)), basis)
+        _test_op(MB.implicit, a)
     end
     mono = x[1]^2 * x[2]^3
     p = MB.Polynomial{B}(mono)
