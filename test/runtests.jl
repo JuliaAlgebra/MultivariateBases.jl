@@ -74,10 +74,14 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
           _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, p.monomial))) *
           " \$\$"
     const_mono = constant_monomial(prod(x))
-    @test const_mono + MB.algebra_element(MB.Polynomial{B}(const_mono)) == 2
-    @test MB.algebra_element(MB.Polynomial{B}(const_mono)) + const_mono == 2
-    @test iszero(const_mono - MB.algebra_element(MB.Polynomial{B}(const_mono)))
-    @test iszero(MB.algebra_element(MB.Polynomial{B}(const_mono)) - const_mono)
+    const_poly = MB.Polynomial{B}(const_mono)
+    const_alg_el = MB.algebra_element(const_poly)
+    for other in (const_mono, 1, const_alg_el)
+        @test other + const_alg_el ≈ 2 * other
+        @test const_alg_el + other ≈ 2 * other
+        @test iszero(other - const_alg_el)
+        @test iszero(const_alg_el - other)
+    end
     @test typeof(MB.sparse_coefficients(sum(x))) ==
           MA.promote_operation(MB.sparse_coefficients, typeof(sum(x)))
     @test typeof(MB.algebra_element(sum(x))) ==

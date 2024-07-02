@@ -23,7 +23,7 @@ struct ChebyshevFirstKind <: AbstractChebyshev end
 const Chebyshev = ChebyshevFirstKind
 
 # https://en.wikipedia.org/wiki/Chebyshev_polynomials#Properties
-# T_n * T_m = T_{n + m} / 2 + T_{|n - m|} / 2
+# `T_n * T_m = T_{n + m} / 2 + T_{|n - m|} / 2`
 function (::Mul{Chebyshev})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
     terms = [MP.term(1 // 1, MP.constant_monomial(a * b))]
     vars_a = MP.variables(a)
