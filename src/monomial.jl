@@ -427,6 +427,6 @@ function SA.coeffs(
         res = SA.zero_coeffs(_promote_coef(valtype(cfs), B1), target)
         return SA.coeffs!(res, cfs, source, target)
     else
-        error("Convertion from $source to $target not implemented yet")
+        error("Convertion from `$source` to `$target` not implemented yet")
     end
 end

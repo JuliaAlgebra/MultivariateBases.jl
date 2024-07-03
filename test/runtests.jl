@@ -13,14 +13,21 @@ function _test_op(op, args...)
     return result
 end
 
+function _test_basis(basis)
+    B = typeof(basis)
+    @test typeof(MB.algebra(basis)) ==
+          MA.promote_operation(MB.algebra, B)
+    @test typeof(MB.constant_algebra_element(B, 1)) ==
+        MB.constant_algebra_element_type(B, Int)
+end
+
 function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
     M = typeof(prod(x))
     full_basis = FullBasis{B,M}()
+    _test_basis(full_basis)
     @test sprint(show, MB.algebra(full_basis)) ==
           "Polynomial algebra of $B basis"
-    @test typeof(MB.algebra(full_basis)) ==
-          MA.promote_operation(MB.algebra, typeof(full_basis))
     for basis in [
         maxdegree_basis(full_basis, x, degree),
         explicit_basis_covering(
@@ -32,8 +39,7 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
             MB.SubBasis{ScaledMonomial}(monomials(x, 0:degree)),
         ),
     ]
-        @test typeof(MB.algebra(basis)) ==
-              MA.promote_operation(MB.algebra, typeof(basis))
+        _test_basis(basis)
         @test basis isa MB.explicit_basis_type(typeof(full_basis))
         for i in eachindex(basis)
             mono = basis.monomials[i]
