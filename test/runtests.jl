@@ -15,10 +15,9 @@ end
 
 function _test_basis(basis)
     B = typeof(basis)
-    @test typeof(MB.algebra(basis)) ==
-          MA.promote_operation(MB.algebra, B)
+    @test typeof(MB.algebra(basis)) == MA.promote_operation(MB.algebra, B)
     @test typeof(MB.constant_algebra_element(B, 1)) ==
-        MB.constant_algebra_element_type(B, Int)
+          MB.constant_algebra_element_type(B, Int)
 end
 
 function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
