@@ -102,6 +102,9 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @test typeof(MB.algebra_element(sum(x))) ==
           MA.promote_operation(MB.algebra_element, typeof(sum(x)))
     @test const_alg_el(x => ones(length(x))) == const_mono
+    @test const_alg_el(ones(length(x))) == const_mono
+    @test const_alg_el(ones(length(x))...) == const_mono
+    @test const_alg_el(tuple(ones(length(x))...)) == const_mono
     @test subs(const_alg_el, x => ones(length(x))) == const_mono
     @test differentiate(const_alg_el, x) == differentiate(const_mono, x)
 end
