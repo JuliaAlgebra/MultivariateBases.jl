@@ -431,12 +431,3 @@ function SA.coeffs(
         return SA.coeffs!(res, cfs, source, target)
     end
 end
-
-function SA.coeffs!(
-    _,
-    _,
-    source::MonomialIndexedBasis,
-    target::MonomialIndexedBasis,
-)
-    return error("Convertion from `$source` to `$target` not implemented yet")
-end

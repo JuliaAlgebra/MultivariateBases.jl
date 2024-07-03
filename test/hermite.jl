@@ -48,8 +48,4 @@ end
     M = typeof(x^2)
     mono = MB.FullBasis{MB.Monomial,M}()
     basis = MB.FullBasis{MB.PhysicistsHermite,M}()
-    err = ErrorException(
-        "Convertion from `$mono` to `$basis` not implemented yet",
-    )
-    @test_throws err SA.coeffs(MB.algebra_element(x + 1), basis)
 end
