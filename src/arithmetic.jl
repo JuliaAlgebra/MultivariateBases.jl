@@ -99,6 +99,16 @@ function (p::_AE)(args::MP.AbstractSubstitution...)
     return MP.substitute(MP.Eval(), p, args...)
 end
 
+function (p::_AE)(x::NTuple{N,<:Number}) where {N}
+    return (MP.polynomial(p))(x)
+end
+
+function (p::_AE)(x::AbstractVector{<:Number})
+    return (MP.polynomial(p))(x)
+end
+
+(p::_AE)(x::Number...) = (MP.polynomial(p))(x...)
+
 function MP.differentiate(p::_AE, args...)
     return MP.differentiate(MP.polynomial(p), args...)
 end
