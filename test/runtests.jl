@@ -95,10 +95,15 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         @test iszero(_test_op(-, other, const_alg_el))
         @test iszero(_test_op(-, const_alg_el, other))
     end
+    @test iszero(MA.operate!(-, polynomial(const_alg_el), const_alg_el))
+    @test iszero(MA.operate!(+, -polynomial(const_alg_el), const_alg_el))
     @test typeof(MB.sparse_coefficients(sum(x))) ==
           MA.promote_operation(MB.sparse_coefficients, typeof(sum(x)))
     @test typeof(MB.algebra_element(sum(x))) ==
           MA.promote_operation(MB.algebra_element, typeof(sum(x)))
+    @test const_alg_el(x => ones(length(x))) == const_mono
+    @test subs(const_alg_el, x => ones(length(x))) == const_mono
+    @test differentiate(const_alg_el, x) == differentiate(const_mono, x)
 end
 
 function univ_orthogonal_test(

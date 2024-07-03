@@ -75,3 +75,30 @@ for op in [:+, :-]
         end
     end
 end
+
+function MA.operate!(op::Union{typeof(+),typeof(-),typeof(*)}, p::_APL, q::_AE)
+    return MA.operate!(op, p, MP.polynomial(q))
+end
+
+# These are not implemented yet for arbitrary bases so we
+# fall back to polynomials
+
+function MP.substitute(
+    s::MP.AbstractSubstitutionType,
+    p::_AE,
+    args::MP.AbstractSubstitution...,
+)
+    return MP.substitute(s, MP.polynomial(p), args...)
+end
+
+function MP.subs(p::_AE, args::MP.AbstractSubstitution...)
+    return MP.substitute(MP.Subs(), p, args...)
+end
+
+function (p::_AE)(args::MP.AbstractSubstitution...)
+    return MP.substitute(MP.Eval(), p, args...)
+end
+
+function MP.differentiate(p::_AE, args...)
+    return MP.differentiate(MP.polynomial(p), args...)
+end
