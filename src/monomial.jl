@@ -423,10 +423,20 @@ function SA.coeffs(
         # The defaults initialize to zero and then sums which promotes
         # `JuMP.VariableRef` to `JuMP.AffExpr`
         return SA.SparseCoefficients(_vec(source.monomials), _vec(cfs))
-    elseif B2 === Monomial
-        res = SA.zero_coeffs(_promote_coef(valtype(cfs), B1), target)
-        return SA.coeffs!(res, cfs, source, target)
     else
-        error("Convertion from `$source` to `$target` not implemented yet")
+        res = SA.zero_coeffs(
+            _promote_coef(_promote_coef(valtype(cfs), B1), B2),
+            target,
+        )
+        return SA.coeffs!(res, cfs, source, target)
     end
+end
+
+function SA.coeffs!(
+    _,
+    _,
+    source::MonomialIndexedBasis,
+    target::MonomialIndexedBasis,
+)
+    return error("Convertion from `$source` to `$target` not implemented yet")
 end
