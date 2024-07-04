@@ -38,8 +38,10 @@ end
     # It will be sorted and 1 will be moved at the end
     basis = SubBasis{MB.Monomial}([1, x, y])
     @test polynomial_type(basis, Int) == polynomial_type(x, Int)
-    @test polynomial(i -> i^2, basis) == 9x + 4y + 1
+    poly = 9x + 4y + 1
+    @test polynomial(i -> i^2, basis) == poly
     @test coefficients(9 + x + 4y, basis) == [9, 4, 1]
+    @test MB.explicit_basis(poly) == basis
 end
 @testset "Quadratic" begin
     basis = SubBasis{MB.Monomial}([x^2, x * y, y^2])

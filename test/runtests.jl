@@ -20,6 +20,11 @@ function _test_basis(basis)
           MB.constant_algebra_element_type(B, Int)
 end
 
+struct TypeA end
+struct TypeB end
+Base.zero(::Type{TypeA}) = TypeA()
+Base.:*(::Float64, ::TypeA) = TypeB()
+
 function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
     M = typeof(prod(x))
@@ -65,7 +70,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     p = MB.Polynomial{B}(mono)
     @test full_basis[p] == mono
     @test full_basis[mono] == p
-    @test polynomial_type(mono, String) == polynomial_type(typeof(p), String)
+    @test polynomial_type(mono, B == Monomial ? TypeA : TypeB) ==
+          polynomial_type(typeof(p), TypeA)
     a = MB.algebra_element(p)
     @test variables(a) == x
     @test typeof(polynomial(a)) == polynomial_type(typeof(a))

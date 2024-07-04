@@ -51,7 +51,7 @@ end
 _float(::Type{T}) where {T<:Number} = float(T)
 # Could be for instance `MathOptInterface.ScalarAffineFunction{Float64}`
 # which does not implement `float`
-_float(::Type{F}) where {F} = F
+_float(::Type{F}) where {F} = MA.promote_operation(*, Float64, F)
 
 _promote_coef(::Type{T}, ::Type{ScaledMonomial}) where {T} = _float(T)
 
