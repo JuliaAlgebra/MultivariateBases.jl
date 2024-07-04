@@ -155,6 +155,10 @@ end
 
 _explicit_basis(_, basis::SubBasis) = basis
 
+function explicit_basis(p::MP.AbstractPolynomialLike)
+    return SubBasis{Monomial}(MP.monomials(p))
+end
+
 function explicit_basis(a::SA.AlgebraElement)
     return _explicit_basis(SA.coeffs(a), SA.basis(a))
 end

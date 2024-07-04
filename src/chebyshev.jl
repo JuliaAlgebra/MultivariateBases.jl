@@ -4,7 +4,7 @@ _promote_div(::Type{I}) where {I<:Integer} = Rational{I}
 _promote_div(::Type{T}) where {T<:Number} = MA.promote_operation(/, T, Int)
 # Could be for instance `MathOptInterface.ScalarAffineFunction{Float64}`
 # which does not support division with `Int`
-_promote_div(::Type{F}) where {F} = F
+_promote_div(::Type{F}) where {F} = _float(F)
 
 function _promote_coef(::Type{T}, ::Type{<:AbstractChebyshev}) where {T}
     return _promote_div(T)
