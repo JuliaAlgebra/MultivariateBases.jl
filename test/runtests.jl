@@ -25,7 +25,6 @@ struct TypeB end
 Base.zero(::Type{TypeA}) = TypeA()
 Base.:*(::Float64, ::TypeA) = TypeB()
 
-
 function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
     M = typeof(prod(x))
@@ -71,7 +70,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     p = MB.Polynomial{B}(mono)
     @test full_basis[p] == mono
     @test full_basis[mono] == p
-    @test polynomial_type(mono, B == Monomial ? TypeA : TypeB) == polynomial_type(typeof(p), TypeA)
+    @test polynomial_type(mono, B == Monomial ? TypeA : TypeB) ==
+          polynomial_type(typeof(p), TypeA)
     a = MB.algebra_element(p)
     @test variables(a) == x
     @test typeof(polynomial(a)) == polynomial_type(typeof(a))
