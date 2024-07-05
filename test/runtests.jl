@@ -65,6 +65,7 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         #@test polynomial(i -> 0.0, basis) isa polynomial_type(basis, Float64)
         a = MB.algebra_element(ones(length(basis)), basis)
         _test_op(MB.implicit, a)
+	@test SA.star(a) == a
     end
     mono = x[1]^2 * x[2]^3
     p = MB.Polynomial{B}(mono)
