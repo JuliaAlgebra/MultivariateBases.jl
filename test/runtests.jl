@@ -115,6 +115,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @test const_alg_el(x[1] => x[2], x[2] => x[1]) == const_mono
     @test differentiate(const_alg_el, x) == differentiate(const_mono, x)
     @test differentiate(const_alg_el, x, 2) == differentiate(const_mono, x, 2)
+    @test MA.operate_to!(polynomial(const_mono), *, const_alg_el, const_mono) == const_mono
+    @test MA.operate_to!(polynomial(const_mono), *, const_mono, const_alg_el) == const_mono
     @test dot([const_alg_el], [const_mono]) == const_mono
     @test dot([const_mono], [const_alg_el]) == const_mono
 end
