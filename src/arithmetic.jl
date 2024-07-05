@@ -80,6 +80,14 @@ function MA.operate!(op::Union{typeof(+),typeof(-),typeof(*)}, p::_APL, q::_AE)
     return MA.operate!(op, p, MP.polynomial(q))
 end
 
+function MA.operate_to!(res::MP.AbstractPolynomial, op::typeof(*), p::_AE, q::_APL)
+    return MA.operate_to!(res, op, MP.polynomial(p), q)
+end
+
+function MA.operate_to!(res::MP.AbstractPolynomial, op::typeof(*), p::_APL, q::_AE)
+    return MA.operate_to!(res, op, p, MP.polynomial(q))
+end
+
 # These are not implemented yet for arbitrary bases so we
 # fall back to polynomials
 
