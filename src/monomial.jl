@@ -435,3 +435,6 @@ function SA.coeffs(
         return SA.coeffs!(res, cfs, source, target)
     end
 end
+
+# FIXME this assumes that the basis is invariant under adjoint
+SA.star(::SubBasis, coeffs) = SA.star.(coeffs)
