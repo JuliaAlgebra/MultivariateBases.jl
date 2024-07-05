@@ -86,17 +86,17 @@ end
 function MP.substitute(
     s::MP.AbstractSubstitutionType,
     p::_AE,
-    args::MP.AbstractSubstitution...,
+    args::MP.Substitutions,
 )
-    return MP.substitute(s, MP.polynomial(p), args...)
+    return MP.substitute(s, MP.polynomial(p), args)
 end
 
 function MP.subs(p::_AE, args::MP.AbstractSubstitution...)
-    return MP.substitute(MP.Subs(), p, args...)
+    return MP.substitute(MP.Subs(), p, args)
 end
 
 function (p::_AE)(args::MP.AbstractSubstitution...)
-    return MP.substitute(MP.Eval(), p, args...)
+    return MP.substitute(MP.Eval(), p, args)
 end
 
 function (p::_AE)(x::NTuple{N,<:Number}) where {N}
@@ -109,6 +109,6 @@ end
 
 (p::_AE)(x::Number...) = (MP.polynomial(p))(x...)
 
-function MP.differentiate(p::_AE, args...)
-    return MP.differentiate(MP.polynomial(p), args...)
+function MP.differentiate(p::_AE, x)
+    return MP.differentiate(MP.polynomial(p), x)
 end
