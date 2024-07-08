@@ -23,9 +23,11 @@ end
 struct TypeA end
 Base.zero(::Type{TypeA}) = TypeA()
 Base.iszero(::TypeA) = false
+LinearAlgebra.adjoint(::TypeA) = TypeA()
 struct TypeB end
 Base.zero(::Type{TypeB}) = TypeB()
 Base.iszero(::TypeB) = false
+LinearAlgebra.adjoint(::TypeB) = TypeB()
 
 Base.:*(::Float64, ::TypeA) = TypeB()
 Base.:*(::TypeA, ::Float64) = TypeB()
@@ -36,7 +38,6 @@ Base.:/(::TypeB, ::Float64) = TypeB()
 Base.:+(::TypeB, ::TypeB) = TypeB()
 Base.:-(::TypeB, ::TypeB) = TypeB()
 Base.convert(::Type{TypeB}, ::TypeA) = TypeB()
-LinearAlgebra.adjoint(::TypeB) = TypeB()
 
 function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
