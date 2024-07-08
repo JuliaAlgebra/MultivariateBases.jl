@@ -105,11 +105,8 @@ function univariate_orthogonal_basis(
     end
 end
 
-function explicit_basis_covering(
-    ::FullBasis{B,M},
-    monos::SubBasis{<:AbstractMonomial,M},
-) where {B<:AbstractMultipleOrthogonal,M}
-    to_add = collect(monos.monomials)
+function _covering(::FullBasis{B,M}, monos) where {B,M}
+    to_add = collect(monos)
     m = Set{M}(to_add)
     while !isempty(to_add)
         mono = pop!(to_add)
@@ -125,7 +122,22 @@ function explicit_basis_covering(
             end
         end
     end
-    return SubBasis{B}(MP.monomial_vector(collect(m)))
+    return collect(m)
+end
+
+function explicit_basis_covering(
+    full::FullBasis{BM,M},
+    monos::SubBasis{B,M},
+) where {BM<:AbstractMonomial,B<:AbstractMultipleOrthogonal,M}
+    full = FullBasis{B,M}()
+    return SubBasis{BM}(_covering(full, monos.monomials))
+end
+
+function explicit_basis_covering(
+    full::FullBasis{B,M},
+    monos::SubBasis{<:AbstractMonomial,M},
+) where {B<:AbstractMultipleOrthogonal,M}
+    return SubBasis{B}(_covering(full, monos.monomials))
 end
 
 function _scalar_product_function(::Type{<:AbstractMultipleOrthogonal}, i::Int) end

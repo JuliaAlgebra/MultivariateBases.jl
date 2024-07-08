@@ -118,7 +118,7 @@ function Base.copy(basis::SubBasis)
     return typeof(basis)(copy(basis.monomials))
 end
 
-Base.:(==)(a::SubBasis, b::SubBasis) = a.monomials == b.monomials
+Base.:(==)(a::SubBasis{B}, b::SubBasis{B}) where {B} = a.monomials == b.monomials
 
 function algebra_type(::Type{BT}) where {B,M,BT<:MonomialIndexedBasis{B,M}}
     return Algebra{BT,B,M}
