@@ -105,7 +105,11 @@ function SA.coeffs(
     return SA.SparseCoefficients(
         sub.monomials,
         #LinearAlgebra.UpperTriangular(A) \ ext, # Julia v1.6 converts `A` to the eltype of the `result` which is bad for JuMP
-        LinearAlgebra.ldiv!(zeros(_promote_coef(eltype(ext), Chebyshev), size(A, 2)), LinearAlgebra.UpperTriangular(A), ext),
+        LinearAlgebra.ldiv!(
+            zeros(_promote_coef(eltype(ext), Chebyshev), size(A, 2)),
+            LinearAlgebra.UpperTriangular(A),
+            ext,
+        ),
     )
 end
 

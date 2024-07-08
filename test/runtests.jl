@@ -22,8 +22,11 @@ end
 
 struct TypeA end
 Base.zero(::Type{TypeA}) = TypeA()
+Base.iszero(::TypeA) = false
 struct TypeB end
 Base.zero(::Type{TypeB}) = TypeB()
+Base.iszero(::TypeB) = false
+
 Base.:*(::Float64, ::TypeA) = TypeB()
 Base.:*(::TypeA, ::Float64) = TypeB()
 Base.:*(::Float64, ::TypeB) = TypeB()
@@ -33,7 +36,6 @@ Base.:/(::TypeB, ::Float64) = TypeB()
 Base.:+(::TypeB, ::TypeB) = TypeB()
 Base.:-(::TypeB, ::TypeB) = TypeB()
 Base.convert(::Type{TypeB}, ::TypeA) = TypeB()
-Base.iszero(::TypeB) = false
 LinearAlgebra.adjoint(::TypeB) = TypeB()
 
 function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
@@ -78,9 +80,13 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         _test_op(MB.implicit, a)
         @test SA.star(a) == a
         if B == Chebyshev || B == ScaledMonomial
-            mono = explicit_basis_covering(FullBasis{Monomial,eltype(basis.monomials)}(), basis)
+            mono = explicit_basis_covering(
+                FullBasis{Monomial,eltype(basis.monomials)}(),
+                basis,
+            )
             a = MB.algebra_element(fill(TypeA(), length(basis)), mono)
-            @test SA.coeffs(a, full_basis).values == fill(TypeB(), length(basis))
+            @test SA.coeffs(a, full_basis).values ==
+                  fill(TypeB(), length(basis))
         end
     end
     mono = x[1]^2 * x[2]^3
