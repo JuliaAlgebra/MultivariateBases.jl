@@ -19,10 +19,7 @@ reccurence_first_coef(::Type{ProbabilistsHermite}, degree) = 1
 function reccurence_third_coef(::Type{ProbabilistsHermite}, degree)
     return -(degree - 1)
 end
-function degree_one_univariate_polynomial(
-    ::Type{ProbabilistsHermite},
-    variable::MP.AbstractVariable,
-)
+function degree_one_univariate_polynomial(::Type{ProbabilistsHermite}, variable)
     MA.@rewrite(1variable)
 end
 
@@ -47,10 +44,7 @@ Orthogonal polynomial with respect to the univariate weight function ``w(x) = \\
 struct PhysicistsHermite <: AbstractHermite end
 reccurence_first_coef(::Type{PhysicistsHermite}, degree) = 2
 reccurence_third_coef(::Type{PhysicistsHermite}, degree) = -2(degree - 1)
-function degree_one_univariate_polynomial(
-    ::Type{PhysicistsHermite},
-    variable::MP.AbstractVariable,
-)
+function degree_one_univariate_polynomial(::Type{PhysicistsHermite}, variable)
     MA.@rewrite(2variable)
 end
 

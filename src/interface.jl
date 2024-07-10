@@ -1,25 +1,4 @@
 """
-    abstract type AbstractPolynomialBasis end
-
-Polynomial basis of a subspace of the polynomials [Section~3.1.5, BPT12].
-
-[BPT12] Blekherman, G.; Parrilo, P. A. & Thomas, R. R.
-*Semidefinite Optimization and Convex Algebraic Geometry*.
-Society for Industrial and Applied Mathematics, **2012**.
-"""
-abstract type AbstractPolynomialBasis end
-
-# TODO breaking Should be underscore and only for internal use
-generators(basis::AbstractPolynomialBasis) = basis.polynomials
-
-function Base.getindex(
-    basis::AbstractPolynomialBasis,
-    I::AbstractVector{<:Integer},
-)
-    return typeof(basis)(generators(basis)[I])
-end
-
-"""
     maxdegree_basis(basis::StarAlgebras.AbstractBasis, variables, maxdegree::Int)
 
 Return the explicit version of `basis`generating all polynomials of degree up to
@@ -27,7 +6,6 @@ Return the explicit version of `basis`generating all polynomials of degree up to
 """
 function maxdegree_basis end
 
-# TODO remove, not needed anymore
 """
     explicit_basis_covering(basis::StarAlgebras.AbstractBasis, target::StarAlgebras.ExplicitBasis)
 

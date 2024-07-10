@@ -62,6 +62,34 @@ d_k p_k(x_i) = (a_k x_i + b_k) p_{k-1}(x_i) + c_k p_{k-2}(x_i)
 """
 function reccurence_deno_coef end
 
+function recurrence_eval(
+    ::Type{B},
+    previous::AbstractVector,
+    value,
+    degree,
+) where {B<:AbstractMultipleOrthogonal}
+    a = reccurence_first_coef(B, degree)
+    b = reccurence_second_coef(B, degree)
+    c = reccurence_third_coef(B, degree)
+    d = reccurence_deno_coef(B, degree)
+    return MA.@rewrite(
+        (a * value + b) * previous[degree] + c * previous[degree-1]
+    ) / d
+end
+
+function univariate_eval!(::Type{B}, values::AbstractVector, value) where {B}
+    if 1 in eachindex(values)
+        values[1] = one(value)
+    end
+    if 2 in eachindex(values)
+        values[2] = degree_one_univariate_polynomial(B, value)
+    end
+    for d in 2:(length(values)-1)
+        values[d+1] = recurrence_eval(B, view(values, 1:d), value, d)
+    end
+    return values
+end
+
 """
     univariate_orthogonal_basis(
         B::Type{<:AbstractMultipleOrthogonal},
@@ -77,32 +105,16 @@ function univariate_orthogonal_basis(
     variable::MP.AbstractVariable,
     degree::Integer,
 )
-    @assert degree >= 0
-    if degree == 0
-        return MP.polynomial_type(
-            Polynomial{B,MP.monomial_type(variable)},
-            Int,
-        )[one(variable)]
-    elseif degree == 1
-        return push!(
-            univariate_orthogonal_basis(B, variable, 0),
-            degree_one_univariate_polynomial(B, variable),
-        )
-    else
-        previous = univariate_orthogonal_basis(B, variable, degree - 1)
-        a = reccurence_first_coef(B, degree)
-        b = reccurence_second_coef(B, degree)
-        c = reccurence_third_coef(B, degree)
-        d = reccurence_deno_coef(B, degree)
-        next = MA.@rewrite(
-            (a * variable + b) * previous[degree] + c * previous[degree-1]
-        )
-        if !isone(d)
-            next = next / d
-        end
-        push!(previous, next)
-        return previous
-    end
+    return univariate_eval!(
+        B,
+        Vector{
+            MP.polynomial_type(Polynomial{B,MP.monomial_type(variable)}, Int),
+        }(
+            undef,
+            degree + 1,
+        ),
+        variable,
+    )
 end
 
 function _covering(::FullBasis{B,M}, monos) where {B,M}

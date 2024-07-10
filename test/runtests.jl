@@ -240,30 +240,10 @@ function coefficient_test(
     return
 end
 
-@testset "Monomial" begin
-    include("monomial.jl")
-end
-@testset "Scaled" begin
-    include("scaled.jl")
-end
-#@testset "Fixed" begin
-#    include("fixed.jl")
-#end
-#@testset "Orthonormal" begin
-#    include("orthonormal.jl")
-#end
-@testset "Hermite" begin
-    include("hermite.jl")
-end
-@testset "Laguerre" begin
-    include("laguerre.jl")
-end
-@testset "Legendre" begin
-    include("legendre.jl")
-end
-@testset "Chebyshev" begin
-    include("chebyshev.jl")
-end
-@testset "Quotient" begin
-    include("quotient.jl")
+for file in readdir(@__DIR__)
+    if endswith(file, ".jl") && !in(file, ["runtests.jl"])
+        @testset "$file" begin
+            include(joinpath(@__DIR__, file))
+        end
+    end
 end
