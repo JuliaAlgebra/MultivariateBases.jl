@@ -32,10 +32,12 @@ struct LagrangePolynomial{T,P,V}
     variables::V
     point::P
     function LagrangePolynomial(variables, point)
-        return new{eltype(point),typeof(point),typeof(variables)}(variables, point)
+        return new{eltype(point),typeof(point),typeof(variables)}(
+            variables,
+            point,
+        )
     end
 end
-
 
 struct ImplicitLagrangeBasis{T,P,N<:AbstractNodes{T,P},V} <:
        SA.ImplicitBasis{LagrangePolynomial{T,P,V},Pair{V,P}}
@@ -49,9 +51,14 @@ struct ImplicitLagrangeBasis{T,P,N<:AbstractNodes{T,P},V} <:
     end
 end
 
-function Base.getindex(implicit::ImplicitLagrangeBasis{T,P,N,V}, subs::Pair{V,P}) where {T,P,N,V}
+function Base.getindex(
+    implicit::ImplicitLagrangeBasis{T,P,N,V},
+    subs::Pair{V,P},
+) where {T,P,N,V}
     if subs.first != implicit.variables
-        error("Variables `$(subs.first)` do not match Lagrange basis variables `$(implicit.variables)`")
+        error(
+            "Variables `$(subs.first)` do not match Lagrange basis variables `$(implicit.variables)`",
+        )
     end
     return LagrangePolynomial(implicit.variables, subs.second)
 end

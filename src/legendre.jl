@@ -21,10 +21,7 @@ reccurence_first_coef(::Type{Legendre}, degree) = (2degree - 1)
 reccurence_third_coef(::Type{Legendre}, degree) = -(degree - 1)
 reccurence_deno_coef(::Type{Legendre}, degree) = degree
 
-function degree_one_univariate_polynomial(
-    ::Type{Legendre},
-    variable,
-)
+function degree_one_univariate_polynomial(::Type{Legendre}, variable)
     MA.@rewrite(variable + 0)
 end
 

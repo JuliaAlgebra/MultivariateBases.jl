@@ -150,10 +150,7 @@ Orthogonal polynomial with respect to the univariate weight function ``w(x) = \\
 """
 struct ChebyshevSecondKind <: AbstractChebyshev end
 
-function degree_one_univariate_polynomial(
-    ::Type{ChebyshevSecondKind},
-    variable,
-)
+function degree_one_univariate_polynomial(::Type{ChebyshevSecondKind}, variable)
     MA.@rewrite(2variable + 0)
 end
 

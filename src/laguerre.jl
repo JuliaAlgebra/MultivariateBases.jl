@@ -16,10 +16,7 @@ reccurence_second_coef(::Type{Laguerre}, degree) = (2degree - 1)
 reccurence_third_coef(::Type{Laguerre}, degree) = -(degree - 1)
 reccurence_deno_coef(::Type{Laguerre}, degree) = degree
 
-function degree_one_univariate_polynomial(
-    ::Type{Laguerre},
-    variable,
-)
+function degree_one_univariate_polynomial(::Type{Laguerre}, variable)
     MA.@rewrite(1 - variable)
 end
 

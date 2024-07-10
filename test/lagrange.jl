@@ -8,23 +8,26 @@ import MultivariateBases as MB
 function _test(B::Type)
     @polyvar x[1:2]
     Random.seed!(0)
-    implicit = MB.ImplicitLagrangeBasis(
-        x,
-        MB.BoxSampling([-1, -1], UInt32[1, 1]),
-    )
+    implicit =
+        MB.ImplicitLagrangeBasis(x, MB.BoxSampling([-1, -1], UInt32[1, 1]))
     point = zeros(2)
-    poly = implicit[x => point]
+    poly = implicit[x=>point]
     @test poly isa MB.LagrangePolynomial
     @test poly.variables == x
     @test poly.point === point
-    err = ErrorException("Variables `$([x[1]])` do not match Lagrange basis variables `$x`")
-    @test_throws err implicit[[x[1]] => [0.0]]
+    err = ErrorException(
+        "Variables `$([x[1]])` do not match Lagrange basis variables `$x`",
+    )
+    @test_throws err implicit[[x[1]]=>[0.0]]
     monos = monomials(x, 0:2)
     coeffs = collect(eachindex(monos))
     sub = MB.SubBasis{B}(monos)
     lag = MB.explicit_basis_covering(implicit, sub)
     @test typeof(lag) == MB.explicit_basis_type(typeof(implicit))
-    a = MB.algebra_element(SA.SparseCoefficients(collect(monos), coeffs), MB.FullBasis{B,typeof(prod(x))}())
+    a = MB.algebra_element(
+        SA.SparseCoefficients(collect(monos), coeffs),
+        MB.FullBasis{B,typeof(prod(x))}(),
+    )
     @test SA.coeffs(a, lag) == SA.coeffs(coeffs, sub, lag)
     @polyvar z
     bad = MB.SubBasis{B}([prod(x) * z])
