@@ -38,7 +38,10 @@ struct ImplicitLagrangeBasis{T,P,N<:AbstractNodes{T,P},V} <:
        SA.ImplicitBasis{LagrangePolynomial{T,P,V},Pair{V,P}}
     variables::V
     nodes::AbstractNodes{T,P}
-    function ImplicitLagrangeBasis(variables, nodes::AbstractNodes{T,P}) where {T,P}
+    function ImplicitLagrangeBasis(
+        variables,
+        nodes::AbstractNodes{T,P},
+    ) where {T,P}
         return new{T,P,typeof(nodes),typeof(variables)}(variables, nodes)
     end
 end
@@ -48,7 +51,10 @@ struct LagrangeBasis{T,P,U<:AbstractVector{P},V} <:
     points::U
     function LagrangeBasis(variables, points::AbstractVector)
         P = eltype(points)
-        return new{eltype(P),P,typeof(points),typeof(variables)}(variables, points)
+        return new{eltype(P),P,typeof(points),typeof(variables)}(
+            variables,
+            points,
+        )
     end
 end
 
@@ -59,16 +65,26 @@ function Base.getindex(basis::LagrangeBasis, I::AbstractVector{<:Integer})
     return LagrangeBasis(basis.variables, basis.points[I])
 end
 
-function explicit_basis_type(::Type{<:ImplicitLagrangeBasis{T,_P,N,V}}) where {T,_P,N,V}
+function explicit_basis_type(
+    ::Type{<:ImplicitLagrangeBasis{T,_P,N,V}},
+) where {T,_P,N,V}
     points = eachcol(ones(T, 1, 1))
     P = eltype(points)
     return LagrangeBasis{eltype(P),P,typeof(points),V}
 end
 
-function eval_basis!(univariate_buffer, result, basis::SubBasis{B}, variables, values) where {B}
+function eval_basis!(
+    univariate_buffer,
+    result,
+    basis::SubBasis{B},
+    variables,
+    values,
+) where {B}
     for v in MP.variables(basis)
         if !(v in variables)
-            error("Cannot evaluate `$basis` as its variable `$v` is not part of the variables `$variables` of the `LagrangeBasis`")
+            error(
+                "Cannot evaluate `$basis` as its variable `$v` is not part of the variables `$variables` of the `LagrangeBasis`",
+            )
         end
     end
     for i in eachindex(values)
@@ -79,7 +95,7 @@ function eval_basis!(univariate_buffer, result, basis::SubBasis{B}, variables, v
         result[i] = one(eltype(result))
         for j in eachindex(values)
             d = MP.degree(basis.monomials[i], variables[j])
-            result[i] = MA.operate!!(*, result[i], univariate_buffer[d + 1, j])
+            result[i] = MA.operate!!(*, result[i], univariate_buffer[d+1, j])
         end
     end
     return result
@@ -91,7 +107,13 @@ function transformation_to(basis::SubBasis, lag::LagrangeBasis{T}) where {T}
     univariate_buffer = Matrix{T}(undef, length(basis), MP.nvariables(lag))
     V = Matrix{T}(undef, length(lag), length(basis))
     for i in eachindex(lag)
-        eval_basis!(univariate_buffer, view(V, i, :), basis, MP.variables(lag), lag.points[i])
+        eval_basis!(
+            univariate_buffer,
+            view(V, i, :),
+            basis,
+            MP.variables(lag),
+            lag.points[i],
+        )
     end
     return V
 end

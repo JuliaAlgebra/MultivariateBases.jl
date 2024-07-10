@@ -77,19 +77,15 @@ function recurrence_eval(
     ) / d
 end
 
-function univariate_eval!(
-    ::Type{B},
-    values::AbstractVector,
-    value,
-) where {B}
+function univariate_eval!(::Type{B}, values::AbstractVector, value) where {B}
     if 1 in eachindex(values)
         values[1] = one(value)
     end
     if 2 in eachindex(values)
         values[2] = degree_one_univariate_polynomial(B, value)
     end
-    for d in 2:(length(values) - 1)
-        values[d + 1] = recurrence_eval(B, view(values, 1:d), value, d)
+    for d in 2:(length(values)-1)
+        values[d+1] = recurrence_eval(B, view(values, 1:d), value, d)
     end
     return values
 end
@@ -111,7 +107,12 @@ function univariate_orthogonal_basis(
 )
     return univariate_eval!(
         B,
-        Vector{MP.polynomial_type(Polynomial{B,MP.monomial_type(variable)}, Int)}(undef, degree + 1),
+        Vector{
+            MP.polynomial_type(Polynomial{B,MP.monomial_type(variable)}, Int),
+        }(
+            undef,
+            degree + 1,
+        ),
         variable,
     )
 end
