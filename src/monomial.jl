@@ -312,6 +312,12 @@ one get ths [`ScaledMonomial`](@ref).
 """
 struct Monomial <: AbstractMonomial end
 
+degree_one_univariate_polynomial(::Type{Monomial}, value) = value
+
+function recurrence_eval(::Type{Monomial}, previous, value, degree)
+    return previous[degree] * value
+end
+
 function (::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
     return sparse_coefficients(a * b)
 end
