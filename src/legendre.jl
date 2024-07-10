@@ -23,7 +23,7 @@ reccurence_deno_coef(::Type{Legendre}, degree) = degree
 
 function degree_one_univariate_polynomial(
     ::Type{Legendre},
-    variable::MP.AbstractVariable,
+    variable,
 )
     MA.@rewrite(variable + 0)
 end

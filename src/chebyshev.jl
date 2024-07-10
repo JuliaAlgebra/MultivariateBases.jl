@@ -97,7 +97,7 @@ function transformation_to(
     for (i, cheby) in enumerate(source)
         A[:, i] = SA.coeffs(algebra_element(cheby), target)
     end
-    return A
+    return LinearAlgebra.UpperTriangular(A)
 end
 
 function SA.coeffs(
@@ -128,10 +128,7 @@ function SA.coeffs(cfs, ::FullBasis{Monomial}, target::FullBasis{Chebyshev})
     )
 end
 
-function degree_one_univariate_polynomial(
-    ::Type{Chebyshev},
-    variable::MP.AbstractVariable,
-)
+function degree_one_univariate_polynomial(::Type{Chebyshev}, variable)
     MA.@rewrite(variable + 0)
 end
 
@@ -155,7 +152,7 @@ struct ChebyshevSecondKind <: AbstractChebyshev end
 
 function degree_one_univariate_polynomial(
     ::Type{ChebyshevSecondKind},
-    variable::MP.AbstractVariable,
+    variable,
 )
     MA.@rewrite(2variable + 0)
 end

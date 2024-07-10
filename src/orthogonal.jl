@@ -64,7 +64,7 @@ function reccurence_deno_coef end
 
 function recurrence_eval(
     ::Type{B},
-    previous::Vector,
+    previous::AbstractVector,
     value,
     degree,
 ) where {B<:AbstractMultipleOrthogonal}

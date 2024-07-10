@@ -8,13 +8,12 @@ mutable struct BoxSampling{T,V} <: AbstractNodes{T,V}
     lower::V
     upper::V
     sample_factor::Int
-    orthogonalize::Bool
-    function BoxSampling(lower, upper; sample_factor = 0, orthogonalize = false)
+    function BoxSampling(lower, upper; sample_factor = 0)
         @assert length(lower) == length(upper)
         l = float.(lower)
         u = float.(upper)
         V = promote_type(typeof(l), typeof(u))
-        return new{eltype(V),V}(l, u, sample_factor, orthogonalize)
+        return new{eltype(V),V}(l, u, sample_factor)
     end
 end
 
@@ -32,7 +31,11 @@ end
 struct LagrangePolynomial{T,P,V}
     variables::V
     point::P
+    function LagrangePolynomial(variables, point)
+        return new{eltype(point),typeof(point),typeof(variables)}(variables, point)
+    end
 end
+
 
 struct ImplicitLagrangeBasis{T,P,N<:AbstractNodes{T,P},V} <:
        SA.ImplicitBasis{LagrangePolynomial{T,P,V},Pair{V,P}}
@@ -45,6 +48,14 @@ struct ImplicitLagrangeBasis{T,P,N<:AbstractNodes{T,P},V} <:
         return new{T,P,typeof(nodes),typeof(variables)}(variables, nodes)
     end
 end
+
+function Base.getindex(implicit::ImplicitLagrangeBasis{T,P,N,V}, subs::Pair{V,P}) where {T,P,N,V}
+    if subs.first != implicit.variables
+        error("Variables `$(subs.first)` do not match Lagrange basis variables `$(implicit.variables)`")
+    end
+    return LagrangePolynomial(implicit.variables, subs.second)
+end
+
 struct LagrangeBasis{T,P,U<:AbstractVector{P},V} <:
        SA.ExplicitBasis{LagrangePolynomial{T,P,V},Int}
     variables::V
@@ -61,9 +72,6 @@ end
 Base.length(basis::LagrangeBasis) = length(basis.points)
 MP.nvariables(basis::LagrangeBasis) = length(basis.variables)
 MP.variables(basis::LagrangeBasis) = basis.variables
-function Base.getindex(basis::LagrangeBasis, I::AbstractVector{<:Integer})
-    return LagrangeBasis(basis.variables, basis.points[I])
-end
 
 function explicit_basis_type(
     ::Type{<:ImplicitLagrangeBasis{T,_P,N,V}},

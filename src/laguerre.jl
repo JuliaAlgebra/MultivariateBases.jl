@@ -18,7 +18,7 @@ reccurence_deno_coef(::Type{Laguerre}, degree) = degree
 
 function degree_one_univariate_polynomial(
     ::Type{Laguerre},
-    variable::MP.AbstractVariable,
+    variable,
 )
     MA.@rewrite(1 - variable)
 end
