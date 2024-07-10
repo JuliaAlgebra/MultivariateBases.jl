@@ -83,7 +83,7 @@ MP.variables(basis::LagrangeBasis) = basis.variables
 function explicit_basis_type(
     ::Type{<:ImplicitLagrangeBasis{T,_P,N,V}},
 ) where {T,_P,N,V}
-    points = eachcol(ones(T, 1, 1))
+    points = _eachcol(ones(T, 1, 1))
     P = eltype(points)
     return LagrangeBasis{eltype(P),P,typeof(points),V}
 end
@@ -149,13 +149,20 @@ function num_samples(sample_factor, dim)
     return sample_factor * dim
 end
 
+if VERSION >= v"1.10"
+    _eachcol(x) = eachcol(x)
+else
+    # It is a `Base.Generator` so not an `AbstractVector`
+    _eachcol(x) = collect(eachcol(x))
+end
+
 function sample(variables, s::AbstractNodes, basis::SubBasis)
     samples = sample(s, num_samples(s.sample_factor, length(basis)))
-    full = LagrangeBasis(variables, eachcol(samples))
+    full = LagrangeBasis(variables, _eachcol(samples))
     V = transformation_to(basis, full)
     F = LinearAlgebra.qr!(Matrix(V'), LinearAlgebra.ColumnNorm())
     kept_indices = F.p[1:length(basis)]
-    return LagrangeBasis(variables, eachcol(samples[:, kept_indices]))
+    return LagrangeBasis(variables, _eachcol(samples[:, kept_indices]))
 end
 
 function explicit_basis_covering(

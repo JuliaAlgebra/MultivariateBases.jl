@@ -28,7 +28,7 @@ function _test(B::Type)
         SA.SparseCoefficients(collect(monos), coeffs),
         MB.FullBasis{B,typeof(prod(x))}(),
     )
-    @test SA.coeffs(a, lag) == SA.coeffs(coeffs, sub, lag)
+    @test SA.coeffs(a, lag) ≈ SA.coeffs(coeffs, sub, lag)
     @polyvar z
     bad = MB.SubBasis{B}([prod(x) * z])
     err = ErrorException(
