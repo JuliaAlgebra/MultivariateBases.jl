@@ -56,6 +56,10 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
             full_basis,
             MB.SubBasis{ScaledMonomial}(monomials(x, 0:degree)),
         ),
+        explicit_basis_covering(
+            full_basis,
+            MB.SubBasis{B}(monomials(x, 0:degree)),
+        ),
     ]
         _test_basis(basis)
         @test basis isa MB.explicit_basis_type(typeof(full_basis))
