@@ -64,10 +64,7 @@ function Base.getindex(basis::SubBasis{B,M}, value::Polynomial{B,M}) where {B,M}
     return mono
 end
 
-function explicit_basis_covering(
-    ::FullBasis{B},
-    target::SubBasis{B},
-) where {B}
+function explicit_basis_covering(::FullBasis{B}, target::SubBasis{B}) where {B}
     return SubBasis{B}(target.monomials)
 end
 
