@@ -151,16 +151,18 @@ end
 
 if VERSION >= v"1.10"
     _eachcol(x) = eachcol(x)
+    _column_norm() = LinearAlgebra.ColumnNorm()
 else
     # It is a `Base.Generator` so not an `AbstractVector`
     _eachcol(x) = collect(eachcol(x))
+    _column_norm() = Val(true)
 end
 
 function sample(variables, s::AbstractNodes, basis::SubBasis)
     samples = sample(s, num_samples(s.sample_factor, length(basis)))
     full = LagrangeBasis(variables, _eachcol(samples))
     V = transformation_to(basis, full)
-    F = LinearAlgebra.qr!(Matrix(V'), LinearAlgebra.ColumnNorm())
+    F = LinearAlgebra.qr!(Matrix(V'), _column_norm())
     kept_indices = F.p[1:length(basis)]
     return LagrangeBasis(variables, _eachcol(samples[:, kept_indices]))
 end
