@@ -4,7 +4,7 @@ import MutableArithmetics as MA
 import StarAlgebras as SA
 import MultivariatePolynomials as MP
 
-export AbstractPolynomialBasis, FullBasis, SubBasis
+export FullBasis, SubBasis
 export maxdegree_basis, explicit_basis_covering, empty_basis, monomial_index
 include("interface.jl")
 
@@ -55,10 +55,8 @@ export algebra_element,
     reccurence_second_coef,
     reccurence_third_coef,
     reccurence_deno_coef
-#include("fixed.jl")
 
 import LinearAlgebra
-#include("orthonormal.jl")
 include("orthogonal.jl")
 include("hermite.jl")
 include("laguerre.jl")

@@ -11,7 +11,6 @@ end
 based on the [MultivariatePolynomials](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) API.
 
 ```@docs
-AbstractPolynomialBasis
 maxdegree_basis
 explicit_basis_covering
 ```
