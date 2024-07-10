@@ -62,6 +62,21 @@ d_k p_k(x_i) = (a_k x_i + b_k) p_{k-1}(x_i) + c_k p_{k-2}(x_i)
 """
 function reccurence_deno_coef end
 
+function univariate_eval!(
+    values::Vector,
+    value,
+    ::Type{B},
+) where {B}
+    if 1 in eachindex(values)
+        values[1] = one(value)
+    end
+    if 2 in eachindex(values)
+        values[1] = one(value)
+    end
+    for d in 2:(length(values) - 1)
+    end
+end
+
 """
     univariate_orthogonal_basis(
         B::Type{<:AbstractMultipleOrthogonal},

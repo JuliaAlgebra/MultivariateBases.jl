@@ -89,6 +89,17 @@ function SA.coeffs!(
     return res
 end
 
+function transformation_to(
+    source::SubBasis{Chebyshev},
+    target::SubBasis{Monomial},
+)
+    A = zeros(Float64, length(target), length(source))
+    for (i, cheby) in enumerate(source)
+        A[:, i] = SA.coeffs(algebra_element(cheby), target)
+    end
+    return A
+end
+
 function SA.coeffs(
     cfs,
     source::SubBasis{Monomial},
@@ -97,17 +108,13 @@ function SA.coeffs(
     sub = explicit_basis_covering(target, source)
     # Need to make A square so that it's UpperTriangular
     extended = SubBasis{Monomial}(sub.monomials)
-    A = zeros(Float64, length(extended), length(sub))
-    for (i, cheby) in enumerate(sub)
-        A[:, i] = SA.coeffs(algebra_element(cheby), extended)
-    end
     ext = SA.coeffs(algebra_element(cfs, source), extended)
     return SA.SparseCoefficients(
         sub.monomials,
-        #LinearAlgebra.UpperTriangular(A) \ ext, # Julia v1.6 converts `A` to the eltype of the `result` which is bad for JuMP
+        #transformation_to(sub, extended) \ ext, # Julia v1.6 converts the matrix to the eltype of the `result` which is bad for JuMP
         LinearAlgebra.ldiv!(
-            zeros(_promote_coef(eltype(ext), Chebyshev), size(A, 2)),
-            LinearAlgebra.UpperTriangular(A),
+            zeros(_promote_coef(eltype(ext), Chebyshev), length(sub)),
+            transformation_to(sub, extended),
             ext,
         ),
     )

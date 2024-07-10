@@ -64,6 +64,7 @@ include("hermite.jl")
 include("laguerre.jl")
 include("legendre.jl")
 include("chebyshev.jl")
+include("lagrange.jl")
 include("quotient.jl")
 
 function algebra(
