@@ -64,6 +64,10 @@ function Base.getindex(basis::SubBasis{B,M}, value::Polynomial{B,M}) where {B,M}
     return mono
 end
 
+function explicit_basis_covering(::FullBasis{B}, target::SubBasis{B}) where {B}
+    return SubBasis{B}(target.monomials)
+end
+
 const MonomialIndexedBasis{B,M} = Union{SubBasis{B,M},FullBasis{B,M}}
 
 MP.monomial_type(::Type{<:SubBasis{B,M}}) where {B,M} = M
@@ -291,6 +295,14 @@ abstract type AbstractMonomial <: AbstractMonomialIndexed end
 function explicit_basis_covering(
     ::FullBasis{B},
     target::SubBasis{<:AbstractMonomial},
+) where {B<:AbstractMonomial}
+    return SubBasis{B}(target.monomials)
+end
+
+# To break ambiguity
+function explicit_basis_covering(
+    ::FullBasis{B},
+    target::SubBasis{B},
 ) where {B<:AbstractMonomial}
     return SubBasis{B}(target.monomials)
 end
