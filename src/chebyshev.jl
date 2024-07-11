@@ -24,11 +24,23 @@ const Chebyshev = ChebyshevFirstKind
 
 # https://en.wikipedia.org/wiki/Chebyshev_polynomials#Properties
 # `T_n * T_m = T_{n + m} / 2 + T_{|n - m|} / 2`
-function (::Mul{Chebyshev})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
+function univariate_mul!(::Mul{Chebyshev}, terms, var, a, b)
+    I = eachindex(terms)
+    for i in I
+        mono = MP.monomial(terms[i]) * var^(a + b)
+        terms[i] = MA.mul!!(terms[i], var^abs(a - b))
+        terms[i] = MA.operate!!(/, terms[i], 2)
+        α = MA.copy_if_mutable(MP.coefficient(terms[i]))
+        push!(terms, MP.term(α, mono))
+    end
+    return
+end
+
+function (mul::Mul{B})(a::MP.AbstractMonomial, b::MP.AbstractMonomial) where {B<:AbstractMonomialIndexed}
     terms = [MP.term(1 // 1, MP.constant_monomial(a * b))]
-    vars_a = MP.variables(a)
+    vars_a = MP.effective_variables(a)
     var_state_a = iterate(vars_a)
-    vars_b = MP.variables(b)
+    vars_b = MP.effective_variables(b)
     var_state_b = iterate(vars_b)
     while !isnothing(var_state_a) || !isnothing(var_state_b)
         if isnothing(var_state_a) ||
@@ -48,16 +60,7 @@ function (::Mul{Chebyshev})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
         else
             var_a, state_a = var_state_a
             var_b, state_b = var_state_b
-            d_a = MP.degree(a, var_a)
-            d_b = MP.degree(b, var_b)
-            I = eachindex(terms)
-            for i in I
-                mono = MP.monomial(terms[i]) * var_a^(d_a + d_b)
-                terms[i] = MA.mul!!(terms[i], var_a^abs(d_a - d_b))
-                terms[i] = MA.operate!!(/, terms[i], 2)
-                α = MA.copy_if_mutable(MP.coefficient(terms[i]))
-                push!(terms, MP.term(α, mono))
-            end
+            univariate_mul!(mul, terms, var_a, MP.degree(a, var_a), MP.degree(b, var_b))
             var_state_a = iterate(vars_a, state_a)
             var_state_b = iterate(vars_b, state_b)
         end
