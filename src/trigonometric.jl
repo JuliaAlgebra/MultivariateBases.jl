@@ -85,7 +85,8 @@ function recurrence_eval(
     d = _id(degree)
     if _is_cos(degree)
         # Chebyshev first order
-        return 2 * value * previous[_cos_id(d - 1) + 1] - previous[_cos_id(d - 2) + 1]
+        return 2 * value * previous[_cos_id(d - 1)+1] -
+               previous[_cos_id(d - 2)+1]
     else
         return sqrt(1 - previous[degree]^2)
     end

@@ -38,4 +38,5 @@ AbstractGegenbauer
 Legendre
 ChebyshevFirstKind
 ChebyshevSecondKind
+Trigonometric
 ```

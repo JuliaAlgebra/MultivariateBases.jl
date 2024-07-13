@@ -36,7 +36,10 @@ function univariate_mul!(::Mul{Chebyshev}, terms, var, a, b)
     return
 end
 
-function (mul::Mul{B})(a::MP.AbstractMonomial, b::MP.AbstractMonomial) where {B<:AbstractMonomialIndexed}
+function (mul::Mul{B})(
+    a::MP.AbstractMonomial,
+    b::MP.AbstractMonomial,
+) where {B<:AbstractMonomialIndexed}
     terms = [MP.term(1 // 1, MP.constant_monomial(a * b))]
     vars_a = MP.effective_variables(a)
     var_state_a = iterate(vars_a)
@@ -60,7 +63,13 @@ function (mul::Mul{B})(a::MP.AbstractMonomial, b::MP.AbstractMonomial) where {B<
         else
             var_a, state_a = var_state_a
             var_b, state_b = var_state_b
-            univariate_mul!(mul, terms, var_a, MP.degree(a, var_a), MP.degree(b, var_b))
+            univariate_mul!(
+                mul,
+                terms,
+                var_a,
+                MP.degree(a, var_a),
+                MP.degree(b, var_b),
+            )
             var_state_a = iterate(vars_a, state_a)
             var_state_b = iterate(vars_b, state_b)
         end
