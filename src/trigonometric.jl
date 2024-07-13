@@ -6,12 +6,12 @@ Univariate trigonometric basis is
 a0 + a1 cos(ωt) + a2 sin(ωt) + a3 cos(2ωt) + a4 sin(2ωt)
 ```
 """
-struct Trigonometric <: AbstractMonomialIndexed end
+struct Trigonometric <: AbstractMultipleOrthogonal end
 
 _cos_id(d) = iszero(d) ? 0 : 2d - 1
 _sin_id(d) = 2d
 _is_cos(d) = isodd(d)
-_is_sin(d) = isodd(d)
+_is_sin(d) = d > 0 && iseven(d)
 _id(d) = div(d + 1, 2)
 
 # https://en.wikipedia.org/wiki/Chebyshev_polynomials#Properties
@@ -95,3 +95,6 @@ end
 function _promote_coef(::Type{T}, ::Type{Trigonometric}) where {T}
     return _promote_div(T)
 end
+
+# FIXME The cos part is, like Chebysev, maybe the sin part too ? We should do better here, this is just a stopgap
+even_odd_separated(::Type{Trigonometric}) = false
