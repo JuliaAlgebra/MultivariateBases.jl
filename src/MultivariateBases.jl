@@ -47,7 +47,7 @@ include("scaled.jl")
 export AbstractMultipleOrthogonal,
     ProbabilistsHermite, PhysicistsHermite, Laguerre
 export AbstractGegenbauer,
-    Legendre, Chebyshev, ChebyshevFirstKind, ChebyshevSecondKind
+    Legendre, Chebyshev, ChebyshevFirstKind, ChebyshevSecondKind, Trigonometric
 export algebra_element,
     sparse_coefficients,
     univariate_orthogonal_basis,
@@ -62,6 +62,7 @@ include("hermite.jl")
 include("laguerre.jl")
 include("legendre.jl")
 include("chebyshev.jl")
+include("trigonometric.jl")
 include("lagrange.jl")
 include("quotient.jl")
 
