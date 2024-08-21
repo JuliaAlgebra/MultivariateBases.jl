@@ -2,6 +2,32 @@ const _APL = MP.AbstractPolynomialLike
 # We don't define it for all `AlgebraElement` as this would be type piracy
 const _AE = SA.AlgebraElement{<:Algebra}
 
+struct SubMStruct{B} <: SA.MultiplicativeStructure
+    bases::B
+end
+
+function (m::SubMStruct)(args...)
+    return SA.coeffs(
+        *(getindex.(m.bases[2:end], args)...),
+        m.bases[1],
+    )
+end
+
+function SA.mstructure(args::Algebra...)
+    if SA.basis(args[1]) isa FullBasis &&
+        all(isequal(args[1]), args)
+        return SA.mstructure(SA.basis(args[1]))
+    end
+    return SubMStruct(SA.basis.(args))
+end
+
+SA.mstructure(::FullBasis{B}) where {B} = Mul{B}()
+
+function _preallocate_output(op, args::Vararg{Any,N}) where {N}
+    T = MA.promote_operation(op, SA._coeff_type.(args)...)
+    return zero(T, algebra(implicit_basis(SA.basis(args[1]))))
+end
+
 for op in [:+, :-, :*]
     @eval begin
         function MA.promote_operation(
@@ -29,7 +55,7 @@ for op in [:+, :-, :*]
             return SA.algebra_promote_operation($op, P, Q)
         end
         function Base.$op(p::_AE, q::_AE)
-            return MA.operate_to!(SA._preallocate_output($op, p, q), $op, p, q)
+            return MA.operate_to!(_preallocate_output($op, p, q), $op, p, q)
         end
     end
 end

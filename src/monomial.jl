@@ -9,8 +9,6 @@ function Base.getindex(::FullBasis{B,M}, p::Polynomial{B,M}) where {B,M}
     return p.monomial
 end
 
-SA.mstructure(::FullBasis{B}) where {B} = Mul{B}()
-
 MP.monomial_type(::Type{<:FullBasis{B,M}}) where {B,M} = M
 function MP.polynomial_type(basis::FullBasis{B,M}, ::Type{T}) where {B,M,T}
     return MP.polynomial_type(typeof(basis), T)
@@ -449,7 +447,7 @@ function SA.coeffs(
         return SA.SparseCoefficients(_vec(source.monomials), _vec(cfs))
     else
         res = SA.zero_coeffs(
-            _promote_coef(_promote_coef(valtype(cfs), B1), B2),
+            _promote_coef(_promote_coef(SA.value_type(cfs), B1), B2),
             target,
         )
         return SA.coeffs!(res, cfs, source, target)
