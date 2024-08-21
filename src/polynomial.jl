@@ -102,7 +102,17 @@ end
 
 function _show(io::IO, mime::MIME, p::Polynomial{B}) where {B}
     if B != Monomial
-        print(io, B)
+        if mime isa MIME"text/latex"
+            print(io, "\\text{")
+        end
+        if B == Chebyshev
+            print(io, "Cheby")
+        else
+            print(io, B)
+        end
+        if mime isa MIME"text/latex"
+            print(io, "}")
+        end
         print(io, "(")
     end
     print(io, SA.trim_LaTeX(mime, sprint(show, mime, p.monomial)))
