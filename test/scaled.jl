@@ -46,3 +46,7 @@ end
 @testset "Coefficients" begin
     coefficient_test(MB.ScaledMonomial, [1, -√3 / √2, 1 / √15, 1 / √15])
 end
+
+@testset "test_mul" begin
+    test_mul(MB.ScaledMonomial)
+end

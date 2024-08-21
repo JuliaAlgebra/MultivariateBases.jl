@@ -67,3 +67,7 @@ end
         ]),
     )
 end
+
+@testset "test_mul" begin
+    test_mul(MB.Chebyshev)
+end

@@ -104,3 +104,7 @@ end
 @testset "Coefficients" begin
     coefficient_test(MB.Monomial, [1, -3, 1, 1])
 end
+
+@testset "test_mul" begin
+    test_mul(MB.Monomial)
+end
