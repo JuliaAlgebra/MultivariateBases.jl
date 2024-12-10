@@ -82,5 +82,6 @@ function MA.promote_operation(
 end
 
 include("arithmetic.jl")
+include("fixed.jl")
 
 end # module

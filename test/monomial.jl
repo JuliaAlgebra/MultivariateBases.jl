@@ -14,7 +14,7 @@ using DynamicPolynomials
     @test MB.Polynomial{MB.Monomial}(x^3) != MB.Polynomial{MB.Monomial}(x^2)
 end
 
-@testset "Linear" begin
+#@testset "Linear" begin
     basis = SubBasis{MB.Monomial}([x, y])
     @test basis == SubBasis{MB.Monomial}([y, x])
     @test basis != SubBasis{MB.Monomial}([y, y^2, x])
@@ -33,7 +33,7 @@ end
     @test sprint(show, MIME"text/plain"(), basis) ==
           "SubBasis{Monomial}([y, x])"
     @test sprint(print, basis) == "SubBasis{Monomial}([y, x])"
-end
+#end
 @testset "Affine" begin
     # It will be sorted and 1 will be moved at the end
     basis = SubBasis{MB.Monomial}([1, x, y])
