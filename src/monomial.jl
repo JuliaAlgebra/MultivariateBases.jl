@@ -270,7 +270,7 @@ function _show_vector(io::IO, mime::MIME, v)
         first = false
         show(io, mime, el)
     end
-    print(io, ']')
+    return print(io, ']')
 end
 
 function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}

@@ -1,7 +1,5 @@
-struct FixedBasis{B,M,T,V} <: SA.ExplicitBasis{
-    SA.AlgebraElement{Algebra{FullBasis{B,M},B,M},T,V},
-    Int,
-}
+struct FixedBasis{B,M,T,V} <:
+       SA.ExplicitBasis{SA.AlgebraElement{Algebra{FullBasis{B,M},B,M},T,V},Int}
     elements::Vector{SA.AlgebraElement{Algebra{FullBasis{B,M},B,M},T,V}}
 end
 
