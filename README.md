@@ -5,15 +5,28 @@
 This package provides a standardized API for multivariate polynomial bases
 based on the [MultivariatePolynomials](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) API.
 
-It defines the following basis:
-* `FixedBasis`: A polynomial basis described by a list of polynomials.
-* Monomial bases: `MonomialBasis` and `ScaledMonomialBasis`.
-* Orthogonal bases:
-  - Hermite bases: `ProbabilistsHermiteBasis` and `PhysicistsHermiteBasis`.
-  - `LaguerreBasis`.
-  - Gegenbauer bases:
-    * `LegendreBasis`.
-    * Chebyshev bases: `ChebyshevBasisFirstKind` and `ChebyshevBasisSecondKind`
+This package defines a few univariate bases such as chebyshev polynomials.
+These are then extended to multivariate as follows.
+Given a monomial `x^i * y^j` the corresponding multivariate chebyshev polynomial is the product of the `i`th univariate chebyshev polynomial in `x` and the `j`th univariate chebyshev polynomial in `y`.
+Given this one-to-one correspondence between monomials and multivariate chebyshev polynomials, we represent them directly by these monomials and keep this representation even through addition, multiplication, etc...
+```julia
+julia> using DynamicPolynomials
+
+julia> @polyvar x y;
+
+julia> using MultivariateBases
+
+julia> basis = FullBasis{Chebyshev,typeof(x*y)}();
+
+julia> basis[x^2 * y^3]
+ChebyshevFirstKind(x²y³)
+
+julia> basis[x^2 * y^3] * basis[x * y]
+1//4·ChebyshevFirstKind(xy²) + 1//4·ChebyshevFirstKind(xy⁴) + 1//4·ChebyshevFirstKind(x³y²) + 1//4·ChebyshevFirstKind(x³y⁴)
+```
+
+The elements obtained by manipulating these polynomials are `StarAlgebras.AlgebraElement`.
+The algebra in [StarAlgebras.jl](https://github.com/JuliaAlgebra/StarAlgebras.jl) implements the [MutableArithmetics.jl](https://github.com/jump-dev/MutableArithmetics.jl/) API for efficient manipulation.
 
 See the documentation for more details.
 
