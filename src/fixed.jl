@@ -45,7 +45,7 @@ Elements of [`SemisimpleBasis`](@ref).
 struct SemisimpleElement{P}
     elements::Vector{P}
 end
-SA.star(p::SemisimpleElement) = SemisimpleElement(SA.star.(p.polynomials))
+SA.star(p::SemisimpleElement) = SemisimpleElement(SA.star.(p.elements))
 
 function Base.getindex(b::SemisimpleBasis, i::Integer)
     return SemisimpleElement(getindex.(b.bases, i))

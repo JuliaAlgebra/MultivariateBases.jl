@@ -41,6 +41,16 @@ end
 
 abstract type AbstractMonomialIndexed end
 
+"""
+    struct Polynomial{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
+        monomial::M
+        function Polynomial{B}(mono::MP.AbstractMonomial) where {B}
+            return new{B,typeof(mono)}(mono)
+        end
+    end
+
+Polynomial of basis `FullBasis{B,M}()` at index `monomial`.
+"""
 struct Polynomial{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
     monomial::M
     function Polynomial{B}(mono::MP.AbstractMonomial) where {B}
