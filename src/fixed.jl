@@ -47,7 +47,9 @@ struct SemisimpleElement{P}
 end
 SA.star(p::SemisimpleElement) = SemisimpleElement(SA.star.(p.polynomials))
 
-Base.getindex(b::SemisimpleBasis, i::Integer) = SemisimpleElement(getindex.(b.bases, i))
+function Base.getindex(b::SemisimpleBasis, i::Integer)
+    return SemisimpleElement(getindex.(b.bases, i))
+end
 
 function Base.show(io::IO, b::SemisimpleBasis)
     if length(b.bases) == 1
