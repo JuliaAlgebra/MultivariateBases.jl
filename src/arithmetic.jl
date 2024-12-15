@@ -31,6 +31,9 @@ for op in [:+, :-, :*]
         function Base.$op(p::_AE, q::_AE)
             return MA.operate_to!(SA._preallocate_output($op, p, q), $op, p, q)
         end
+        function Base.promote_rule(Q::Type{<:_APL}, P::Type{<:_AE})
+            return promote_type(Q, MP.polynomial_type(P))
+        end
     end
 end
 for op in [:+, :-]
