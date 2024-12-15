@@ -21,7 +21,7 @@ using DynamicPolynomials
     @test sprint(show, semi) ==
           "Semisimple basis with 2 simple sub-bases:\n  FixedBasis([$p1])\n  FixedBasis([$p2])"
     mult = semi[1]
-    @test all(mult.polynomials .≈ [p1, p2])
+    @test all(mult.elements .≈ [p1, p2])
     smult = SA.star(mult)
-    @test all(smult.polynomials .≈ [p2, p1])
+    @test all(smult.elements .≈ [p2, p1])
 end
