@@ -1,15 +1,15 @@
-struct FixedPolynomialBasis{B,M,T,V} <: SA.ExplicitBasis{
+struct FixedBasis{B,M,T,V} <: SA.ExplicitBasis{
     SA.AlgebraElement{Algebra{FullBasis{B,M},B,M},T,V},
     Int,
 }
     elements::Vector{SA.AlgebraElement{Algebra{FullBasis{B,M},B,M},T,V}}
 end
 
-Base.length(b::FixedPolynomialBasis) = length(b.elements)
-Base.getindex(b::FixedPolynomialBasis, i::Integer) = b.elements[i]
+Base.length(b::FixedBasis) = length(b.elements)
+Base.getindex(b::FixedBasis, i::Integer) = b.elements[i]
 
-function Base.show(io::IO, b::FixedPolynomialBasis)
-    print(io, "FixedPolynomialBasis(")
+function Base.show(io::IO, b::FixedBasis)
+    print(io, "FixedBasis(")
     _show_vector(io, MIME"text/plain"(), b.elements)
     print(io, ")")
     return

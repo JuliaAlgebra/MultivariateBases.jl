@@ -9,7 +9,7 @@ This package provides a standardized API for multivariate polynomial bases
 based on the [MultivariatePolynomials](https://github.com/JuliaAlgebra/MultivariatePolynomials.jl) API.
 
 It defines the following basis:
-* `FixedPolynomialBasis`: A polynomial basis described by a list of polynomials.
+* `FixedBasis`: A polynomial basis described by a list of polynomials.
 * Monomial bases: `MonomialBasis` and `ScaledMonomialBasis`.
 * Orthogonal bases:
   - Hermite bases: `ProbabilistsHermiteBasis` and `PhysicistsHermiteBasis`.
