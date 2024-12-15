@@ -1,7 +1,7 @@
 # TODO Add to MultivariatePolynomials
 MP.variables(p::SA.AlgebraElement) = MP.variables(explicit_basis(p))
 Base.keytype(p::MP.AbstractPolynomialLike) = MP.monomial_type(p)
-Base.valtype(p::MP.AbstractPolynomialLike) = MP.coefficient_type(p)
+SA.value_type(p::MP.AbstractPolynomialLike) = MP.coefficient_type(p)
 #Base.keys(p::MP.AbstractPolynomial) = MP.monomials(p)
 SA.nonzero_pairs(p::MP.AbstractPolynomialLike) = MP.terms(p)
 function Base.similar(p::PT, ::Type{T}) where {PT<:MP.AbstractPolynomial,T}
@@ -41,6 +41,16 @@ end
 
 abstract type AbstractMonomialIndexed end
 
+"""
+    struct Polynomial{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
+        monomial::M
+        function Polynomial{B}(mono::MP.AbstractMonomial) where {B}
+            return new{B,typeof(mono)}(mono)
+        end
+    end
+
+Polynomial of basis `FullBasis{B,M}()` at index `monomial`.
+"""
 struct Polynomial{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
     monomial::M
     function Polynomial{B}(mono::MP.AbstractMonomial) where {B}

@@ -76,6 +76,18 @@ for op in [:+, :-]
     end
 end
 
+function term_element(α, p::Polynomial{B,M}) where {B,M}
+    return algebra_element(
+        sparse_coefficients(MP.term(α, p.monomial)),
+        FullBasis{B,M}(),
+    )
+end
+
+# Needed by `SymbolicWedderburn` which multiplies elements of the basis by `Int`
+# We'll see if `::Number` is too restrictive
+# Should be able to remove once https://github.com/kalmarek/SymbolicWedderburn.jl/issues/88 is closed
+Base.:*(α::Number, p::Polynomial) = term_element(α, p)
+
 function MA.operate!(op::Union{typeof(+),typeof(-),typeof(*)}, p::_APL, q::_AE)
     return MA.operate!(op, p, MP.polynomial(q))
 end

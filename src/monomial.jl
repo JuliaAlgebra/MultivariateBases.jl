@@ -258,20 +258,26 @@ function constant_algebra_element(::Type{<:SubBasis{B,M}}, α) where {B,M}
     )
 end
 
-function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
-    print(io, "SubBasis{$(nameof(B))}")
-    print(io, "([")
+# TODO use Base.show_vector here, maybe by wrapping the `generator` vector
+#      into something that spits objects wrapped with the `mime` type
+function _show_vector(io::IO, mime::MIME, v)
+    print(io, '[')
     first = true
-    # TODO use Base.show_vector here, maybe by wrapping the `generator` vector
-    #      into something that spits objects wrapped with the `mime` type
-    for mono in basis.monomials
+    for el in v
         if !first
             print(io, ", ")
         end
         first = false
-        show(io, mime, mono)
+        show(io, mime, el)
     end
-    return print(io, "])")
+    return print(io, ']')
+end
+
+function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
+    print(io, "SubBasis{$(nameof(B))}(")
+    _show_vector(io, mime, basis.monomials)
+    print(io, ')')
+    return
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", basis::SubBasis)
@@ -449,7 +455,7 @@ function SA.coeffs(
         return SA.SparseCoefficients(_vec(source.monomials), _vec(cfs))
     else
         res = SA.zero_coeffs(
-            _promote_coef(_promote_coef(valtype(cfs), B1), B2),
+            _promote_coef(_promote_coef(SA.value_type(cfs), B1), B2),
             target,
         )
         return SA.coeffs!(res, cfs, source, target)

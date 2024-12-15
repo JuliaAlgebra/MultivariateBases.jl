@@ -15,6 +15,13 @@ maxdegree_basis
 explicit_basis_covering
 ```
 
+## Basis elements
+
+```@docs
+Polynomial
+SemisimpleElement
+```
+
 ## Monomial basis
 
 ```@docs
@@ -39,4 +46,11 @@ Legendre
 ChebyshevFirstKind
 ChebyshevSecondKind
 Trigonometric
+```
+
+## Additional basis
+
+```@docs
+FixedBasis
+SemisimpleBasis
 ```
