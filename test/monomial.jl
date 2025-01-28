@@ -7,11 +7,14 @@ using DynamicPolynomials
 @testset "StarAlgebras" begin
     @polyvar x
     a = MB.Polynomial{MB.Monomial}(x)
+    @test !isone(a)
     b = a * a
     @test b.coeffs == sparse_coefficients(x^2)
     @test typeof(b.coeffs) == typeof(sparse_coefficients(x^2))
     @test MB.Polynomial{MB.Monomial}(x^2) == MB.Polynomial{MB.Monomial}(x^2)
     @test MB.Polynomial{MB.Monomial}(x^3) != MB.Polynomial{MB.Monomial}(x^2)
+    o = MB.Polynomial{MB.Monomial}(constant_monomial(x^2))
+    @test isone(o)
 end
 
 @testset "Linear" begin

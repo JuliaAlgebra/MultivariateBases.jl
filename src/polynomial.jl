@@ -66,6 +66,8 @@ function Base.isequal(p::Polynomial{B}, q::Polynomial{B}) where {B}
     return isequal(p.monomial, q.monomial)
 end
 
+Base.isone(p::Polynomial) = isone(p.monomial)
+
 # Needed for `BoundsError`
 Base.iterate(p::Polynomial) = p, nothing
 Base.iterate(::Polynomial, ::Nothing) = nothing
