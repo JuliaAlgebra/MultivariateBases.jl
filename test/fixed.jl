@@ -18,7 +18,8 @@ using DynamicPolynomials
     @test fixed[2] ≈ p2
     @test sprint(show, fixed) == "FixedBasis([$p1, $p2])"
 
-    semi = MB.SemisimpleBasis([MB.FixedBasis([p1, p2]), MB.FixedBasis([q1, q2])])
+    semi =
+        MB.SemisimpleBasis([MB.FixedBasis([p1, p2]), MB.FixedBasis([q1, q2])])
     @test length(semi) == 2
     @test sprint(show, semi) ==
           "Semisimple basis with 2 simple sub-bases:\n  FixedBasis([$p1, $p2])\n  FixedBasis([$q1, $q2])"
@@ -33,7 +34,7 @@ using DynamicPolynomials
     @test elem == semi[2]
     @test isnothing(iterate(semi, state))
 
-    res = zero(Complex{Int}, MB.algebra(MB.FullBasis{Monomial,typeof(x*y)}()));
+    res = zero(Complex{Int}, MB.algebra(MB.FullBasis{Monomial,typeof(x * y)}()))
     MA.operate!(SA.UnsafeAddMul(*), res, semi[1], semi[2], true)
     MA.operate!(SA.canonical, res)
     @test res == p1 * p2 + q1 * q2

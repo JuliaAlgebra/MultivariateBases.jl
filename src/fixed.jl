@@ -46,7 +46,9 @@ function _iterate(b::SemisimpleBasis, elem_state)
     return b[elem], state
 end
 Base.iterate(b::SemisimpleBasis) = _iterate(b, iterate(keys(first(b.bases))))
-Base.iterate(b::SemisimpleBasis, st) = _iterate(b, iterate(keys(first(b.bases)), st))
+function Base.iterate(b::SemisimpleBasis, st)
+    return _iterate(b, iterate(keys(first(b.bases)), st))
+end
 
 """
     struct SemisimpleElement{P}
@@ -62,8 +64,8 @@ SA.star(p::SemisimpleElement) = SemisimpleElement(SA.star.(p.elements))
 
 function Base.:(==)(a::SemisimpleElement, b::SemisimpleElement)
     return length(a.elements) == length(b.elements) &&
-    all(zip(a.elements, b.elements)) do (a, b)
-        a == b
+           all(zip(a.elements, b.elements)) do (a, b)
+        return a == b
     end
 end
 
