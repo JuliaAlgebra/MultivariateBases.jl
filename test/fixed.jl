@@ -26,6 +26,13 @@ using DynamicPolynomials
     @test all(mult.elements .≈ [p1, q1])
     smult = SA.star(mult)
     @test all(smult.elements .≈ [q1, p1])
+
+    elem, state = iterate(semi)
+    @test elem == semi[1]
+    elem, state = iterate(semi, state)
+    @test elem == semi[2]
+    @test isnothing(iterate(semi, state))
+
     res = zero(Complex{Int}, MB.algebra(MB.FullBasis{Monomial,typeof(x*y)}()));
     MA.operate!(SA.UnsafeAddMul(*), res, semi[1], semi[2], true)
     MA.operate!(SA.canonical, res)

@@ -60,6 +60,13 @@ struct SemisimpleElement{P}
 end
 SA.star(p::SemisimpleElement) = SemisimpleElement(SA.star.(p.elements))
 
+function Base.:(==)(a::SemisimpleElement, b::SemisimpleElement)
+    return length(a.elements) == length(b.elements) &&
+    all(zip(a.elements, b.elements)) do (a, b)
+        a == b
+    end
+end
+
 function MA.operate!(
     op::SA.UnsafeAddMul,
     res,
