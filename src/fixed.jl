@@ -21,6 +21,9 @@ function Base.show(io::IO, b::FixedBasis)
     return
 end
 
+# TODO refactor with `SA.MappedBasis`
+# https://github.com/JuliaAlgebra/StarAlgebras.jl/pull/76
+
 """
     struct SemisimpleBasis{T,I,B<:SA.ExplicitBasis{T,I}} <: SA.ExplicitBasis{T,I}
         bases::Vector{B}
@@ -35,6 +38,16 @@ end
 
 Base.length(b::SemisimpleBasis) = length(first(b.bases))
 
+function _iterate(b::SemisimpleBasis, elem_state)
+    if isnothing(elem_state)
+        return
+    end
+    elem, state = elem_state
+    return b[elem], state
+end
+Base.iterate(b::SemisimpleBasis) = _iterate(b, iterate(keys(first(b.bases))))
+Base.iterate(b::SemisimpleBasis, st) = _iterate(b, iterate(keys(first(b.bases)), st))
+
 """
     struct SemisimpleElement{P}
         polynomials::Vector{P}
@@ -46,6 +59,18 @@ struct SemisimpleElement{P}
     elements::Vector{P}
 end
 SA.star(p::SemisimpleElement) = SemisimpleElement(SA.star.(p.elements))
+
+function MA.operate!(
+    op::SA.UnsafeAddMul,
+    res,
+    A::SemisimpleElement,
+    B::SemisimpleElement,
+    α,
+)
+    for (a, b) in zip(A.elements, B.elements)
+        MA.operate!(op, res, a, b, α)
+    end
+end
 
 function Base.getindex(b::SemisimpleBasis, i::Integer)
     return SemisimpleElement(getindex.(b.bases, i))
