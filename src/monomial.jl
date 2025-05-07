@@ -9,8 +9,6 @@ function Base.getindex(::FullBasis{B,M}, p::Polynomial{B,M}) where {B,M}
     return p.monomial
 end
 
-SA.mstructure(::FullBasis{B}) where {B} = Mul{B}()
-
 MP.monomial_type(::Type{<:FullBasis{B,M}}) where {B,M} = M
 function MP.polynomial_type(basis::FullBasis{B,M}, ::Type{T}) where {B,M,T}
     return MP.polynomial_type(typeof(basis), T)
