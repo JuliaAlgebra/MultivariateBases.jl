@@ -102,9 +102,10 @@ function algebra_element(p::Polynomial{B,M}) where {B,M}
 end
 
 function Base.:*(a::Polynomial{B}, b::Polynomial{B}) where {B}
+    M = promote_type(typeof(a.monomial), typeof(b.monomial))
     return algebra_element(
-        Mul{B}()(a.monomial, b.monomial),
-        FullBasis{B,promote_type(typeof(a.monomial), typeof(b.monomial))}(),
+        Mul{B,M}()(a.monomial, b.monomial),
+        FullBasis{B,M}(),
     )
 end
 
@@ -156,7 +157,7 @@ function convert_basis(basis::SA.AbstractBasis, p::SA.AlgebraElement)
     return SA.AlgebraElement(SA.coeffs(p, basis), algebra(basis))
 end
 
-struct Mul{B<:AbstractMonomialIndexed} <: SA.MultiplicativeStructure end
+struct Mul{B<:AbstractMonomialIndexed,M} <: SA.MultiplicativeStructure{Polynomial{B,M},M} end
 
 function MA.operate_to!(
     p::MP.AbstractPolynomial,
