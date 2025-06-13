@@ -38,8 +38,9 @@ function recurrence_eval(::Type{Monomial}, previous, value, degree)
     return previous[degree] * value
 end
 
-function (::Mul{Monomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
-    return sparse_coefficients(a * b)
+function Base.:*(a::Polynomial{Monomial}, b::Polynomial{Monomial})
+    @assert a.variables == b.variables
+    return SA.SparseCoefficients((Polynomial(a.variables, a.exponents .+ b.exponents),), (1,))
 end
 
 SA.coeffs(p::Polynomial{Monomial}, ::FullBasis{Monomial}) = p.monomial
@@ -109,16 +110,16 @@ end
 #    return a
 #end
 
-function MA.operate!(
-    ::SA.UnsafeAddMul{typeof(*)},
-    a::SA.AlgebraElement{<:Algebra{<:MonomialIndexedBasis,Monomial}},
-    α,
-    x::Polynomial{Monomial},
-)
-    _assert_constant(α)
-    SA.unsafe_push!(a, x, α)
-    return a
-end
+#function MA.operate!(
+#    ::SA.UnsafeAddMul{typeof(*)},
+#    a::SA.AlgebraElement{<:SA.StarAlgebra{<:MonomialIndexedBasis,Monomial}},
+#    α,
+#    x::Polynomial{Monomial},
+#)
+#    _assert_constant(α)
+#    SA.unsafe_push!(a, x, α)
+#    return a
+#end
 
 # Overload some of the `MP` interface for convenience
 MP.mindegree(basis::SubBasis{Monomial}) = MP.mindegree(basis.monomials)

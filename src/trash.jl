@@ -32,7 +32,7 @@ Base.length(basis::SubBasis) = length(basis.monomials)
 Base.firstindex(basis::SubBasis) = firstindex(basis.monomials)
 Base.lastindex(basis::SubBasis) = lastindex(basis.monomials)
 
-Base.parent(::SubBasis{B,M}) where {B,M} = FullBasis{B,M}()
+#Base.parent(b::SubBasis{B,M}) where {B,M} = FullBasis{B,M}(MP.variables(b))
 
 function Base.getindex(basis::SubBasis, index::Int)
     return parent(basis)[basis.monomials[index]]

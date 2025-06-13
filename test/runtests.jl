@@ -42,7 +42,7 @@ Base.convert(::Type{TypeB}, ::TypeA) = TypeB()
 function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
     M = typeof(prod(x))
-    full_basis = FullBasis{B,M}()
+    full_basis = FullBasis{B,M}(x)
     _test_basis(full_basis)
     @test sprint(show, MB.algebra(full_basis)) ==
           "Polynomial algebra of $B basis"
@@ -237,7 +237,7 @@ function coefficient_test(
     @polyvar x y
     p = x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2 + 1
     basis = explicit_basis_covering(
-        FullBasis{B,typeof(x * y)}(),
+        FullBasis{B,typeof(x * y)}(variables(x * y)),
         SubBasis{MB.Monomial}(monomials(p)),
     )
     coefficient_test(basis, p, coefs; kwargs...)

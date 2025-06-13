@@ -51,37 +51,44 @@ abstract type AbstractMonomialIndexed end
 
 Polynomial of basis `FullBasis{B,M}()` at index `monomial`.
 """
-struct Polynomial{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
-    monomial::M
-    function Polynomial{B}(mono::MP.AbstractMonomial) where {B}
-        return new{B,typeof(mono)}(mono)
-    end
+struct Polynomial{B<:AbstractMonomialIndexed,V,E}
+    variables::Variables{B,V}
+    exponents::E
 end
 
+function Polynomial(v::Variables{B,V}, e) where {B,V}
+    return Polynomial{B,V,typeof(e)}(v, e)
+end
+
+function Polynomial{B}(v::MP.AbstractVariable) where {B}
+    vars = MP.variables(v)
+    # MP.exponents(v) gives (1,) for DynamicPolynomials so we use
+    # a custom `map` as workaround
+    return Polynomial(Variables{B}(vars), map(_ -> 1, vars))
+end
+
+MP.exponents(p::Polynomial) = p.exponents
+
 function Base.hash(p::Polynomial{B}, u::UInt) where {B}
-    return hash(B, hash(p.monomial, u))
+    return hash(p.variables, hash(p.monomial, u))
 end
 
 function Base.isequal(p::Polynomial{B}, q::Polynomial{B}) where {B}
-    return isequal(p.monomial, q.monomial)
+    return isequal(p.variables, q.variables) && isequal(p.exponents, q.exponents)
 end
 
-Base.isone(p::Polynomial) = isone(p.monomial)
+Base.isone(p::Polynomial) = all(iszero, p.exponents)
 
 # Needed for `BoundsError`
 Base.iterate(p::Polynomial) = p, nothing
 Base.iterate(::Polynomial, ::Nothing) = nothing
 
-function Polynomial{B}(v::MP.AbstractVariable) where {B}
-    return Polynomial{B}(MP.monomial(v))
-end
-
 function Base.:(==)(p::Polynomial{B}, q::Polynomial{B}) where {B}
-    return p.monomial == q.monomial
+    return p.variables == q.variables && p.exponents == q.exponents
 end
 
-MP.variables(p::Polynomial) = MP.variables(p.monomial)
-MP.nvariables(p::Polynomial) = MP.nvariables(p.monomial)
+MP.variables(p::Polynomial) = MP.variables(p.variables)
+MP.nvariables(p::Polynomial) = MP.nvariables(p.variables)
 
 MP.monomial_type(::Type{<:SA.SparseCoefficients{K}}) where {K} = K
 MP.polynomial(p::Polynomial) = MP.polynomial(algebra_element(p))
@@ -93,20 +100,12 @@ end
 function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
     return algebra_element(
         sparse_coefficients(p),
-        FullBasis{B,MP.monomial_type(typeof(p))}(),
+        FullBasis{B,MP.monomial_type(typeof(p))}(MP.variables(p)),
     )
 end
 
 function algebra_element(p::Polynomial{B,M}) where {B,M}
-    return _algebra_element(p.monomial, B)
-end
-
-function Base.:*(a::Polynomial{B}, b::Polynomial{B}) where {B}
-    M = promote_type(typeof(a.monomial), typeof(b.monomial))
-    return algebra_element(
-        Mul{B,M}()(a.monomial, b.monomial),
-        FullBasis{B,M}(),
-    )
+    return _algebra_element(MP.monomial(p.variables.variables, p.monomial), B)
 end
 
 function Base.:*(a::Polynomial{B}, b::SA.AlgebraElement) where {B}
@@ -118,7 +117,7 @@ function _show(io::IO, mime::MIME, p::Polynomial{B}) where {B}
         print(io, B)
         print(io, "(")
     end
-    print(io, SA.trim_LaTeX(mime, sprint(show, mime, p.monomial)))
+    print(io, SA.trim_LaTeX(mime, sprint(show, mime, MP.monomial(p.variables.variables, p.exponents))))
     if B != Monomial
         print(io, ")")
     end
@@ -155,19 +154,6 @@ end
 
 function convert_basis(basis::SA.AbstractBasis, p::SA.AlgebraElement)
     return SA.AlgebraElement(SA.coeffs(p, basis), algebra(basis))
-end
-
-struct Mul{B<:AbstractMonomialIndexed,M} <: SA.MultiplicativeStructure{Polynomial{B,M},M} end
-
-function MA.operate_to!(
-    p::MP.AbstractPolynomial,
-    op::Mul,
-    args::Vararg{MP.AbstractPolynomialLike,N},
-) where {N}
-    MA.operate!(zero, p)
-    MA.operate!(SA.UnsafeAddMul(op), p, args...)
-    MA.operate!(SA.canonical, p)
-    return p
 end
 
 function MP.polynomial(a::SA.AbstractCoefficients)

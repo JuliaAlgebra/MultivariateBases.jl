@@ -5,9 +5,11 @@ using DynamicPolynomials
 @testset "StarAlgebras" begin
     @polyvar x
     a = MB.Polynomial{MB.Chebyshev}(x)
-    b = a * a
-    @test b.coeffs == MB.sparse_coefficients(1 // 2 + 1 // 2 * x^2)
-    c = b * b
+    b = SA.map_keys(exponents, a * a)
+    @test b == SA.SparseCoefficients([[0], [2]], [1 // 2, 1 // 2])
+    full = MB.FullBasis{MB.Chebyshev,typeof(x^1)}([x])
+    el = SA.AlgebraElement(b, MB.algebra(full))
+    c = el * el
     @test c.coeffs ==
           MB.sparse_coefficients(3 // 8 + 1 // 2 * x^2 + 1 // 8 * x^4)
     @test a * MB.Polynomial{MB.Chebyshev}(constant_monomial(typeof(x))) ==

@@ -117,19 +117,32 @@ function univariate_orthogonal_basis(
     )
 end
 
-function _covering(::FullBasis{B,M}, monos) where {B,M}
-    to_add = collect(monos)
-    m = Set{M}(to_add)
+function _setindex(x::AbstractVector, v, i)
+    y = copy(x)
+    y[i] = v
+    return y
+end
+_setindex(x::Tuple, v, i) = Base.setindex(x, v, i)
+
+# Same as `BangBang.setindex!!`
+_setindex!(x, v, i) = Base.setindex!(x, v, i)
+_setindex!(x::Tuple, v, i) = Base.setindex(x, v, i)
+
+_increment(x, v, i) = _setindex(x, x[i] + v, i)
+_increment!(x, Δ, i) = _setindex!(x, x[i] + Δ, i)
+
+function _covering(::FullBasis{B,M}, exps) where {B,M}
+    to_add = collect(exps)
+    m = Set{eltype(exps)}(to_add)
     while !isempty(to_add)
-        mono = pop!(to_add)
-        for v in MP.variables(mono)
+        exp = pop!(to_add)
+        for i in eachindex(exp)
             step = even_odd_separated(B) ? 2 : 1
-            vstep = v^step
-            if MP.divides(vstep, mono)
-                new_mono = MP.map_exponents(-, mono, vstep)
-                if !(new_mono in m)
-                    push!(m, new_mono)
-                    push!(to_add, new_mono)
+            if exp[i] >= step
+                new_exp = _increment(exp, -step, i)
+                if !(new_exp in m)
+                    push!(m, new_exp)
+                    push!(to_add, new_exp)
                 end
             end
         end
@@ -141,7 +154,6 @@ function explicit_basis_covering(
     full::FullBasis{BM,M},
     monos::SubBasis{B,M},
 ) where {BM<:AbstractMonomial,B<:AbstractMultipleOrthogonal,M}
-    full = FullBasis{B,M}()
     return SubBasis{BM}(_covering(full, monos.monomials))
 end
 
@@ -149,7 +161,7 @@ function explicit_basis_covering(
     full::FullBasis{B,M},
     monos::SubBasis{<:AbstractMonomial,M},
 ) where {B<:AbstractMultipleOrthogonal,M}
-    return SubBasis{B}(_covering(full, monos.monomials))
+    return SA.SubBasis(full, _covering(full, monos.keys))
 end
 
 function _scalar_product_function(::Type{<:AbstractMultipleOrthogonal}, i::Int) end

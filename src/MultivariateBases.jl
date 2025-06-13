@@ -8,6 +8,18 @@ export FullBasis, SubBasis
 export maxdegree_basis, explicit_basis_covering, empty_basis, monomial_index
 include("interface.jl")
 
+struct Variables{B,V}
+    variables::V
+end
+
+Variables{B}(vars) where {B} = Variables{B,typeof(vars)}(vars)
+
+constant_monomial_exponents(v::Variables) = map(_ -> 0, v.variables)
+
+function (v::Variables)(exponents)
+    return Polynomial(v, exponents)
+end
+
 export AbstractMonomialIndexed, Monomial, ScaledMonomial
 include("polynomial.jl")
 MP.monomial_type(::Type{<:SA.AlgebraElement{A}}) where {A} = MP.monomial_type(A)
@@ -48,7 +60,7 @@ include("quotient.jl")
 function algebra(
     basis::Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
 ) where {B,M}
-    return Algebra{typeof(basis),B,M}(basis)
+    return SA.StarAlgebra(Variables{B}(MP.variables(basis)), basis)
 end
 
 function MA.promote_operation(

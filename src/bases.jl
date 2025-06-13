@@ -1,21 +1,12 @@
-struct Variables{B,V}
-    variables::V
-end
-
-function (v::Variables{B})(exponents) where {B}
-    return Polynomial{B}(MP.monomial(v.variables, exponents))
-end
-
-const FullBasis{B,M} = SA.MappedBasis{Polynomial{B,M}}
-const SubBasis{B,M} = SA.SubBasis{Polynomial{B,M}}
+const FullBasis{B,V,E} = SA.MappedBasis{Polynomial{B,V,E}}
+const SubBasis{B,V,E} = SA.SubBasis{Polynomial{B,V,E}}
+const MonomialIndexedBasis{B,V,E} = Union{SubBasis{B,V,E},FullBasis{B,V,E}}
 
 function FullBasis{B,M}(vars) where {B,M}
-    O = typeof(MP.ordering(vars))
-    return SA.MappedBasis{Polynomial{B,M}}(
-        MP.ExponentsIterator{O}(vars),
-        Variables{B,typeof(vars)}(vars),
-        MP.exponents,
-    )
+    O = typeof(MP.ordering(first(vars))) # TODO upstream MP.ordering(vars) that handles differently tuples and vectors
+    v = Variables{B,typeof(vars)}(vars)
+    exps = MP.ExponentsIterator{O}(constant_monomial_exponents(v))
+    return SA.MappedBasis{Polynomial{B,typeof(vars),eltype(exps)}}(exps, v, MP.exponents)
 end
 
 MP.monomial_type(::Type{<:FullBasis{B,M}}) where {B,M} = M
@@ -35,8 +26,8 @@ function monomial_index(basis::SubBasis, mono::MP.AbstractMonomial)
     return get(basis, MP.exponents(mono), nothing)
 end
 
-function explicit_basis_covering(::FullBasis{B}, target::SubBasis{B}) where {B}
-    return SubBasis{B}(target.monomials)
+function explicit_basis_covering(full::FullBasis{B}, target::SubBasis{B}) where {B}
+    return SA.SubBasis(full, target.keys)
 end
 
 MP.monomial_type(::Type{<:SubBasis{B,M}}) where {B,M} = M
@@ -69,10 +60,12 @@ function unsafe_basis(
     ::Type{B},
     monomials::AbstractVector{M},
 ) where {B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
-    return SubBasis{B,M,typeof(monomials)}(monomials)
+    # TODO We should add a way to directly get the vector of exponents inside `DynamicPolynomials.MonomialVector`.
+    # `MP.exponents.(monomials)` should work in the meantime even if it's not the most efficient
+    return SA.SubBasis(FullBasis{B,M}(MP.variables(monomials)), MP.exponents.(monomials))
 end
 
-function Base.getindex(::FullBasis{B,M}, monomials::AbstractVector) where {B,M}
+function Base.getindex(::FullBasis{B}, monomials::AbstractVector{M}) where {B,M<:MP.AbstractMonomial}
     return unsafe_basis(B, MP.monomial_vector(monomials)::AbstractVector{M})
 end
 
@@ -86,14 +79,6 @@ function SubBasis{B}(
 end
 
 SubBasis{B}(monos::Tuple) where {B} = SubBasis{B}([monos...])
-
-function Base.copy(basis::SubBasis)
-    return typeof(basis)(copy(basis.monomials))
-end
-
-function Base.:(==)(a::SubBasis{B}, b::SubBasis{B}) where {B}
-    return a.monomials == b.monomials
-end
 
 function algebra_type(::Type{BT}) where {B,M,BT<:MonomialIndexedBasis{B,M}}
     return Algebra{BT,B,M}
