@@ -1,6 +1,18 @@
 const _APL = MP.AbstractPolynomialLike
 # We don't define it for all `AlgebraElement` as this would be type piracy
-const _AE = SA.AlgebraElement{<:Algebra}
+const _AE = SA.AlgebraElement{<:SA.StarAlgebra{<:Variables}}
+
+function _polynomial(b::FullBasis{Monomial}, c::SA.SparseCoefficients)
+    return MP.polynomial(
+        collect(SA.values(c)),
+        MP.monomial.(getindex.(Ref(b), SA.keys(c))),
+    )
+end
+
+function MP.polynomial(a::SA.AlgebraElement)
+    b = FullBasis{Monomial}(MP.variables(a))
+    return _polynomial(b, SA.coeffs(a, b))
+end
 
 for op in [:+, :-, :*]
     @eval begin
@@ -52,7 +64,7 @@ for op in [:+, :-]
         end
         function Base.$op(p, q::_AE)
             i = implicit(q)
-            return $op(constant_algebra_element(typeof(SA.basis(i)), p), i)
+            return $op(constant_algebra_element(SA.basis(i), p), i)
         end
         function MA.promote_operation(
             ::typeof($op),
@@ -71,15 +83,15 @@ for op in [:+, :-]
         end
         function Base.$op(p::_AE, q)
             i = implicit(p)
-            return $op(i, constant_algebra_element(typeof(SA.basis(i)), q))
+            return $op(i, constant_algebra_element(SA.basis(i), q))
         end
     end
 end
 
-function term_element(α, p::Polynomial{B,M}) where {B,M}
+function term_element(α, p::Polynomial{B}) where {B}
     return algebra_element(
         sparse_coefficients(MP.term(α, p.monomial)),
-        FullBasis{B,M}(),
+        FullBasis{B}(MP.variables(p)),
     )
 end
 

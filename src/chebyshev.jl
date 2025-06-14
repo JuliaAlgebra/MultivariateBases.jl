@@ -24,57 +24,53 @@ const Chebyshev = ChebyshevFirstKind
 
 # https://en.wikipedia.org/wiki/Chebyshev_polynomials#Properties
 # `T_n * T_m = T_{n + m} / 2 + T_{|n - m|} / 2`
-function univariate_mul!(::Mul{Chebyshev}, terms, var, a, b)
-    I = eachindex(terms)
-    for i in I
-        mono = MP.monomial(terms[i]) * var^(a + b)
-        terms[i] = MA.mul!!(terms[i], var^abs(a - b))
-        terms[i] = MA.operate!!(/, terms[i], 2)
-        α = MA.copy_if_mutable(MP.coefficient(terms[i]))
-        push!(terms, MP.term(α, mono))
+function univariate_mul!(::Type{Chebyshev}, exps, coefs, var, a, b)
+    for i in eachindex(exps)
+        exp = _increment(exps[i], a + b, var)
+        exps[i] = _increment!(exps[i], abs(a - b), var)
+        coefs[i] = MA.operate!!(/, coefs[i], 2)
+        push!(coefs, MA.copy_if_mutable(coefs[i]))
+        push!(exps, exp)
     end
     return
 end
 
-function (mul::Mul{B})(
-    a::MP.AbstractMonomial,
-    b::MP.AbstractMonomial,
-) where {B<:AbstractMonomialIndexed}
-    terms = [MP.term(1 // 1, MP.constant_monomial(a * b))]
-    vars_a = MP.effective_variables(a)
+function (m::MStruct{B,V,E})(
+    a::E,
+    b::E,
+    ::Type{E},
+) where {B<:AbstractMonomialIndexed,V,E}
+    exps = [zero.(a)]
+    coefs = [1 // 1]
+    vars_a = findall(!iszero, a)
     var_state_a = iterate(vars_a)
-    vars_b = MP.effective_variables(b)
+    vars_b = findall(!iszero, b)
     var_state_b = iterate(vars_b)
     while !isnothing(var_state_a) || !isnothing(var_state_b)
         if isnothing(var_state_a) ||
            (!isnothing(var_state_b) && var_state_b[1] > var_state_a[1])
             var_b, state_b = var_state_b
-            for i in eachindex(terms)
-                terms[i] = MA.mul!!(terms[i], var_b^MP.degree(b, var_b))
+            for i in eachindex(exps)
+                exps[i] = _increment!(exps[i], b[var_b], var_b)
             end
             var_state_b = iterate(vars_b, state_b)
         elseif isnothing(var_state_b) ||
                (!isnothing(var_state_a) && var_state_a[1] > var_state_b[1])
             var_a, state_a = var_state_a
-            for i in eachindex(terms)
-                terms[i] = MA.mul!!(terms[i], var_a^MP.degree(a, var_a))
+            for i in eachindex(exps)
+                exps[i] = _increment!(exps[i], a[var_a], var_a)
             end
             var_state_a = iterate(vars_a, state_a)
         else
             var_a, state_a = var_state_a
             var_b, state_b = var_state_b
-            univariate_mul!(
-                mul,
-                terms,
-                var_a,
-                MP.degree(a, var_a),
-                MP.degree(b, var_b),
-            )
+            univariate_mul!(B, exps, coefs, var_a, a[var_a], b[var_b])
             var_state_a = iterate(vars_a, state_a)
             var_state_b = iterate(vars_b, state_b)
         end
     end
-    return sparse_coefficients(MP.polynomial!(terms))
+    # FIXME is `canonical` needed ?
+    return MA.operate!(SA.canonical, SA.SparseCoefficients(exps, coefs))
 end
 
 function _add_mul_scalar_vector!(res, ::SubBasis, scalar, vector)
@@ -119,10 +115,10 @@ function SA.coeffs(
 )
     sub = explicit_basis_covering(target, source)
     # Need to make A square so that it's UpperTriangular
-    extended = SubBasis{Monomial}(sub.monomials)
+    extended = SA.SubBasis(parent(source), sub.keys)
     ext = SA.coeffs(algebra_element(cfs, source), extended)
     return SA.SparseCoefficients(
-        sub.monomials,
+        sub.keys,
         #transformation_to(sub, extended) \ ext, # Julia v1.6 converts the matrix to the eltype of the `result` which is bad for JuMP
         LinearAlgebra.ldiv!(
             zeros(_promote_coef(eltype(ext), Chebyshev), length(sub)),
@@ -132,10 +128,10 @@ function SA.coeffs(
     )
 end
 
-function SA.coeffs(cfs, ::FullBasis{Monomial}, target::FullBasis{Chebyshev})
+function SA.coeffs(cfs, src::FullBasis{Monomial}, target::FullBasis{Chebyshev})
     return SA.coeffs(
         SA.values(cfs),
-        SubBasis{Monomial}(collect(SA.keys(cfs))),
+        SA.SubBasis(src, collect(SA.keys(cfs))),
         target,
     )
 end
@@ -151,7 +147,7 @@ function _scalar_product_function(::Type{Chebyshev}, i::Int)
         return 0
     else
         n = div(i, 2)
-        return (π / 2^i) * prod(n+1:i) / factorial(n)
+        return (π / 2^i) * prod((n+1):i) / factorial(n)
     end
 end
 
@@ -173,6 +169,6 @@ function _scalar_product_function(::Type{<:ChebyshevSecondKind}, i::Int)
         return 0
     else
         n = div(i, 2)
-        return π / (2^(i + 1)) * prod(n+2:i) / factorial(n)
+        return π / (2^(i + 1)) * prod((n+2):i) / factorial(n)
     end
 end

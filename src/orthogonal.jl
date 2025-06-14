@@ -107,9 +107,7 @@ function univariate_orthogonal_basis(
 )
     return univariate_eval!(
         B,
-        Vector{
-            MP.polynomial_type(Polynomial{B,MP.monomial_type(variable)}, Int),
-        }(
+        Vector{_polynomial_type(B, typeof(MP.variables(variable)), Int)}(
             undef,
             degree + 1,
         ),
@@ -117,39 +115,54 @@ function univariate_orthogonal_basis(
     )
 end
 
-function _covering(::FullBasis{B,M}, monos) where {B,M}
-    to_add = collect(monos)
-    m = Set{M}(to_add)
+function _setindex(x::AbstractVector, v, i)
+    y = copy(x)
+    y[i] = v
+    return y
+end
+_setindex(x::Tuple, v, i) = Base.setindex(x, v, i)
+
+# Same as `BangBang.setindex!!`
+_setindex!(x, v, i) = Base.setindex!(x, v, i)
+_setindex!(x::Tuple, v, i) = Base.setindex(x, v, i)
+
+_increment(x, v, i) = _setindex(x, x[i] + v, i)
+_increment!(x, Δ, i) = _setindex!(x, x[i] + Δ, i)
+
+function _covering(b::FullBasis{B}, exps) where {B}
+    to_add = collect(exps)
+    m = Set{eltype(exps)}(to_add)
     while !isempty(to_add)
-        mono = pop!(to_add)
-        for v in MP.variables(mono)
+        exp = pop!(to_add)
+        for i in eachindex(exp)
             step = even_odd_separated(B) ? 2 : 1
-            vstep = v^step
-            if MP.divides(vstep, mono)
-                new_mono = MP.map_exponents(-, mono, vstep)
-                if !(new_mono in m)
-                    push!(m, new_mono)
-                    push!(to_add, new_mono)
+            if exp[i] >= step
+                new_exp = _increment(exp, -step, i)
+                if !(new_exp in m)
+                    push!(m, new_exp)
+                    push!(to_add, new_exp)
                 end
             end
         end
     end
-    return collect(m)
+    return sort!(collect(m); lt = MP.ordering(b)())
 end
 
 function explicit_basis_covering(
     full::FullBasis{BM,M},
     monos::SubBasis{B,M},
 ) where {BM<:AbstractMonomial,B<:AbstractMultipleOrthogonal,M}
-    full = FullBasis{B,M}()
-    return SubBasis{BM}(_covering(full, monos.monomials))
+    return SA.SubBasis(
+        full,
+        _covering(FullBasis{B}(MP.variables(full)), monos.keys),
+    )
 end
 
 function explicit_basis_covering(
-    full::FullBasis{B,M},
-    monos::SubBasis{<:AbstractMonomial,M},
-) where {B<:AbstractMultipleOrthogonal,M}
-    return SubBasis{B}(_covering(full, monos.monomials))
+    full::FullBasis{B,V,E},
+    monos::SubBasis{<:AbstractMonomial,V,E},
+) where {B<:AbstractMultipleOrthogonal,V,E}
+    return SA.SubBasis(full, _covering(full, monos.keys))
 end
 
 function _scalar_product_function(::Type{<:AbstractMultipleOrthogonal}, i::Int) end
@@ -198,8 +211,9 @@ function MP.coefficients(
 ) where {B<:AbstractMultipleOrthogonal,M}
     poly_p = MP.polynomial(p)
     return map(basis) do el
-        q = SA.coeffs(el, FullBasis{Monomial,M}())
-        poly_q = MP.polynomial(q)
+        full_mono = FullBasis{Monomial}(MP.variables(basis))
+        q = SA.coeffs(el, full_mono)
+        poly_q = _polynomial(full_mono, q)
         return LinearAlgebra.dot(poly_p, poly_q, B) /
                LinearAlgebra.dot(poly_q, poly_q, B)
     end
@@ -214,14 +228,12 @@ function SA.coeffs(
 end
 
 function SA.coeffs(
-    p::Polynomial{B,M},
+    p::Polynomial{B},
     ::FullBasis{Monomial},
-) where {B<:AbstractMultipleOrthogonal,M}
+) where {B<:AbstractMultipleOrthogonal}
+    mono = MP.monomial(p)
     return sparse_coefficients(
-        prod(
-            MP.powers(p.monomial);
-            init = MP.constant_monomial(M),
-        ) do (var, deg)
+        prod(MP.powers(mono); init = MP.constant_monomial(mono)) do (var, deg)
             return univariate_orthogonal_basis(B, var, deg)[deg+1]
         end,
     )

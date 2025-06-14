@@ -1,17 +1,25 @@
 using Test
+import StarAlgebras as SA
 using MultivariateBases
+import MultivariateBases as MB
 using DynamicPolynomials
 
 @testset "StarAlgebras" begin
     @polyvar x
-    a = MB.Polynomial{MB.Chebyshev}(x)
+    full = MB.FullBasis{MB.Chebyshev}(x)
+    sub = SA.SubBasis(full, [[1]])
+    a = MB.algebra_element(MB.sparse_coefficients(1 // 1 * x), full)
+    @test a == MB.convert_basis(full, MB.algebra_element(x))
     b = a * a
-    @test b.coeffs == MB.sparse_coefficients(1 // 2 + 1 // 2 * x^2)
+    expected =
+        MB.algebra_element(MB.sparse_coefficients((1 // 2) * (1 + x^2)), full)
+    @test b == expected
     c = b * b
-    @test c.coeffs ==
+    @test SA.coeffs(c) ==
           MB.sparse_coefficients(3 // 8 + 1 // 2 * x^2 + 1 // 8 * x^4)
-    @test a * MB.Polynomial{MB.Chebyshev}(constant_monomial(typeof(x))) ==
-          a * MB.Polynomial{MB.Chebyshev}(x^0)
+    c1 = MB.convert_basis(full, MB.algebra_element(constant_monomial(x)))
+    c2 = MB.convert_basis(full, MB.algebra_element(x^0))
+    @test a * c1 == a * c2
 end
 
 @testset "Orthogonal" begin

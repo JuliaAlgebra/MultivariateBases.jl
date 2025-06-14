@@ -16,7 +16,7 @@ end
 function _test_basis(basis)
     B = typeof(basis)
     @test typeof(MB.algebra(basis)) == MA.promote_operation(MB.algebra, B)
-    @test typeof(MB.constant_algebra_element(B, 1)) ==
+    @test typeof(MB.constant_algebra_element(basis, 1)) ==
           MB.constant_algebra_element_type(B, Int)
 end
 
@@ -41,11 +41,13 @@ Base.convert(::Type{TypeB}, ::TypeA) = TypeB()
 
 function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
-    M = typeof(prod(x))
-    full_basis = FullBasis{B,M}()
+    full_basis = FullBasis{B}(x)
     _test_basis(full_basis)
-    @test sprint(show, MB.algebra(full_basis)) ==
-          "Polynomial algebra of $B basis"
+    # FIXME `AbstractStarAlgebra` is currently calling `print` anyway
+    #@test sprint(show, MIME"text/plain"(), MB.algebra(full_basis)) ==
+    #      "*-algebra of $B polynomials in the variables [x[1], x[2]]"
+    @test sprint(print, MB.algebra(full_basis)) ==
+          "*-algebra of $B polynomials in the variables [x[1], x[2]]"
     for basis in [
         maxdegree_basis(full_basis, x, degree),
         explicit_basis_covering(
@@ -64,8 +66,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         _test_basis(basis)
         @test basis isa MB.explicit_basis_type(typeof(full_basis))
         for i in eachindex(basis)
-            mono = basis.monomials[i]
-            poly = MB.Polynomial{B}(mono)
+            poly =
+                MB.Polynomial(MB.Variables{B}(variables(basis)), basis.keys[i])
             @test basis[i] == poly
             @test basis[poly] == i
         end
@@ -86,7 +88,7 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         @test SA.star(a) == a
         if B == Chebyshev || B == ScaledMonomial
             mono = explicit_basis_covering(
-                FullBasis{Monomial,eltype(basis.monomials)}(),
+                FullBasis{Monomial}(variables(basis)),
                 basis,
             )
             a = MB.algebra_element(fill(TypeA(), length(basis)), mono)
@@ -95,9 +97,9 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         end
     end
     mono = x[1]^2 * x[2]^3
-    p = MB.Polynomial{B}(mono)
-    @test full_basis[p] == mono
-    @test full_basis[mono] == p
+    p = MB.Polynomial(MB.Variables{B}(variables(mono)), exponents(mono))
+    @test full_basis[p] == exponents(mono)
+    @test full_basis[exponents(mono)] == p
     @test polynomial_type(mono, B == Monomial ? TypeA : TypeB) ==
           polynomial_type(typeof(p), TypeA)
     a = MB.algebra_element(p)
@@ -106,22 +108,25 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @test typeof(polynomial(a)) == polynomial_type(typeof(p), Int)
     @test a ≈ a
     if B == MB.Monomial
-        @test a ≈ p.monomial
-        @test p.monomial ≈ a
+        @test a ≈ monomial(p)
+        @test monomial(p) ≈ a
     else
-        @test !(a ≈ p.monomial)
-        @test !(p.monomial ≈ a)
+        @test !(a ≈ monomial(p))
+        @test !(monomial(p) ≈ a)
     end
     _wrap(s) = (B == MB.Monomial ? s : "$B($s)")
-    @test sprint(show, p) == _wrap(sprint(show, p.monomial))
-    @test sprint(print, p) == _wrap(sprint(print, p.monomial))
+    @test sprint(show, p) == _wrap(sprint(show, monomial(p)))
+    @test sprint(print, p) == _wrap(sprint(print, monomial(p)))
     mime = MIME"text/latex"()
     @test sprint(show, mime, p) ==
           "\$\$ " *
-          _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, p.monomial))) *
+          _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, monomial(p)))) *
           " \$\$"
     const_mono = constant_monomial(prod(x))
-    const_poly = MB.Polynomial{B}(const_mono)
+    const_poly = MB.Polynomial(
+        MB.Variables{B}(variables(const_mono)),
+        exponents(const_mono),
+    )
     const_alg_el = MB.algebra_element(const_poly)
     for other in (const_mono, 1, const_alg_el)
         @test _test_op(+, other, const_alg_el) ≈ _test_op(*, 2, other)
@@ -157,11 +162,11 @@ function univ_orthogonal_test(
     kwargs...,
 )
     @polyvar x
-    basis = maxdegree_basis(FullBasis{B,monomial_type(x)}(), [x], 4)
+    basis = maxdegree_basis(FullBasis{B}(x), [x], 4)
     for i in eachindex(basis)
         p_i = polynomial(basis[i])
         @test isapprox(dot(p_i, p_i, B), univ(maxdegree(p_i)); kwargs...)
-        for j in 1:i-1
+        for j in 1:(i-1)
             @test isapprox(dot(p_i, polynomial(basis[j]), B), 0.0; kwargs...)
         end
     end
@@ -179,7 +184,7 @@ function orthogonal_test(
 
     @testset "Univariate $var" for (var, univ) in
                                    [(x, univariate_x), (y, univariate_y)]
-        basis = maxdegree_basis(FullBasis{B,monomial_type(var)}(), (var,), 4)
+        basis = maxdegree_basis(FullBasis{B}(var), (var,), 4)
         for i in 1:5
             @test polynomial(basis[i]) == univ[i]
         end
@@ -187,8 +192,8 @@ function orthogonal_test(
 
     @testset "explicit_basis_covering" begin
         basis = explicit_basis_covering(
-            FullBasis{B,typeof(x * y)}(),
-            SubBasis{MB.Monomial}(monomial_vector([x^2 * y, y^2])),
+            FullBasis{B}(x * y),
+            FullBasis{MB.Monomial}(x * y)[[x^2 * y, y^2]],
         )
         if even_odd_separated
             exps = [(0, 0), (0, 1), (0, 2), (2, 1)]
@@ -200,8 +205,8 @@ function orthogonal_test(
                   univariate_x[exps[i][1]+1] * univariate_y[exps[i][2]+1]
         end
         basis = explicit_basis_covering(
-            FullBasis{B,typeof(x^2)}(),
-            SubBasis{MB.Monomial}(monomial_vector([x^4, x^2, x])),
+            FullBasis{B}(x^2),
+            FullBasis{Monomial}(x^2)[[x^4, x^2, x]],
         )
         if even_odd_separated
             exps = [0, 1, 2, 4]
@@ -237,7 +242,7 @@ function coefficient_test(
     @polyvar x y
     p = x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2 + 1
     basis = explicit_basis_covering(
-        FullBasis{B,typeof(x * y)}(),
+        FullBasis{B}(variables(x * y)),
         SubBasis{MB.Monomial}(monomials(p)),
     )
     coefficient_test(basis, p, coefs; kwargs...)

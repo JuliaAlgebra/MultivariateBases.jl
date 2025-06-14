@@ -1,26 +1,3 @@
-"""
-    struct FixedBasis{B,M,T,V} <:
-        SA.ExplicitBasis{SA.AlgebraElement{Algebra{FullBasis{B,M},B,M},T,V},Int}
-        elements::Vector{SA.AlgebraElement{Algebra{FullBasis{B,M},B,M},T,V}}
-    end
-
-Fixed basis with polynomials `elements`.
-"""
-struct FixedBasis{B,M,T,V} <:
-       SA.ExplicitBasis{SA.AlgebraElement{Algebra{FullBasis{B,M},B,M},T,V},Int}
-    elements::Vector{SA.AlgebraElement{Algebra{FullBasis{B,M},B,M},T,V}}
-end
-
-Base.length(b::FixedBasis) = length(b.elements)
-Base.getindex(b::FixedBasis, i::Integer) = b.elements[i]
-
-function Base.show(io::IO, b::FixedBasis)
-    print(io, "FixedBasis(")
-    _show_vector(io, MIME"text/plain"(), b.elements)
-    print(io, ")")
-    return
-end
-
 # TODO refactor with `SA.MappedBasis`
 # https://github.com/JuliaAlgebra/StarAlgebras.jl/pull/76
 

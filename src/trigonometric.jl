@@ -21,13 +21,12 @@ _id(d) = div(d + 1, 2)
 # If a > b
 # sin(a) cos(b) = sin(a + b) + sin(a - b)
 # sin(a) cos(b) = sin(a + b) + sin(a - b)
-function univariate_mul!(::Mul{Trigonometric}, terms, var, a, b)
+function univariate_mul!(::Type{Trigonometric}, exps, coefs, var, a, b)
     @assert !iszero(a)
     @assert !iszero(b)
-    I = eachindex(terms)
     da = _id(a)
     db = _id(b)
-    for i in I
+    for i in eachindex(exps)
         if _is_cos(a) == _is_cos(b)
             # Chebyshev first kind
             mono = MP.monomial(terms[i]) * var^(_cos_id(da + db))
@@ -85,8 +84,7 @@ function recurrence_eval(
     d = _id(degree)
     if _is_cos(degree)
         # Chebyshev first order
-        return 2 * value * previous[_cos_id(d - 1)+1] -
-               previous[_cos_id(d - 2)+1]
+        return 2 * value * previous[_cos_id(d-1)+1] - previous[_cos_id(d-2)+1]
     else
         return sqrt(1 - previous[degree]^2)
     end

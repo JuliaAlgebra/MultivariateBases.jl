@@ -33,15 +33,16 @@ Foundations of Computational Mathematics 7.2 (2007): 229-244.
 """
 struct ScaledMonomial <: AbstractMonomial end
 
-function (::Mul{ScaledMonomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
-    mono = a * b
+function (m::MStruct{ScaledMonomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
+    @assert a.variables == b.variables
+    exp = a.exponents .+ b.exponents
     α = prod(
-        MP.variables(mono);
-        init = inv(binomial(MP.degree(mono), MP.degree(a))),
-    ) do v
-        return binomial(MP.degree(mono, v), MP.degree(a, v))
+        eachindex(exp);
+        init = inv(binomial(sum(mono), sum(a.exponents))),
+    ) do i
+        return binomial(exp[i], a.exponents[i])
     end
-    return sparse_coefficients(MP.term(√α, mono))
+    return SA.SparseCoefficients((exp,), (1,))
 end
 
 function SA.coeffs(p::Polynomial{ScaledMonomial}, ::FullBasis{Monomial})
@@ -70,9 +71,8 @@ function Base.promote_rule(
 end
 
 function scaling(m::MP.AbstractMonomial)
-    return √(
-        factorial(MP.degree(m)) / prod(factorial, MP.exponents(m); init = 1),
-    )
+    return √(factorial(MP.degree(m)) /
+             prod(factorial, MP.exponents(m); init = 1),)
 end
 unscale_coef(t::MP.AbstractTerm) = MP.coefficient(t) / scaling(MP.monomial(t))
 function SA.coeffs(
