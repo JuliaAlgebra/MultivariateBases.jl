@@ -161,9 +161,8 @@ function SA.coeffs(
         # `JuMP.VariableRef` to `JuMP.AffExpr`
         return SA.SparseCoefficients(_vec(source.keys), _vec(cfs))
     else
-        T = _promote_coef(_promote_coef(SA.value_type(cfs), B1), B2)
         res = SA.zero_coeffs(
-            MA.promote_operation(+, T, T),
+            _promote_coef(_promote_coef(SA.value_type(cfs), B1), B2),
             target,
         )
         return SA.coeffs!(res, cfs, source, target)
@@ -190,7 +189,7 @@ end
 
 function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
     print(io, "SubBasis{$(nameof(B))}(")
-    _show_vector(io, mime, basis.keys, Base.Fix1(MP.monomial, MP.variables(b)))
+    _show_vector(io, mime, basis.keys, Base.Fix1(MP.monomial, MP.variables(basis)))
     print(io, ')')
     return
 end
