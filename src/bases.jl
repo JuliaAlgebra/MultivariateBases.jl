@@ -102,12 +102,12 @@ end
 
 function MA.promote_operation(
     ::typeof(implicit),
-    ::Type{E},
-) where {AG,T,E<:SA.AlgebraElement{AG,T}}
-    BT = MA.promote_operation(implicit_basis, MA.promote_operation(SA.basis, E))
+    ::Type{AE},
+) where {AG,T,AE<:SA.AlgebraElement{AG,T}}
+    BT = MA.promote_operation(implicit_basis, MA.promote_operation(SA.basis, AE))
     A = MA.promote_operation(algebra, BT)
-    M = MP.monomial_type(BT)
-    return SA.AlgebraElement{A,T,SA.SparseCoefficients{M,T,Vector{M},Vector{T},typeof(isless)}}
+    E = SA.key_type(BT)
+    return SA.AlgebraElement{A,T,SA.SparseCoefficients{E,T,Vector{E},Vector{T},typeof(isless)}}
 end
 
 MA.promote_operation(::typeof(implicit_basis), B::Type{<:SA.ImplicitBasis}) = B

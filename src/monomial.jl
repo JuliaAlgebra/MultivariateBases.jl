@@ -161,8 +161,9 @@ function SA.coeffs(
         # `JuMP.VariableRef` to `JuMP.AffExpr`
         return SA.SparseCoefficients(_vec(source.keys), _vec(cfs))
     else
+        T = _promote_coef(_promote_coef(SA.value_type(cfs), B1), B2)
         res = SA.zero_coeffs(
-            _promote_coef(_promote_coef(SA.value_type(cfs), B1), B2),
+            MA.promote_operation(+, T, T),
             target,
         )
         return SA.coeffs!(res, cfs, source, target)
