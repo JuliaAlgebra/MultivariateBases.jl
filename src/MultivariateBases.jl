@@ -14,6 +14,8 @@ end
 
 Variables{B}(vars) where {B} = Variables{B,typeof(vars)}(vars)
 
+MP.monomial_type(::Type{Variables{B,V}}) where {B,V} = MP.monomial_type(V)
+
 constant_monomial_exponents(v::Variables) = map(_ -> 0, v.variables)
 
 function (v::Variables)(exponents)
@@ -27,8 +29,8 @@ function MP.polynomial_type(::Type{<:SA.AlgebraElement{A,T}}) where {A,T}
     return MP.polynomial_type(A, T)
 end
 MP.monomial_type(::Type{<:SA.StarAlgebra{O}}) where {O} = MP.monomial_type(O)
-function MP.polynomial_type(::Type{SA.StarAlgebra{O,S,M}}, ::Type{T}) where {O,S,M,T}
-    return MP.polynomial_type(M, T)
+function MP.polynomial_type(::Type{A}, ::Type{T}) where {A<:SA.StarAlgebra,T}
+    return MP.polynomial_type(MP.monomial_type(A), T)
 end
 
 include("bases.jl")

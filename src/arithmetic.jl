@@ -1,6 +1,6 @@
 const _APL = MP.AbstractPolynomialLike
 # We don't define it for all `AlgebraElement` as this would be type piracy
-const _AE = SA.AlgebraElement{<:Variables}
+const _AE = SA.AlgebraElement{<:SA.StarAlgebra{<:Variables}}
 
 for op in [:+, :-, :*]
     @eval begin
@@ -76,10 +76,10 @@ for op in [:+, :-]
     end
 end
 
-function term_element(α, p::Polynomial{B,M}) where {B,M}
+function term_element(α, p::Polynomial{B}) where {B}
     return algebra_element(
         sparse_coefficients(MP.term(α, p.monomial)),
-        FullBasis{B,M}(MP.variables(p)),
+        FullBasis{B}(MP.variables(p)),
     )
 end
 

@@ -131,7 +131,7 @@ _setindex!(x::Tuple, v, i) = Base.setindex(x, v, i)
 _increment(x, v, i) = _setindex(x, x[i] + v, i)
 _increment!(x, Δ, i) = _setindex!(x, x[i] + Δ, i)
 
-function _covering(::FullBasis{B,M}, exps) where {B,M}
+function _covering(b::FullBasis{B}, exps) where {B}
     to_add = collect(exps)
     m = Set{eltype(exps)}(to_add)
     while !isempty(to_add)
@@ -147,14 +147,14 @@ function _covering(::FullBasis{B,M}, exps) where {B,M}
             end
         end
     end
-    return collect(m)
+    return sort!(collect(m), lt = MP.ordering(b)())
 end
 
 function explicit_basis_covering(
     full::FullBasis{BM,M},
     monos::SubBasis{B,M},
 ) where {BM<:AbstractMonomial,B<:AbstractMultipleOrthogonal,M}
-    return SubBasis{BM}(_covering(full, monos.monomials))
+    return SA.SubBasis(full, _covering(FullBasis{B}(MP.variables(full)), monos.keys))
 end
 
 function explicit_basis_covering(
@@ -210,8 +210,9 @@ function MP.coefficients(
 ) where {B<:AbstractMultipleOrthogonal,M}
     poly_p = MP.polynomial(p)
     return map(basis) do el
-        q = SA.coeffs(el, FullBasis{Monomial,M}())
-        poly_q = MP.polynomial(q)
+        full_mono = FullBasis{Monomial}(MP.variables(basis))
+        q = SA.coeffs(el, full_mono)
+        poly_q = _polynomial(full_mono, q)
         return LinearAlgebra.dot(poly_p, poly_q, B) /
                LinearAlgebra.dot(poly_q, poly_q, B)
     end
@@ -229,7 +230,7 @@ function SA.coeffs(
     p::Polynomial{B},
     ::FullBasis{Monomial},
 ) where {B<:AbstractMultipleOrthogonal}
-    mono = MP.monomial(MP.variables(p), p.exponents)
+    mono = MP.monomial(p)
     return sparse_coefficients(
         prod(
             MP.powers(mono);

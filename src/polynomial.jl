@@ -69,6 +69,8 @@ end
 
 MP.exponents(p::Polynomial) = p.exponents
 
+MP.monomial(p::Polynomial) = MP.monomial(MP.variables(p), MP.exponents(p))
+
 function Base.hash(p::Polynomial{B}, u::UInt) where {B}
     return hash(p.variables, hash(p.monomial, u))
 end
@@ -105,7 +107,7 @@ function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
 end
 
 function algebra_element(p::Polynomial{B}) where {B}
-    return _algebra_element(MP.monomial(MP.variables(p), p.exponents), B)
+    return _algebra_element(MP.monomial(p), B)
 end
 
 function Base.:*(a::Polynomial{B}, b::SA.AlgebraElement) where {B}
@@ -156,14 +158,13 @@ function convert_basis(basis::SA.AbstractBasis, p::SA.AlgebraElement)
     return SA.AlgebraElement(SA.coeffs(p, basis), algebra(basis))
 end
 
-function MP.polynomial(a::SA.AbstractCoefficients)
-    return MP.polynomial(collect(SA.values(a)), collect(SA.keys(a)))
+function _polynomial(b::FullBasis{Monomial}, c::SA.SparseCoefficients)
+    return MP.polynomial(collect(SA.values(c)), MP.monomial.(getindex.(Ref(b), SA.keys(c))))
 end
 
 function MP.polynomial(a::SA.AlgebraElement)
-    return MP.polynomial(
-        SA.coeffs(a, FullBasis{Monomial,MP.monomial_type(typeof(a))}()),
-    )
+    b = FullBasis{Monomial}(MP.variables(a))
+    return _polynomial(b, SA.coeffs(a, b))
 end
 
 function Base.isapprox(

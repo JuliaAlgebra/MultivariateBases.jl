@@ -2,21 +2,19 @@ const FullBasis{B,V,E} = SA.MappedBasis{Polynomial{B,V,E}}
 const SubBasis{B,V,E} = SA.SubBasis{Polynomial{B,V,E}}
 const MonomialIndexedBasis{B,V,E} = Union{SubBasis{B,V,E},FullBasis{B,V,E}}
 
-function FullBasis{B,M}(vars) where {B,M}
+function FullBasis{B}(vars) where {B}
     O = typeof(MP.ordering(first(vars))) # TODO upstream MP.ordering(vars) that handles differently tuples and vectors
     v = Variables{B,typeof(vars)}(vars)
     exps = MP.ExponentsIterator{O}(constant_monomial_exponents(v))
     return SA.MappedBasis{Polynomial{B,typeof(vars),eltype(exps)}}(exps, v, MP.exponents)
 end
 
-FullBasis{B}(vars) where {B} = FullBasis{B,MP.monomial_type(vars)}(vars)
-
 function FullBasis{B}(p::MP.AbstractPolynomialLike) where {B}
     return FullBasis{B}(MP.variables(p))
 end
 
-MP.monomial_type(::Type{<:FullBasis{B,M}}) where {B,M} = M
-function MP.polynomial_type(basis::FullBasis{B,M}, ::Type{T}) where {B,M,T}
+MP.monomial_type(::Type{<:FullBasis{B,V}}) where {B,V} = MP.monomial_type(V)
+function MP.polynomial_type(basis::FullBasis, ::Type{T}) where {T}
     return MP.polynomial_type(typeof(basis), T)
 end
 
@@ -64,11 +62,11 @@ end
 # Unsafe because we don't check that `monomials` is sorted and without duplicates
 function unsafe_basis(
     ::Type{B},
-    monomials::AbstractVector{M},
-) where {B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
+    monomials::AbstractVector{<:MP.AbstractMonomial},
+) where {B<:AbstractMonomialIndexed}
     # TODO We should add a way to directly get the vector of exponents inside `DynamicPolynomials.MonomialVector`.
     # `MP.exponents.(monomials)` should work in the meantime even if it's not the most efficient
-    return SA.SubBasis(FullBasis{B,M}(MP.variables(monomials)), MP.exponents.(monomials))
+    return SA.SubBasis(FullBasis{B}(MP.variables(monomials)), MP.exponents.(monomials))
 end
 
 function Base.getindex(::FullBasis{B}, monomials::AbstractVector{M}) where {B,M<:MP.AbstractMonomial}
@@ -76,7 +74,7 @@ function Base.getindex(::FullBasis{B}, monomials::AbstractVector{M}) where {B,M<
 end
 
 function SubBasis{B}(
-    monomials::AbstractVector,
+    monomials::AbstractVector{<:MP.AbstractTermLike},
 ) where {B<:AbstractMonomialIndexed}
     return unsafe_basis(
         B,
@@ -115,8 +113,8 @@ function MA.promote_operation(
     return FullBasis{B,M}
 end
 
-function _explicit_basis(coeffs, ::FullBasis{B}) where {B}
-    return SubBasis{B}(SA.keys(coeffs))
+function _explicit_basis(coeffs, basis::FullBasis{B}) where {B}
+    return SA.SubBasis(basis, _lazy_collect(SA.keys(coeffs)))
 end
 
 _explicit_basis(_, basis::SubBasis) = basis
@@ -150,6 +148,7 @@ end
 MP.variables(c::SA.AbstractCoefficients) = MP.variables(SA.keys(c))
 
 _lazy_collect(v::AbstractVector) = collect(v)
+_lazy_collect(v::Tuple) = collect(v)
 _lazy_collect(v::Vector) = v
 
 function sparse_coefficients(p::MP.AbstractPolynomial)
