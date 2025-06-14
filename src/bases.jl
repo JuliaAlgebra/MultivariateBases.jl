@@ -3,7 +3,7 @@ const SubBasis{B,V,E} = SA.SubBasis{Polynomial{B,V,E}}
 const MonomialIndexedBasis{B,V,E} = Union{SubBasis{B,V,E},FullBasis{B,V,E}}
 
 function FullBasis{B}(vars) where {B}
-    O = typeof(MP.ordering(first(vars))) # TODO upstream MP.ordering(vars) that handles differently tuples and vectors
+    O = typeof(MP.ordering(vars))
     v = Variables{B,typeof(vars)}(vars)
     exps = MP.ExponentsIterator{O}(constant_monomial_exponents(v))
     return SA.MappedBasis{Polynomial{B,typeof(vars),eltype(exps)}}(exps, v, MP.exponents)
@@ -12,6 +12,10 @@ end
 function FullBasis{B}(p::MP.AbstractPolynomialLike) where {B}
     return FullBasis{B}(MP.variables(p))
 end
+
+SA.star(b::MonomialIndexedBasis{B,V,E}, exp::E) where {B,V,E} = b[SA.star(b[exp])]
+
+constant_monomial_exponents(b::FullBasis) = constant_monomial_exponents(b.map)
 
 MP.monomial_type(::Type{<:FullBasis{B,V}}) where {B,V} = MP.monomial_type(V)
 function MP.polynomial_type(basis::FullBasis, ::Type{T}) where {T}
@@ -193,12 +197,10 @@ function constant_algebra_element_type(
     return SA.AlgebraElement{A,T,SA.SparseCoefficients{M,T,Vector{M},Vector{T}}}
 end
 
-function constant_algebra_element(::Type{FullBasis{B,M}}, α) where {B,M}
+function constant_algebra_element(b::FullBasis, α)
     return algebra_element(
-        sparse_coefficients(
-            MP.polynomial(MP.term(_one_if_type(α), MP.constant_monomial(M))),
-        ),
-        FullBasis{B,M}(),
+        SA.SparseCoefficients((constant_monomial_exponents(b),), (_one_if_type(α),)),
+        b,
     )
 end
 

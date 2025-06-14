@@ -16,7 +16,8 @@ function explicit_basis_covering(
 end
 
 function Base.adjoint(p::Polynomial{B}) where {B<:AbstractMonomialIndexed}
-    return Polynomial{B}(adjoint(p.monomial))
+    mono = adjoint(MP.monomial(p))
+    return Polynomial(Variables{B}(MP.variables(mono)), MP.exponents(mono))
 end
 
 """

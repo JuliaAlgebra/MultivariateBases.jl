@@ -80,7 +80,7 @@ for op in [:+, :-]
         end
         function Base.$op(p::_AE, q)
             i = implicit(p)
-            return $op(i, constant_algebra_element(typeof(SA.basis(i)), q))
+            return $op(i, constant_algebra_element(SA.basis(i), q))
         end
     end
 end
