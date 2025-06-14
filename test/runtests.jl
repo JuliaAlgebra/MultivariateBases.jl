@@ -29,8 +29,6 @@ Base.zero(::Type{TypeB}) = TypeB()
 Base.iszero(::TypeB) = false
 LinearAlgebra.adjoint(::TypeB) = TypeB()
 
-Base.:+(::TypeA, ::TypeA) = TypeB()
-Base.:+(::TypeB, ::TypeA) = TypeB()
 Base.:*(::Float64, ::TypeA) = TypeB()
 Base.:*(::TypeA, ::Float64) = TypeB()
 Base.:*(::Float64, ::TypeB) = TypeB()
