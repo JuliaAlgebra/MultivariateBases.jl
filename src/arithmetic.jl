@@ -3,7 +3,10 @@ const _APL = MP.AbstractPolynomialLike
 const _AE = SA.AlgebraElement{<:SA.StarAlgebra{<:Variables}}
 
 function _polynomial(b::FullBasis{Monomial}, c::SA.SparseCoefficients)
-    return MP.polynomial(collect(SA.values(c)), MP.monomial.(getindex.(Ref(b), SA.keys(c))))
+    return MP.polynomial(
+        collect(SA.values(c)),
+        MP.monomial.(getindex.(Ref(b), SA.keys(c))),
+    )
 end
 
 function MP.polynomial(a::SA.AlgebraElement)

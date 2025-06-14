@@ -6,14 +6,20 @@ function FullBasis{B}(vars) where {B}
     O = typeof(MP.ordering(vars))
     v = Variables{B,typeof(vars)}(vars)
     exps = MP.ExponentsIterator{O}(constant_monomial_exponents(v))
-    return SA.MappedBasis{Polynomial{B,typeof(vars),eltype(exps)}}(exps, v, MP.exponents)
+    return SA.MappedBasis{Polynomial{B,typeof(vars),eltype(exps)}}(
+        exps,
+        v,
+        MP.exponents,
+    )
 end
 
 function FullBasis{B}(p::MP.AbstractPolynomialLike) where {B}
     return FullBasis{B}(MP.variables(p))
 end
 
-SA.star(b::MonomialIndexedBasis{B,V,E}, exp::E) where {B,V,E} = b[SA.star(b[exp])]
+function SA.star(b::MonomialIndexedBasis{B,V,E}, exp::E) where {B,V,E}
+    return b[SA.star(b[exp])]
+end
 
 constant_monomial_exponents(b::FullBasis) = constant_monomial_exponents(b.map)
 
@@ -34,11 +40,16 @@ function monomial_index(basis::SubBasis, mono::MP.AbstractMonomial)
     return get(basis, MP.exponents(mono), nothing)
 end
 
-function explicit_basis_covering(full::FullBasis{B}, target::SubBasis{B}) where {B}
+function explicit_basis_covering(
+    full::FullBasis{B},
+    target::SubBasis{B},
+) where {B}
     return SA.SubBasis(full, target.keys)
 end
 
-MP.monomial_type(::Type{<:SA.SubBasis{T,I,K,B}}) where {T,I,K,B} = MP.monomial_type(B)
+function MP.monomial_type(::Type{<:SA.SubBasis{T,I,K,B}}) where {T,I,K,B}
+    return MP.monomial_type(B)
+end
 
 # The `i`th index of output is the index of occurence of `x[i]` in `y`,
 # or `0` if it does not occur.
@@ -70,10 +81,16 @@ function unsafe_basis(
 ) where {B<:AbstractMonomialIndexed}
     # TODO We should add a way to directly get the vector of exponents inside `DynamicPolynomials.MonomialVector`.
     # `MP.exponents.(monomials)` should work in the meantime even if it's not the most efficient
-    return SA.SubBasis(FullBasis{B}(MP.variables(monomials)), MP.exponents.(monomials))
+    return SA.SubBasis(
+        FullBasis{B}(MP.variables(monomials)),
+        MP.exponents.(monomials),
+    )
 end
 
-function Base.getindex(::FullBasis{B}, monomials::AbstractVector{M}) where {B,M<:MP.AbstractMonomial}
+function Base.getindex(
+    ::FullBasis{B},
+    monomials::AbstractVector{M},
+) where {B,M<:MP.AbstractMonomial}
     return unsafe_basis(B, MP.monomial_vector(monomials)::AbstractVector{M})
 end
 
@@ -104,14 +121,24 @@ function MA.promote_operation(
     ::typeof(implicit),
     ::Type{AE},
 ) where {AG,T,AE<:SA.AlgebraElement{AG,T}}
-    BT = MA.promote_operation(implicit_basis, MA.promote_operation(SA.basis, AE))
+    BT =
+        MA.promote_operation(implicit_basis, MA.promote_operation(SA.basis, AE))
     A = MA.promote_operation(algebra, BT)
     E = SA.key_type(BT)
-    return SA.AlgebraElement{A,T,SA.SparseCoefficients{E,T,Vector{E},Vector{T},typeof(isless)}}
+    return SA.AlgebraElement{
+        A,
+        T,
+        SA.SparseCoefficients{E,T,Vector{E},Vector{T},typeof(isless)},
+    }
 end
 
 MA.promote_operation(::typeof(implicit_basis), B::Type{<:SA.ImplicitBasis}) = B
-MA.promote_operation(::typeof(implicit_basis), ::Type{<:SA.SubBasis{T,I,K,B}}) where {T,I,K,B} = B
+function MA.promote_operation(
+    ::typeof(implicit_basis),
+    ::Type{<:SA.SubBasis{T,I,K,B}},
+) where {T,I,K,B}
+    return B
+end
 
 function _explicit_basis(coeffs, basis::FullBasis{B}) where {B}
     return SA.SubBasis(basis, _lazy_collect(SA.keys(coeffs)))
@@ -163,10 +190,7 @@ function sparse_coefficients(t::MP.AbstractTermLike)
 end
 
 function algebra_element(p::MP.AbstractPolynomialLike)
-    return algebra_element(
-        sparse_coefficients(p),
-        FullBasis{Monomial}(p),
-    )
+    return algebra_element(sparse_coefficients(p), FullBasis{Monomial}(p))
 end
 
 function algebra_element(f::Function, basis::SubBasis)
@@ -181,12 +205,19 @@ function constant_algebra_element_type(
     ::Type{T},
 ) where {B,V,E,BT<:FullBasis{B,V,E},T}
     A = MA.promote_operation(algebra, BT)
-    return SA.AlgebraElement{A,T,SA.SparseCoefficients{E,T,Tuple{E},Tuple{T},typeof(isless)}}
+    return SA.AlgebraElement{
+        A,
+        T,
+        SA.SparseCoefficients{E,T,Tuple{E},Tuple{T},typeof(isless)},
+    }
 end
 
 function constant_algebra_element(b::FullBasis, α)
     return algebra_element(
-        SA.SparseCoefficients((constant_monomial_exponents(b),), (_one_if_type(α),)),
+        SA.SparseCoefficients(
+            (constant_monomial_exponents(b),),
+            (_one_if_type(α),),
+        ),
         b,
     )
 end
@@ -202,6 +233,9 @@ end
 function constant_algebra_element(basis::SubBasis, α)
     return algebra_element(
         [_one_if_type(α)],
-        SA.SubBasis(parent(basis), [constant_monomial_exponents(parent(basis))]),
+        SA.SubBasis(
+            parent(basis),
+            [constant_monomial_exponents(parent(basis))],
+        ),
     )
 end

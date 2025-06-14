@@ -52,7 +52,10 @@ function MP.polynomial_type(
     return _polynomial_type(B, V, T)
 end
 
-function MP.polynomial_type(::Type{Polynomial{B,V,E}}, ::Type{T}) where {B,V,E,T}
+function MP.polynomial_type(
+    ::Type{Polynomial{B,V,E}},
+    ::Type{T},
+) where {B,V,E,T}
     return _polynomial_type(B, V, T)
 end
 
@@ -141,7 +144,7 @@ function MP.polynomial_type(::Type{<:FullBasis{B,V}}, ::Type{T}) where {T,B,V}
     return _polynomial_type(B, V, T)
 end
 
-function _polynomial_type(::Type{B}, ::Type{V}, ::Type{T}) where {B, V, T}
+function _polynomial_type(::Type{B}, ::Type{V}, ::Type{T}) where {B,V,T}
     return MP.polynomial_type(MP.monomial_type(V), _promote_coef(T, B))
 end
 
@@ -189,16 +192,29 @@ end
 
 function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
     print(io, "SubBasis{$(nameof(B))}(")
-    _show_vector(io, mime, basis.keys, Base.Fix1(MP.monomial, MP.variables(basis)))
+    _show_vector(
+        io,
+        mime,
+        basis.keys,
+        Base.Fix1(MP.monomial, MP.variables(basis)),
+    )
     print(io, ')')
     return
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", basis::Union{Variables,SubBasis})
+function Base.show(
+    io::IO,
+    mime::MIME"text/plain",
+    basis::Union{Variables,SubBasis},
+)
     return _show(io, mime, basis)
 end
 
-function Base.show(io::IO, mime::MIME"text/print", basis::Union{Variables,SubBasis})
+function Base.show(
+    io::IO,
+    mime::MIME"text/print",
+    basis::Union{Variables,SubBasis},
+)
     return _show(io, mime, basis)
 end
 

@@ -66,7 +66,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         _test_basis(basis)
         @test basis isa MB.explicit_basis_type(typeof(full_basis))
         for i in eachindex(basis)
-            poly = MB.Polynomial(MB.Variables{B}(variables(basis)), basis.keys[i])
+            poly =
+                MB.Polynomial(MB.Variables{B}(variables(basis)), basis.keys[i])
             @test basis[i] == poly
             @test basis[poly] == i
         end
@@ -122,7 +123,10 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
           _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, monomial(p)))) *
           " \$\$"
     const_mono = constant_monomial(prod(x))
-    const_poly = MB.Polynomial(MB.Variables{B}(variables(const_mono)), exponents(const_mono))
+    const_poly = MB.Polynomial(
+        MB.Variables{B}(variables(const_mono)),
+        exponents(const_mono),
+    )
     const_alg_el = MB.algebra_element(const_poly)
     for other in (const_mono, 1, const_alg_el)
         @test _test_op(+, other, const_alg_el) ≈ _test_op(*, 2, other)
@@ -162,7 +166,7 @@ function univ_orthogonal_test(
     for i in eachindex(basis)
         p_i = polynomial(basis[i])
         @test isapprox(dot(p_i, p_i, B), univ(maxdegree(p_i)); kwargs...)
-        for j in 1:i-1
+        for j in 1:(i-1)
             @test isapprox(dot(p_i, polynomial(basis[j]), B), 0.0; kwargs...)
         end
     end
@@ -200,7 +204,10 @@ function orthogonal_test(
             @test polynomial(basis[i]) ==
                   univariate_x[exps[i][1]+1] * univariate_y[exps[i][2]+1]
         end
-        basis = explicit_basis_covering(FullBasis{B}(x^2), FullBasis{Monomial}(x^2)[[x^4, x^2, x]])
+        basis = explicit_basis_covering(
+            FullBasis{B}(x^2),
+            FullBasis{Monomial}(x^2)[[x^4, x^2, x]],
+        )
         if even_odd_separated
             exps = [0, 1, 2, 4]
         else

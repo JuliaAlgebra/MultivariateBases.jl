@@ -107,9 +107,7 @@ function univariate_orthogonal_basis(
 )
     return univariate_eval!(
         B,
-        Vector{
-            _polynomial_type(B, typeof(MP.variables(variable)), Int),
-        }(
+        Vector{_polynomial_type(B, typeof(MP.variables(variable)), Int)}(
             undef,
             degree + 1,
         ),
@@ -147,14 +145,17 @@ function _covering(b::FullBasis{B}, exps) where {B}
             end
         end
     end
-    return sort!(collect(m), lt = MP.ordering(b)())
+    return sort!(collect(m); lt = MP.ordering(b)())
 end
 
 function explicit_basis_covering(
     full::FullBasis{BM,M},
     monos::SubBasis{B,M},
 ) where {BM<:AbstractMonomial,B<:AbstractMultipleOrthogonal,M}
-    return SA.SubBasis(full, _covering(FullBasis{B}(MP.variables(full)), monos.keys))
+    return SA.SubBasis(
+        full,
+        _covering(FullBasis{B}(MP.variables(full)), monos.keys),
+    )
 end
 
 function explicit_basis_covering(
@@ -232,10 +233,7 @@ function SA.coeffs(
 ) where {B<:AbstractMultipleOrthogonal}
     mono = MP.monomial(p)
     return sparse_coefficients(
-        prod(
-            MP.powers(mono);
-            init = MP.constant_monomial(mono),
-        ) do (var, deg)
+        prod(MP.powers(mono); init = MP.constant_monomial(mono)) do (var, deg)
             return univariate_orthogonal_basis(B, var, deg)[deg+1]
         end,
     )

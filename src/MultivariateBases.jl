@@ -82,10 +82,18 @@ end
 function MA.promote_operation(
     ::typeof(algebra),
     BT::Type{
-        <:Union{QuotientBasis{Polynomial{B,V,E}},FullBasis{B,V,E},SubBasis{B,V,E}},
+        <:Union{
+            QuotientBasis{Polynomial{B,V,E}},
+            FullBasis{B,V,E},
+            SubBasis{B,V,E},
+        },
     },
 ) where {B,V,E}
-    return SA.StarAlgebra{Variables{B,V},Polynomial{B,V,E},MStruct{B,V,E,SA.key_type(BT),BT}}
+    return SA.StarAlgebra{
+        Variables{B,V},
+        Polynomial{B,V,E},
+        MStruct{B,V,E,SA.key_type(BT),BT},
+    }
 end
 
 include("arithmetic.jl")

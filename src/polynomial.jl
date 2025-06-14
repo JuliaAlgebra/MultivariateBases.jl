@@ -76,7 +76,8 @@ function Base.hash(p::Polynomial{B}, u::UInt) where {B}
 end
 
 function Base.isequal(p::Polynomial{B}, q::Polynomial{B}) where {B}
-    return isequal(p.variables, q.variables) && isequal(p.exponents, q.exponents)
+    return isequal(p.variables, q.variables) &&
+           isequal(p.exponents, q.exponents)
 end
 
 Base.isone(p::Polynomial) = all(iszero, p.exponents)
@@ -119,7 +120,13 @@ function _show(io::IO, mime::MIME, p::Polynomial{B}) where {B}
         print(io, B)
         print(io, "(")
     end
-    print(io, SA.trim_LaTeX(mime, sprint(show, mime, MP.monomial(p.variables.variables, p.exponents))))
+    print(
+        io,
+        SA.trim_LaTeX(
+            mime,
+            sprint(show, mime, MP.monomial(p.variables.variables, p.exponents)),
+        ),
+    )
     if B != Monomial
         print(io, ")")
     end

@@ -11,7 +11,8 @@ using DynamicPolynomials
     a = MB.algebra_element(MB.sparse_coefficients(1 // 1 * x), full)
     @test a == MB.convert_basis(full, MB.algebra_element(x))
     b = a * a
-    expected = MB.algebra_element(MB.sparse_coefficients((1 // 2) * (1 + x^2)), full)
+    expected =
+        MB.algebra_element(MB.sparse_coefficients((1 // 2) * (1 + x^2)), full)
     @test b == expected
     c = b * b
     @test SA.coeffs(c) ==

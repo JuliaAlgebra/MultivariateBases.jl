@@ -35,7 +35,11 @@ function univariate_mul!(::Type{Chebyshev}, exps, coefs, var, a, b)
     return
 end
 
-function (m::MStruct{B,V,E})(a::E, b::E, ::Type{E}) where {B<:AbstractMonomialIndexed,V,E}
+function (m::MStruct{B,V,E})(
+    a::E,
+    b::E,
+    ::Type{E},
+) where {B<:AbstractMonomialIndexed,V,E}
     exps = [zero.(a)]
     coefs = [1 // 1]
     vars_a = findall(!iszero, a)
@@ -60,14 +64,7 @@ function (m::MStruct{B,V,E})(a::E, b::E, ::Type{E}) where {B<:AbstractMonomialIn
         else
             var_a, state_a = var_state_a
             var_b, state_b = var_state_b
-            univariate_mul!(
-                B,
-                exps,
-                coefs,
-                var_a,
-                a[var_a],
-                b[var_b],
-            )
+            univariate_mul!(B, exps, coefs, var_a, a[var_a], b[var_b])
             var_state_a = iterate(vars_a, state_a)
             var_state_b = iterate(vars_b, state_b)
         end
@@ -132,7 +129,11 @@ function SA.coeffs(
 end
 
 function SA.coeffs(cfs, src::FullBasis{Monomial}, target::FullBasis{Chebyshev})
-    return SA.coeffs(SA.values(cfs), SA.SubBasis(src, collect(SA.keys(cfs))), target)
+    return SA.coeffs(
+        SA.values(cfs),
+        SA.SubBasis(src, collect(SA.keys(cfs))),
+        target,
+    )
 end
 
 function degree_one_univariate_polynomial(::Type{Chebyshev}, variable)
@@ -146,7 +147,7 @@ function _scalar_product_function(::Type{Chebyshev}, i::Int)
         return 0
     else
         n = div(i, 2)
-        return (π / 2^i) * prod(n+1:i) / factorial(n)
+        return (π / 2^i) * prod((n+1):i) / factorial(n)
     end
 end
 
@@ -168,6 +169,6 @@ function _scalar_product_function(::Type{<:ChebyshevSecondKind}, i::Int)
         return 0
     else
         n = div(i, 2)
-        return π / (2^(i + 1)) * prod(n+2:i) / factorial(n)
+        return π / (2^(i + 1)) * prod((n+2):i) / factorial(n)
     end
 end
