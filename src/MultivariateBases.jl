@@ -8,39 +8,33 @@ export FullBasis, SubBasis
 export maxdegree_basis, explicit_basis_covering, empty_basis, monomial_index
 include("interface.jl")
 
+struct Variables{B,V}
+    variables::V
+end
+
+Variables{B}(vars) where {B} = Variables{B,typeof(vars)}(vars)
+
+MP.monomial_type(::Type{Variables{B,V}}) where {B,V} = MP.monomial_type(V)
+
+constant_monomial_exponents(v::Variables) = map(_ -> 0, v.variables)
+
+function (v::Variables)(exponents)
+    return Polynomial(v, exponents)
+end
+
 export AbstractMonomialIndexed, Monomial, ScaledMonomial
 include("polynomial.jl")
 MP.monomial_type(::Type{<:SA.AlgebraElement{A}}) where {A} = MP.monomial_type(A)
 function MP.polynomial_type(::Type{<:SA.AlgebraElement{A,T}}) where {A,T}
     return MP.polynomial_type(A, T)
 end
-struct Algebra{BT,B,M} <:
-       SA.AbstractStarAlgebra{Polynomial{B,M},Polynomial{B,M}}
-    basis::BT
-end
-MP.monomial_type(::Type{<:Algebra{B}}) where {B} = MP.monomial_type(B)
-function MP.polynomial_type(::Type{<:Algebra{B}}, ::Type{T}) where {B,T}
-    return MP.polynomial_type(B, T)
-end
-function MA.promote_operation(
-    ::typeof(SA.basis),
-    ::Type{<:Algebra{B}},
-) where {B}
-    return B
-end
-SA.basis(a::Algebra) = a.basis
-
-#Base.:(==)(::Algebra{BT1,B1,M}, ::Algebra{BT2,B2,M}) where {BT1,B1,BT2,B2,M} = true
-function Base.:(==)(a::Algebra, b::Algebra)
-    # `===` is a shortcut for speedup
-    return a.basis === b.basis || a.basis == b.basis
+MP.monomial_type(::Type{<:SA.StarAlgebra{O}}) where {O} = MP.monomial_type(O)
+function MP.polynomial_type(::Type{A}, ::Type{T}) where {A<:SA.StarAlgebra,T}
+    return MP.polynomial_type(MP.monomial_type(A), T)
 end
 
-function Base.show(io::IO, ::Algebra{BT,B}) where {BT,B}
-    ioc = IOContext(io, :limit => true, :compact => true)
-    return print(ioc, "Polynomial algebra of $B basis")
-end
-
+include("bases.jl")
+include("mstructures.jl")
 include("monomial.jl")
 include("scaled.jl")
 
@@ -69,7 +63,7 @@ include("quotient.jl")
 function algebra(
     basis::Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
 ) where {B,M}
-    return Algebra{typeof(basis),B,M}(basis)
+    return SA.StarAlgebra(Variables{B}(MP.variables(basis)), MStruct(basis))
 end
 
 function MA.promote_operation(
