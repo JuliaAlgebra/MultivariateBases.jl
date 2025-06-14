@@ -14,6 +14,19 @@ end
 
 Variables{B}(vars) where {B} = Variables{B,typeof(vars)}(vars)
 
+function _show(io::IO, mime::MIME, v::Variables{B}) where {B}
+    print(io, "$B polynomials in the variables ")
+    # We don't use the default `show` since we don't want to print the `eltype`
+    # and we want to use the `mime`
+    _show_vector(io, mime, v.variables)
+    return
+end
+
+function Base.:(==)(v::Variables{B}, w::Variables{B}) where {B}
+    # Testing `===` allows speeding up a typical situations
+    return v.variables === w.variables || v.variables == w.variables
+end
+
 MP.monomial_type(::Type{Variables{B,V}}) where {B,V} = MP.monomial_type(V)
 
 constant_monomial_exponents(v::Variables) = map(_ -> 0, v.variables)
@@ -30,7 +43,7 @@ function MP.polynomial_type(::Type{<:SA.AlgebraElement{A,T}}) where {A,T}
 end
 MP.monomial_type(::Type{<:SA.StarAlgebra{O}}) where {O} = MP.monomial_type(O)
 function MP.polynomial_type(::Type{A}, ::Type{T}) where {A<:SA.StarAlgebra,T}
-    return MP.polynomial_type(MP.monomial_type(A), T)
+    return MP.polynomial_type(MA.promote_operation(SA.basis, A), T)
 end
 
 include("bases.jl")
@@ -61,18 +74,18 @@ include("lagrange.jl")
 include("quotient.jl")
 
 function algebra(
-    basis::Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
-) where {B,M}
+    basis::Union{QuotientBasis{Polynomial{B}},FullBasis{B},SubBasis{B}},
+) where {B}
     return SA.StarAlgebra(Variables{B}(MP.variables(basis)), MStruct(basis))
 end
 
 function MA.promote_operation(
     ::typeof(algebra),
     BT::Type{
-        <:Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
+        <:Union{QuotientBasis{Polynomial{B,V,E}},FullBasis{B,V,E},SubBasis{B,V,E}},
     },
-) where {B,M}
-    return Algebra{BT,B,M}
+) where {B,V,E}
+    return SA.StarAlgebra{Variables{B,V},Polynomial{B,V,E},MStruct{B,V,E,SA.key_type(BT),BT}}
 end
 
 include("arithmetic.jl")

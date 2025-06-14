@@ -38,7 +38,7 @@ function explicit_basis_covering(full::FullBasis{B}, target::SubBasis{B}) where 
     return SA.SubBasis(full, target.keys)
 end
 
-MP.monomial_type(::Type{<:SubBasis{B,M}}) where {B,M} = M
+MP.monomial_type(::Type{<:SA.SubBasis{T,I,K,B}}) where {T,I,K,B} = MP.monomial_type(B)
 
 # The `i`th index of output is the index of occurence of `x[i]` in `y`,
 # or `0` if it does not occur.
@@ -107,15 +107,11 @@ function MA.promote_operation(
     BT = MA.promote_operation(implicit_basis, MA.promote_operation(SA.basis, E))
     A = MA.promote_operation(algebra, BT)
     M = MP.monomial_type(BT)
-    return SA.AlgebraElement{A,T,SA.SparseCoefficients{M,T,Vector{M},Vector{T}}}
+    return SA.AlgebraElement{A,T,SA.SparseCoefficients{M,T,Vector{M},Vector{T},typeof(isless)}}
 end
 
-function MA.promote_operation(
-    ::typeof(implicit_basis),
-    ::Type{<:Union{FullBasis{B,M},SubBasis{B,M}}},
-) where {B,M}
-    return FullBasis{B,M}
-end
+MA.promote_operation(::typeof(implicit_basis), B::Type{<:SA.ImplicitBasis}) = B
+MA.promote_operation(::typeof(implicit_basis), ::Type{<:SA.SubBasis{T,I,K,B}}) where {T,I,K,B} = B
 
 function _explicit_basis(coeffs, basis::FullBasis{B}) where {B}
     return SA.SubBasis(basis, _lazy_collect(SA.keys(coeffs)))
@@ -131,8 +127,8 @@ function explicit_basis(a::SA.AlgebraElement)
     return _explicit_basis(SA.coeffs(a), SA.basis(a))
 end
 
-function explicit_basis_type(::Type{FullBasis{B,M}}) where {B,M}
-    return SubBasis{B,M,MP.monomial_vector_type(M)}
+function explicit_basis_type(BT::Type{<:FullBasis{B,V,E}}) where {B,V,E}
+    return SA.SubBasis{eltype(BT),Int,SA.key_type(BT),BT,Vector{E}}
 end
 
 function empty_basis(
@@ -166,15 +162,6 @@ function sparse_coefficients(t::MP.AbstractTermLike)
     return SA.SparseCoefficients((MP.exponents(t),), (MP.coefficient(t),))
 end
 
-function MA.promote_operation(
-    ::typeof(sparse_coefficients),
-    ::Type{P},
-) where {P<:MP.AbstractPolynomialLike}
-    M = MP.monomial_type(P)
-    T = MP.coefficient_type(P)
-    return SA.SparseCoefficients{M,T,Vector{M},Vector{T}}
-end
-
 function algebra_element(p::MP.AbstractPolynomialLike)
     return algebra_element(
         sparse_coefficients(p),
@@ -192,9 +179,9 @@ _one_if_type(::Type{T}) where {T} = one(T)
 function constant_algebra_element_type(
     ::Type{BT},
     ::Type{T},
-) where {B,M,BT<:FullBasis{B,M},T}
+) where {B,V,E,BT<:FullBasis{B,V,E},T}
     A = MA.promote_operation(algebra, BT)
-    return SA.AlgebraElement{A,T,SA.SparseCoefficients{M,T,Vector{M},Vector{T}}}
+    return SA.AlgebraElement{A,T,SA.SparseCoefficients{E,T,Tuple{E},Tuple{T},typeof(isless)}}
 end
 
 function constant_algebra_element(b::FullBasis, α)
@@ -212,9 +199,9 @@ function constant_algebra_element_type(
     return SA.AlgebraElement{A,T,Vector{T}}
 end
 
-function constant_algebra_element(::Type{<:SubBasis{B,M}}, α) where {B,M}
+function constant_algebra_element(basis::SubBasis, α)
     return algebra_element(
         [_one_if_type(α)],
-        SubBasis{B}([MP.constant_monomial(M)]),
+        SA.SubBasis(parent(basis), [constant_monomial_exponents(parent(basis))]),
     )
 end

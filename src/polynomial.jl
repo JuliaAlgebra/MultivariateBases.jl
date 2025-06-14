@@ -181,7 +181,7 @@ end
 function Base.isapprox(a::SA.AlgebraElement, α::Number; kws...)
     return isapprox(
         a,
-        α * constant_algebra_element(typeof(SA.basis(a)), typeof(α));
+        α * constant_algebra_element(SA.basis(a), typeof(α));
         kws...,
     )
 end

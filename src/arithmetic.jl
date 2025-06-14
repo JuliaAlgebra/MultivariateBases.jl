@@ -61,7 +61,7 @@ for op in [:+, :-]
         end
         function Base.$op(p, q::_AE)
             i = implicit(q)
-            return $op(constant_algebra_element(typeof(SA.basis(i)), p), i)
+            return $op(constant_algebra_element(SA.basis(i), p), i)
         end
         function MA.promote_operation(
             ::typeof($op),

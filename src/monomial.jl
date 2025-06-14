@@ -174,7 +174,7 @@ SA.star(::SubBasis, coeffs) = SA.star.(coeffs)
 
 # TODO use Base.show_vector here, maybe by wrapping the `generator` vector
 #      into something that spits objects wrapped with the `mime` type
-function _show_vector(io::IO, mime::MIME, b, v)
+function _show_vector(io::IO, mime::MIME, v, map = identity)
     print(io, '[')
     first = true
     for el in v
@@ -182,30 +182,30 @@ function _show_vector(io::IO, mime::MIME, b, v)
             print(io, ", ")
         end
         first = false
-        show(io, mime, MP.monomial(MP.variables(b), el))
+        show(io, mime, map(el))
     end
     return print(io, ']')
 end
 
 function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
     print(io, "SubBasis{$(nameof(B))}(")
-    _show_vector(io, mime, basis, basis.keys)
+    _show_vector(io, mime, basis.keys, Base.Fix1(MP.monomial, MP.variables(b)))
     print(io, ')')
     return
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", basis::SubBasis)
+function Base.show(io::IO, mime::MIME"text/plain", basis::Union{Variables,SubBasis})
     return _show(io, mime, basis)
 end
 
-function Base.show(io::IO, mime::MIME"text/print", basis::SubBasis)
+function Base.show(io::IO, mime::MIME"text/print", basis::Union{Variables,SubBasis})
     return _show(io, mime, basis)
 end
 
-function Base.print(io::IO, basis::SubBasis)
+function Base.print(io::IO, basis::Union{Variables,SubBasis})
     return show(io, MIME"text/print"(), basis)
 end
 
-function Base.show(io::IO, basis::SubBasis)
+function Base.show(io::IO, basis::Union{Variables,SubBasis})
     return show(io, MIME"text/plain"(), basis)
 end

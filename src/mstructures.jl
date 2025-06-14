@@ -2,6 +2,10 @@ struct MStruct{B<:AbstractMonomialIndexed,V,E,I,BT<:SA.AbstractBasis{Polynomial{
     basis::BT
 end
 
+function MA.promote_operation(::typeof(SA.basis), ::Type{MStruct{B,V,E,I,BT}}) where {B,V,E,I,BT}
+    return BT
+end
+
 function (m::MStruct)(a::Polynomial, b::Polynomial, ::Type{U}) where {U}
     return m(m[a], m[b], U)
 end

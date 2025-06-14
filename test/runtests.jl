@@ -16,7 +16,7 @@ end
 function _test_basis(basis)
     B = typeof(basis)
     @test typeof(MB.algebra(basis)) == MA.promote_operation(MB.algebra, B)
-    @test typeof(MB.constant_algebra_element(B, 1)) ==
+    @test typeof(MB.constant_algebra_element(basis, 1)) ==
           MB.constant_algebra_element_type(B, Int)
 end
 
@@ -35,6 +35,7 @@ Base.:*(::Float64, ::TypeB) = TypeB()
 Base.:*(::TypeB, ::Float64) = TypeB()
 Base.:/(::TypeA, ::Float64) = TypeB()
 Base.:/(::TypeB, ::Float64) = TypeB()
+Base.:+(::TypeA, ::TypeA) = TypeB()
 Base.:+(::TypeB, ::TypeB) = TypeB()
 Base.:-(::TypeB, ::TypeB) = TypeB()
 Base.convert(::Type{TypeB}, ::TypeA) = TypeB()
@@ -43,8 +44,11 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @polyvar x[1:2]
     full_basis = FullBasis{B}(x)
     _test_basis(full_basis)
-    @test sprint(show, MB.algebra(full_basis)) ==
-          "Polynomial algebra of $B basis"
+    # FIXME `AbstractStarAlgebra` is currently calling `print` anyway
+    #@test sprint(show, MIME"text/plain"(), MB.algebra(full_basis)) ==
+    #      "*-algebra of $B polynomials in the variables [x[1], x[2]]"
+    @test sprint(print, MB.algebra(full_basis)) ==
+          "*-algebra of $B polynomials in the variables [x[1], x[2]]"
     for basis in [
         maxdegree_basis(full_basis, x, degree),
         explicit_basis_covering(
@@ -94,8 +98,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     end
     mono = x[1]^2 * x[2]^3
     p = MB.Polynomial(MB.Variables{B}(variables(mono)), exponents(mono))
-    @test full_basis[p] == mono
-    @test full_basis[mono] == p
+    @test full_basis[p] == exponents(mono)
+    @test full_basis[exponents(mono)] == p
     @test polynomial_type(mono, B == Monomial ? TypeA : TypeB) ==
           polynomial_type(typeof(p), TypeA)
     a = MB.algebra_element(p)
@@ -104,19 +108,19 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @test typeof(polynomial(a)) == polynomial_type(typeof(p), Int)
     @test a ≈ a
     if B == MB.Monomial
-        @test a ≈ p.monomial
-        @test p.monomial ≈ a
+        @test a ≈ monomial(p)
+        @test monomial(p) ≈ a
     else
-        @test !(a ≈ p.monomial)
-        @test !(p.monomial ≈ a)
+        @test !(a ≈ monomial(p))
+        @test !(monomial(p) ≈ a)
     end
     _wrap(s) = (B == MB.Monomial ? s : "$B($s)")
-    @test sprint(show, p) == _wrap(sprint(show, p.monomial))
-    @test sprint(print, p) == _wrap(sprint(print, p.monomial))
+    @test sprint(show, p) == _wrap(sprint(show, monomial(p)))
+    @test sprint(print, p) == _wrap(sprint(print, monomial(p)))
     mime = MIME"text/latex"()
     @test sprint(show, mime, p) ==
           "\$\$ " *
-          _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, p.monomial))) *
+          _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, monomial(p)))) *
           " \$\$"
     const_mono = constant_monomial(prod(x))
     const_poly = MB.Polynomial(MB.Variables{B}(variables(const_mono)), exponents(const_mono))
