@@ -104,8 +104,8 @@ function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
     )
 end
 
-function algebra_element(p::Polynomial{B,M}) where {B,M}
-    return _algebra_element(MP.monomial(p.variables.variables, p.monomial), B)
+function algebra_element(p::Polynomial{B}) where {B}
+    return _algebra_element(MP.monomial(MP.variables(p), p.exponents), B)
 end
 
 function Base.:*(a::Polynomial{B}, b::SA.AlgebraElement) where {B}

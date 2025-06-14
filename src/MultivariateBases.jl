@@ -32,6 +32,7 @@ function MP.polynomial_type(::Type{SA.StarAlgebra{O,S,M}}, ::Type{T}) where {O,S
 end
 
 include("bases.jl")
+include("mstructures.jl")
 include("monomial.jl")
 include("scaled.jl")
 
@@ -60,7 +61,7 @@ include("quotient.jl")
 function algebra(
     basis::Union{QuotientBasis{Polynomial{B,M}},FullBasis{B,M},SubBasis{B,M}},
 ) where {B,M}
-    return SA.StarAlgebra(Variables{B}(MP.variables(basis)), basis)
+    return SA.StarAlgebra(Variables{B}(MP.variables(basis)), MStruct(basis))
 end
 
 function MA.promote_operation(

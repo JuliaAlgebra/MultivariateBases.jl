@@ -35,29 +35,26 @@ function univariate_mul!(::Type{Chebyshev}, exps, coefs, var, a, b)
     return
 end
 
-function Base.:*(
-    a::Polynomial{B},
-    b::Polynomial{B},
-) where {B<:AbstractMonomialIndexed}
-    exps = [constant_monomial_exponents(a.variables)]
+function (m::MStruct{B,V,E})(a::E, b::E, ::Type{E}) where {B<:AbstractMonomialIndexed,V,E}
+    exps = [zero.(a)]
     coefs = [1 // 1]
-    vars_a = findall(!iszero, a.exponents)
+    vars_a = findall(!iszero, a)
     var_state_a = iterate(vars_a)
-    vars_b = findall(!iszero, b.exponents)
+    vars_b = findall(!iszero, b)
     var_state_b = iterate(vars_b)
     while !isnothing(var_state_a) || !isnothing(var_state_b)
         if isnothing(var_state_a) ||
            (!isnothing(var_state_b) && var_state_b[1] > var_state_a[1])
             var_b, state_b = var_state_b
             for i in eachindex(exps)
-                exps[i] = _increment!(exps[i], b.exponents[var_b], var_b)
+                exps[i] = _increment!(exps[i], b[var_b], var_b)
             end
             var_state_b = iterate(vars_b, state_b)
         elseif isnothing(var_state_b) ||
                (!isnothing(var_state_a) && var_state_a[1] > var_state_b[1])
             var_a, state_a = var_state_a
             for i in eachindex(exps)
-                exps[i] = _increment!(exps[i], a.exponents[var_a], var_a)
+                exps[i] = _increment!(exps[i], a[var_a], var_a)
             end
             var_state_a = iterate(vars_a, state_a)
         else
@@ -68,17 +65,15 @@ function Base.:*(
                 exps,
                 coefs,
                 var_a,
-                a.exponents[var_a],
-                b.exponents[var_b],
+                a[var_a],
+                b[var_b],
             )
             var_state_a = iterate(vars_a, state_a)
             var_state_b = iterate(vars_b, state_b)
         end
     end
     # FIXME is `canonical` needed ?
-    # TODO get rid of this map_keys
-    @show exps
-    return SA.map_keys(exp -> Polynomial(a.variables, exp), MA.operate!(SA.canonical, SA.SparseCoefficients(exps, coefs)))
+    return MA.operate!(SA.canonical, SA.SparseCoefficients(exps, coefs))
 end
 
 function _add_mul_scalar_vector!(res, ::SubBasis, scalar, vector)
@@ -123,10 +118,10 @@ function SA.coeffs(
 )
     sub = explicit_basis_covering(target, source)
     # Need to make A square so that it's UpperTriangular
-    extended = SubBasis{Monomial}(sub.monomials)
+    extended = SA.SubBasis(parent(source), sub.keys)
     ext = SA.coeffs(algebra_element(cfs, source), extended)
     return SA.SparseCoefficients(
-        sub.monomials,
+        sub.keys,
         #transformation_to(sub, extended) \ ext, # Julia v1.6 converts the matrix to the eltype of the `result` which is bad for JuMP
         LinearAlgebra.ldiv!(
             zeros(_promote_coef(eltype(ext), Chebyshev), length(sub)),
@@ -136,12 +131,8 @@ function SA.coeffs(
     )
 end
 
-function SA.coeffs(cfs, ::FullBasis{Monomial}, target::FullBasis{Chebyshev})
-    return SA.coeffs(
-        SA.values(cfs),
-        SubBasis{Monomial}(collect(SA.keys(cfs))),
-        target,
-    )
+function SA.coeffs(cfs, src::FullBasis{Monomial}, target::FullBasis{Chebyshev})
+    return SA.coeffs(SA.values(cfs), SA.SubBasis(src, collect(SA.keys(cfs))), target)
 end
 
 function degree_one_univariate_polynomial(::Type{Chebyshev}, variable)

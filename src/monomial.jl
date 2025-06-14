@@ -38,9 +38,8 @@ function recurrence_eval(::Type{Monomial}, previous, value, degree)
     return previous[degree] * value
 end
 
-function Base.:*(a::Polynomial{Monomial}, b::Polynomial{Monomial})
-    @assert a.variables == b.variables
-    return SA.SparseCoefficients((Polynomial(a.variables, a.exponents .+ b.exponents),), (1,))
+function (m::MStruct{Monomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
+    return SA.SparseCoefficients((a .+ b,), (1,))
 end
 
 SA.coeffs(p::Polynomial{Monomial}, ::FullBasis{Monomial}) = p.monomial
@@ -170,7 +169,7 @@ SA.star(::SubBasis, coeffs) = SA.star.(coeffs)
 
 # TODO use Base.show_vector here, maybe by wrapping the `generator` vector
 #      into something that spits objects wrapped with the `mime` type
-function _show_vector(io::IO, mime::MIME, v)
+function _show_vector(io::IO, mime::MIME, b, v)
     print(io, '[')
     first = true
     for el in v
@@ -178,14 +177,14 @@ function _show_vector(io::IO, mime::MIME, v)
             print(io, ", ")
         end
         first = false
-        show(io, mime, el)
+        show(io, mime, MP.monomial(MP.variables(b), el))
     end
     return print(io, ']')
 end
 
 function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
     print(io, "SubBasis{$(nameof(B))}(")
-    _show_vector(io, mime, basis.monomials)
+    _show_vector(io, mime, basis, basis.keys)
     print(io, ')')
     return
 end

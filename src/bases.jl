@@ -9,6 +9,12 @@ function FullBasis{B,M}(vars) where {B,M}
     return SA.MappedBasis{Polynomial{B,typeof(vars),eltype(exps)}}(exps, v, MP.exponents)
 end
 
+FullBasis{B}(vars) where {B} = FullBasis{B,MP.monomial_type(vars)}(vars)
+
+function FullBasis{B}(p::MP.AbstractPolynomialLike) where {B}
+    return FullBasis{B}(MP.variables(p))
+end
+
 MP.monomial_type(::Type{<:FullBasis{B,M}}) where {B,M} = M
 function MP.polynomial_type(basis::FullBasis{B,M}, ::Type{T}) where {B,M,T}
     return MP.polynomial_type(typeof(basis), T)
@@ -84,7 +90,7 @@ function algebra_type(::Type{BT}) where {B,M,BT<:MonomialIndexedBasis{B,M}}
     return Algebra{BT,B,M}
 end
 
-implicit_basis(::SubBasis{B,M}) where {B,M} = FullBasis{B,M}()
+implicit_basis(basis::SubBasis) = parent(basis)
 implicit_basis(basis::FullBasis) = basis
 
 function implicit(a::SA.AlgebraElement)
@@ -148,13 +154,13 @@ _lazy_collect(v::Vector) = v
 
 function sparse_coefficients(p::MP.AbstractPolynomial)
     return SA.SparseCoefficients(
-        _lazy_collect(MP.monomials(p)),
+        MP.exponents.(MP.monomials(p)),
         _lazy_collect(MP.coefficients(p)),
     )
 end
 
 function sparse_coefficients(t::MP.AbstractTermLike)
-    return SA.SparseCoefficients((MP.monomial(t),), (MP.coefficient(t),))
+    return SA.SparseCoefficients((MP.exponents(t),), (MP.coefficient(t),))
 end
 
 function MA.promote_operation(
@@ -169,7 +175,7 @@ end
 function algebra_element(p::MP.AbstractPolynomialLike)
     return algebra_element(
         sparse_coefficients(p),
-        FullBasis{Monomial,MP.monomial_type(p)}(),
+        FullBasis{Monomial}(p),
     )
 end
 

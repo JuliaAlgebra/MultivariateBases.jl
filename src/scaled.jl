@@ -33,7 +33,7 @@ Foundations of Computational Mathematics 7.2 (2007): 229-244.
 """
 struct ScaledMonomial <: AbstractMonomial end
 
-function Base.:*(a::Polynomial{ScaledMonomial}, b::Polynomial{ScaledMonomial})
+function (m::MStruct{ScaledMonomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
     @assert a.variables == b.variables
     exp = a.exponents .+ b.exponents
     α = prod(
@@ -42,7 +42,7 @@ function Base.:*(a::Polynomial{ScaledMonomial}, b::Polynomial{ScaledMonomial})
     ) do i
         return binomial(exp[i], a.exponents[i])
     end
-    return SA.SparseCoefficients((Polynomial(a.variables, exp),), (√α,))
+    return SA.SparseCoefficients((exp,), (1,))
 end
 
 function SA.coeffs(p::Polynomial{ScaledMonomial}, ::FullBasis{Monomial})

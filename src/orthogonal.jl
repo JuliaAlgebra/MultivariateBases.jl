@@ -226,13 +226,14 @@ function SA.coeffs(
 end
 
 function SA.coeffs(
-    p::Polynomial{B,M},
+    p::Polynomial{B},
     ::FullBasis{Monomial},
-) where {B<:AbstractMultipleOrthogonal,M}
+) where {B<:AbstractMultipleOrthogonal}
+    mono = MP.monomial(MP.variables(p), p.exponents)
     return sparse_coefficients(
         prod(
-            MP.powers(p.monomial);
-            init = MP.constant_monomial(M),
+            MP.powers(mono);
+            init = MP.constant_monomial(mono),
         ) do (var, deg)
             return univariate_orthogonal_basis(B, var, deg)[deg+1]
         end,
