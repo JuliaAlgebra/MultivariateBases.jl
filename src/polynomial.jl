@@ -102,7 +102,7 @@ end
 function _algebra_element(p, ::Type{B}) where {B<:AbstractMonomialIndexed}
     return algebra_element(
         sparse_coefficients(p),
-        FullBasis{B,MP.monomial_type(typeof(p))}(MP.variables(p)),
+        FullBasis{B}(MP.variables(p)),
     )
 end
 
@@ -156,15 +156,6 @@ end
 
 function convert_basis(basis::SA.AbstractBasis, p::SA.AlgebraElement)
     return SA.AlgebraElement(SA.coeffs(p, basis), algebra(basis))
-end
-
-function _polynomial(b::FullBasis{Monomial}, c::SA.SparseCoefficients)
-    return MP.polynomial(collect(SA.values(c)), MP.monomial.(getindex.(Ref(b), SA.keys(c))))
-end
-
-function MP.polynomial(a::SA.AlgebraElement)
-    b = FullBasis{Monomial}(MP.variables(a))
-    return _polynomial(b, SA.coeffs(a, b))
 end
 
 function Base.isapprox(

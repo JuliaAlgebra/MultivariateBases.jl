@@ -2,6 +2,15 @@ const _APL = MP.AbstractPolynomialLike
 # We don't define it for all `AlgebraElement` as this would be type piracy
 const _AE = SA.AlgebraElement{<:SA.StarAlgebra{<:Variables}}
 
+function _polynomial(b::FullBasis{Monomial}, c::SA.SparseCoefficients)
+    return MP.polynomial(collect(SA.values(c)), MP.monomial.(getindex.(Ref(b), SA.keys(c))))
+end
+
+function MP.polynomial(a::SA.AlgebraElement)
+    b = FullBasis{Monomial}(MP.variables(a))
+    return _polynomial(b, SA.coeffs(a, b))
+end
+
 for op in [:+, :-, :*]
     @eval begin
         function MA.promote_operation(
