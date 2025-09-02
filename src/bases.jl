@@ -260,7 +260,8 @@ function constant_algebra_element_type(
     ::Type{B},
     ::Type{T},
 ) where {B<:SubBasis,T}
-    return _algebra_element_type(Vector{T}, B)
+    A = MA.promote_operation(algebra, B)
+    return SA.AlgebraElement{A,T,Vector{T}}
 end
 
 function constant_algebra_element(basis::SubBasis, α)
