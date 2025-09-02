@@ -2,8 +2,13 @@ const FullBasis{B,V,E} = SA.MappedBasis{Polynomial{B,V,E}}
 const SubBasis{B,V,E} = SA.SubBasis{Polynomial{B,V,E}}
 const MonomialIndexedBasis{B,V,E} = Union{SubBasis{B,V,E},FullBasis{B,V,E}}
 
+function MP.ordering(::Type{MonomialIndexedBasis{B,V,E}}) where {B,V,E}
+    return MP.ordering(E)
+end
+MP.ordering(b::MonomialIndexedBasis) = MP.ordering(typeof(b))
+
 function FullBasis{B}(vars) where {B}
-    O = typeof(MP.ordering(vars))
+    O = MP.ordering(vars)
     v = Variables{B,typeof(vars)}(vars)
     exps = MP.ExponentsIterator{O}(constant_monomial_exponents(v))
     return SA.MappedBasis{Polynomial{B,typeof(vars),eltype(exps)}}(
@@ -117,19 +122,27 @@ function implicit(a::SA.AlgebraElement)
     return algebra_element(SA.coeffs(a, basis), basis)
 end
 
+function _algebra_element_type(
+    ::Type{C}, # type of coefficient vector
+    ::Type{B}, # basis type
+) where {C,B}
+    A = MA.promote_operation(algebra, B)
+    T = eltype(C) # Even works for `NTuple`!
+    E = SA.key_type(B)
+    return SA.AlgebraElement{
+        A,
+        T,
+        SA.SparseCoefficients{E,T,_similar_type(C, E),C,typeof(isless)},
+    }
+end
+
 function MA.promote_operation(
     ::typeof(implicit),
     ::Type{AE},
 ) where {AG,T,AE<:SA.AlgebraElement{AG,T}}
     BT =
         MA.promote_operation(implicit_basis, MA.promote_operation(SA.basis, AE))
-    A = MA.promote_operation(algebra, BT)
-    E = SA.key_type(BT)
-    return SA.AlgebraElement{
-        A,
-        T,
-        SA.SparseCoefficients{E,T,Vector{E},Vector{T},typeof(isless)},
-    }
+    return _algebra_element_type(Vector{T}, BT)
 end
 
 MA.promote_operation(::typeof(implicit_basis), B::Type{<:SA.ImplicitBasis}) = B
@@ -197,19 +210,40 @@ function algebra_element(f::Function, basis::SubBasis)
     return algebra_element(map(f, eachindex(basis)), basis)
 end
 
+# Another option is to use `fieldcount`, see
+# https://discourse.julialang.org/t/get-tuple-length-from-type/32483/16?u=blegat
+_similar_type(::Type{<:NTuple{N,Any}}, ::Type{T}) where {N,T} = NTuple{N,T}
+_similar_type(::Type{V}, ::Type{T}) where {V<:AbstractVector,T} = SA.similar_type(V, T)
+
+function MA.promote_operation(
+    ::typeof(algebra_element),
+    P::Type{<:MP.AbstractPolynomialLike{T}}
+) where {T}
+    V = MA.promote_operation(MP.variables, P)
+    E = _similar_type(V, Int)
+    O = MP.ordering(P)
+    P = MultivariateBases.Polynomial{Monomial,V,E}
+    B = SA.MappedBasis{
+        P,
+        E,
+        MP.ExponentsIterator{O,Nothing,E},
+        Variables{
+            Monomial,
+            V,
+        },
+        typeof(MP.exponents),
+    }
+    return _algebra_element_type(Vector{T}, B)
+end
+
 _one_if_type(α) = α
 _one_if_type(::Type{T}) where {T} = one(T)
 
 function constant_algebra_element_type(
     ::Type{BT},
     ::Type{T},
-) where {B,V,E,BT<:FullBasis{B,V,E},T}
-    A = MA.promote_operation(algebra, BT)
-    return SA.AlgebraElement{
-        A,
-        T,
-        SA.SparseCoefficients{E,T,Tuple{E},Tuple{T},typeof(isless)},
-    }
+) where {BT<:FullBasis,T}
+    return _algebra_element_type(Tuple{T}, BT)
 end
 
 function constant_algebra_element(b::FullBasis, α)
@@ -226,8 +260,7 @@ function constant_algebra_element_type(
     ::Type{B},
     ::Type{T},
 ) where {B<:SubBasis,T}
-    A = MA.promote_operation(algebra, B)
-    return SA.AlgebraElement{A,T,Vector{T}}
+    return _algebra_element_type(Vector{T}, B)
 end
 
 function constant_algebra_element(basis::SubBasis, α)
