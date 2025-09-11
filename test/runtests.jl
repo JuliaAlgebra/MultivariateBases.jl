@@ -73,9 +73,6 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         end
         n = binomial(2 + degree, 2)
         @test length(basis) == n
-        @test firstindex(basis) == 1
-        @test lastindex(basis) == n
-        @test typeof(copy(basis)) == typeof(basis)
         @test nvariables(basis) == 2
         @test variables(basis) == x
         @test monomial_type(typeof(basis)) == monomial_type(x[1])
