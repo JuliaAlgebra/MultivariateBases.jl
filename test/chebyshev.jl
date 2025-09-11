@@ -7,7 +7,6 @@ using DynamicPolynomials
 @testset "StarAlgebras" begin
     @polyvar x
     full = MB.FullBasis{MB.Chebyshev}(x)
-    sub = SA.SubBasis(full, [[1]])
     a = MB.algebra_element(MB.sparse_coefficients(1 // 1 * x), full)
     @test a == MB.convert_basis(full, MB.algebra_element(x))
     b = a * a

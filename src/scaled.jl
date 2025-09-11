@@ -58,8 +58,8 @@ _promote_coef(::Type{T}, ::Type{ScaledMonomial}) where {T} = _float(T)
 
 function MP.polynomial(f::Function, basis::SubBasis{ScaledMonomial})
     return MP.polynomial(
-        i -> scaling(basis.monomials[i]) * f(i),
-        basis.monomials,
+        i -> scaling(basis.keys[i]) * f(i),
+        keys_as_monomials(basis),
     )
 end
 
@@ -70,9 +70,9 @@ function Base.promote_rule(
     return SubBasis{Monomial,M,V}
 end
 
-function scaling(m::MP.AbstractMonomial)
-    return √(factorial(MP.degree(m)) /
-             prod(factorial, MP.exponents(m); init = 1),)
+function scaling(exp)
+    return √(factorial(sum(exp)) /
+             prod(factorial, exp; init = 1),)
 end
 unscale_coef(t::MP.AbstractTerm) = MP.coefficient(t) / scaling(MP.monomial(t))
 function SA.coeffs(
@@ -87,7 +87,7 @@ function MP.coefficients(p, ::FullBasis{ScaledMonomial})
     return unscale_coef.(MP.terms(p))
 end
 function MP.coefficients(p, basis::SubBasis{ScaledMonomial})
-    return MP.coefficients(p, basis.monomials) ./ scaling.(MP.monomials(p))
+    return MP.coefficients(p, keys_as_monomials(basis)) ./ scaling.(basis.keys)
 end
 function SA.coeffs(
     p::MP.AbstractPolynomialLike,
@@ -105,11 +105,11 @@ function SA.coeffs!(
 )
     MA.operate!(zero, res)
     for (k, v) in SA.nonzero_pairs(cfs)
-        mono = source[k].monomial
+        exp = source[k].exponents
         SA.unsafe_push!(
             res,
-            target[Polynomial{Monomial}(mono)],
-            v * scaling(mono),
+            exponents_index(target, exp),
+            v * scaling(exp),
         )
     end
     MA.operate!(SA.canonical, res)
@@ -124,11 +124,11 @@ function SA.coeffs!(
 )
     MA.operate!(zero, res)
     for (k, v) in SA.nonzero_pairs(cfs)
-        mono = source[k].monomial
+        exp = source[k].exponents
         SA.unsafe_push!(
             res,
-            target[Polynomial{ScaledMonomial}(mono)],
-            v / scaling(mono),
+            exponents_index(target, exp),
+            v / scaling(exp),
         )
     end
     MA.operate!(SA.canonical, res)

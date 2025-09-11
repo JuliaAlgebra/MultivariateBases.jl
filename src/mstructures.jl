@@ -8,6 +8,10 @@ struct MStruct{
     basis::BT
 end
 
+function Base.:(==)(a::MStruct, b::MStruct)
+    return a.basis == b.basis
+end
+
 function MA.promote_operation(
     ::typeof(SA.basis),
     ::Type{MStruct{B,V,E,I,BT}},

@@ -6,14 +6,10 @@ using DynamicPolynomials
 
 @testset "StarAlgebras" begin
     @polyvar x
-    a = MB.Polynomial{MB.Monomial}(x)
-    @test !isone(a)
-    b = a * a
-    @test b.coeffs == sparse_coefficients(x^2)
-    @test typeof(b.coeffs) == typeof(sparse_coefficients(x^2))
-    @test MB.Polynomial{MB.Monomial}(x^2) == MB.Polynomial{MB.Monomial}(x^2)
-    @test MB.Polynomial{MB.Monomial}(x^3) != MB.Polynomial{MB.Monomial}(x^2)
-    o = MB.Polynomial{MB.Monomial}(constant_monomial(x^2))
+    vars = MB.Variables{MB.Monomial}(variables(x))
+    @test vars(exponents(x^2)) == vars(exponents(x^2))
+    @test vars(exponents(x^3)) != vars(exponents(x^2))
+    o = vars(exponents(constant_monomial(x^2)))
     @test isone(o)
 end
 
@@ -26,7 +22,7 @@ end
     @test coefficients(x + 4y, basis) == [4, 1]
     @test polynomial(basis[1]) == y
     @test polynomial(basis[2]) == x
-    @test basis.monomials == [y, x]
+    @test MB.keys_as_monomials(basis) == [y, x]
     @test polynomial.(collect(basis)) == [y, x]
     @test variables(basis) == [x, y]
     @test nvariables(basis) == 2
@@ -37,6 +33,7 @@ end
           "SubBasis{Monomial}([y, x])"
     @test sprint(print, basis) == "SubBasis{Monomial}([y, x])"
 end
+
 @testset "Affine" begin
     # It will be sorted and 1 will be moved at the end
     basis = SubBasis{MB.Monomial}([1, x, y])
@@ -46,6 +43,7 @@ end
     @test coefficients(9 + x + 4y, basis) == [9, 4, 1]
     @test MB.explicit_basis(poly) == basis
 end
+
 @testset "Quadratic" begin
     basis = SubBasis{MB.Monomial}([x^2, x * y, y^2])
     @test polynomial_type(basis, Int) == polynomial_type(x, Int)
@@ -54,6 +52,7 @@ end
     @test sprint(show, basis) == "SubBasis{Monomial}([y², xy, x²])"
     @test sprint(print, basis) == "SubBasis{Monomial}([y^2, x*y, x^2])"
 end
+
 @testset "merge_bases" begin
     basis1 = SubBasis{MB.Monomial}([x^2, y^2])
     basis2 = SubBasis{MB.Monomial}([x * y, y^2])
@@ -67,14 +66,13 @@ end
     @test extdegree(basis2, x) == (0, 1)
     @test extdegree(basis2, y) == (1, 2)
     basis, I1, I2 = MultivariateBases.merge_bases(basis1, basis2)
-    @test basis.monomials == [y^2, x * y, x^2]
+    @test MB.keys_as_monomials(basis) == [y^2, x * y, x^2]
     @test I1 == [1, 0, 2]
     @test I2 == [1, 2, 0]
     for i in eachindex(basis)
-        mono = basis.monomials[i]
-        @test monomial_index(basis, mono) == i
+        @test SA.key_index(basis, basis.keys[i]) == i
         for (I, b) in [(I1, basis1), (I2, basis2)]
-            idx = monomial_index(b, basis.monomials[i])
+            idx = SA.key_index(b, basis.keys[i])
             if iszero(I[i])
                 @test isnothing(idx)
             else

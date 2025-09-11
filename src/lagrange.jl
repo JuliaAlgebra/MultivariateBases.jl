@@ -103,13 +103,13 @@ function eval_basis!(
         end
     end
     for i in eachindex(values)
-        l = MP.maxdegree(basis.monomials, variables[i]) + 1
+        l = maximum(Base.Fix2(getindex, i), basis.keys) + 1
         univariate_eval!(B, view(univariate_buffer, 1:l, i), values[i])
     end
     for i in eachindex(basis)
         result[i] = one(eltype(result))
         for j in eachindex(values)
-            d = MP.degree(basis.monomials[i], variables[j])
+            d = basis.keys[i][j]
             result[i] = MA.operate!!(*, result[i], univariate_buffer[d+1, j])
         end
     end

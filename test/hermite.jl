@@ -45,7 +45,4 @@ end
             1.0,
         ]),
     )
-    M = typeof(x^2)
-    mono = MB.FullBasis{MB.Monomial,M}()
-    basis = MB.FullBasis{MB.PhysicistsHermite,M}()
 end

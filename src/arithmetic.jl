@@ -2,10 +2,13 @@ const _APL = MP.AbstractPolynomialLike
 # We don't define it for all `AlgebraElement` as this would be type piracy
 const _AE = SA.AlgebraElement{<:SA.StarAlgebra{<:Variables}}
 
+_collect_if_tuple(t::Tuple) = collect(t)
+_collect_if_tuple(v::AbstractVector) = v
+
 function _polynomial(b::FullBasis{Monomial}, c::SA.SparseCoefficients)
     return MP.polynomial(
         collect(SA.values(c)),
-        MP.monomial.(getindex.(Ref(b), SA.keys(c))),
+        _collect_if_tuple(MP.monomial.(getindex.(Ref(b), SA.keys(c)))),
     )
 end
 
@@ -90,7 +93,7 @@ end
 
 function term_element(α, p::Polynomial{B}) where {B}
     return algebra_element(
-        sparse_coefficients(MP.term(α, p.monomial)),
+        SA.SparseCoefficients((p.exponents,), (α,)),
         FullBasis{B}(MP.variables(p)),
     )
 end

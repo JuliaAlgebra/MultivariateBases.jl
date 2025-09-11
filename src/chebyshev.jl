@@ -116,7 +116,7 @@ function SA.coeffs(
     sub = explicit_basis_covering(target, source)
     # Need to make A square so that it's UpperTriangular
     extended = SA.SubBasis(parent(source), sub.keys)
-    ext = SA.coeffs(algebra_element(cfs, source), extended)
+    ext = _collect_if_tuple(SA.coeffs(algebra_element(cfs, source), extended))
     return SA.SparseCoefficients(
         sub.keys,
         #transformation_to(sub, extended) \ ext, # Julia v1.6 converts the matrix to the eltype of the `result` which is bad for JuMP

@@ -29,16 +29,15 @@ function univariate_mul!(::Type{Trigonometric}, exps, coefs, var, a, b)
     for i in eachindex(exps)
         if _is_cos(a) == _is_cos(b)
             # Chebyshev first kind
-            mono = MP.monomial(terms[i]) * var^(_cos_id(da + db))
-            terms[i] = MA.mul!!(terms[i], var^_cos_id(abs(da - db)))
-            terms[i] = MA.operate!!(/, terms[i], 2)
-            α = MA.copy_if_mutable(MP.coefficient(terms[i]))
-            push!(terms, MP.term(α, mono))
+            push!(exps, _increment(exps[i], _cos_id(da + db), var))
+            exps[i] = _increment!(exps[i], _cos_id(abs(da - db)), var)
+            coefs[i] = MA.operate!!(/, coefs[i], 2)
+            push!(coefs, MA.copy_if_mutable(coefs[i]))
             # cos(a + b) = cos(a) cos(b) - sin(a) sin(b)
             # cos(a - b) = cos(a) cos(b) + sin(a) sin(b)
             # cos(a - b) - cos(a + b)
             if _is_sin(a)
-                terms[end] = MA.operate!!(*, terms[end], -1)
+                coefs[end] = MA.operate!!(*, coefs[end], -1)
             end
         else
             if _is_cos(a)
@@ -47,8 +46,8 @@ function univariate_mul!(::Type{Trigonometric}, exps, coefs, var, a, b)
             # sin(da) * cos(db)
             if da == db
                 # sin(da) * cos(da) = sin(2da) / 2
-                terms[i] = MA.mul!!(terms[i], var^_cos_id(da + db))
-                terms[i] = MA.operate!!(/, terms[i], 2)
+                exps[i] = _increment!(exps[i], _cos_id(da + db), var)
+                coefs[i] = MA.operate!!(/, coefs[i], 2)
             else
                 # Using
                 # sin(a + b) = sin(a) cos(b) + cos(a) sin(b)
@@ -57,13 +56,12 @@ function univariate_mul!(::Type{Trigonometric}, exps, coefs, var, a, b)
                 # sin(a) cos(b) = (sin(a + b) + sin(a - b)) / 2
                 # If a < b
                 # sin(a) cos(b) = (sin(b + a) - sin(b - a)) / 2
-                mono = MP.monomial(terms[i]) * var^(_sin_id(da + db))
-                terms[i] = MA.mul!!(terms[i], var^_sin_id(abs(da - db)))
-                terms[i] = MA.operate!!(/, terms[i], 2)
-                α = MA.copy_if_mutable(MP.coefficient(terms[i]))
-                push!(terms, MP.term(α, mono))
+                push!(exps, _increment(exps[i], _sin_id(da + db), var))
+                exps[i] = _increment!(exps[i], _sin_id(abs(da - db)), var)
+                coefs[i] = MA.operate!!(/, coefs[i], 2)
+                push!(coefs, MA.copy_if_mutable(MP.coefficient(terms[i])))
                 if da < db
-                    terms[i] = MA.operate!!(*, terms[i], -1)
+                    coefs[i] = MA.operate!!(*, coefs[i], -1)
                 end
             end
         end

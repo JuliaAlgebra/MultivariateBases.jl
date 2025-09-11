@@ -42,14 +42,12 @@ end
 abstract type AbstractMonomialIndexed end
 
 """
-    struct Polynomial{B<:AbstractMonomialIndexed,M<:MP.AbstractMonomial}
-        monomial::M
-        function Polynomial{B}(mono::MP.AbstractMonomial) where {B}
-            return new{B,typeof(mono)}(mono)
-        end
+    struct Polynomial{B<:AbstractMonomialIndexed,V,E}
+        variables::Variables{B,V}
+        exponents::E
     end
 
-Polynomial of basis `FullBasis{B,M}()` at index `monomial`.
+Polynomial of basis `FullBasis{B,V,E}(variables)` at index `exponents`.
 """
 struct Polynomial{B<:AbstractMonomialIndexed,V,E}
     variables::Variables{B,V}

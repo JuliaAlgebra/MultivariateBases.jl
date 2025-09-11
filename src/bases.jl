@@ -2,6 +2,9 @@ const FullBasis{B,V,E} = SA.MappedBasis{Polynomial{B,V,E}}
 const SubBasis{B,V,E} = SA.SubBasis{Polynomial{B,V,E}}
 const MonomialIndexedBasis{B,V,E} = Union{SubBasis{B,V,E},FullBasis{B,V,E}}
 
+exponents_index(::FullBasis, exp) = exp
+exponents_index(b::SubBasis, exp) = SA.key_index(b, exp)
+
 function MP.ordering(::Type{MonomialIndexedBasis{B,V,E}}) where {B,V,E}
     return MP.ordering(E)
 end
@@ -40,11 +43,6 @@ MP.variables(v::Variables) = v.variables
 MP.variables(basis::FullBasis) = MP.variables(basis.map)
 MP.variables(basis::SubBasis) = MP.variables(parent(basis))
 
-function monomial_index(basis::SubBasis, mono::MP.AbstractMonomial)
-    @assert MP.variables(basis) == MP.variables(mono)
-    return get(basis, MP.exponents(mono), nothing)
-end
-
 function explicit_basis_covering(
     full::FullBasis{B},
     target::SubBasis{B},
@@ -72,11 +70,16 @@ function multi_findsorted(x, y)
     return I
 end
 
+import MergeSorted
+
 function merge_bases(basis1::MB, basis2::MB) where {MB<:SubBasis}
-    monos = MP.merge_monomial_vectors([basis1.monomials, basis2.monomials])
-    I1 = multi_findsorted(monos, basis1.monomials)
-    I2 = multi_findsorted(monos, basis2.monomials)
-    return MB(monos), I1, I2
+    @assert basis1.parent_basis == basis2.parent_basis
+    @assert basis1.is_sorted
+    @assert basis2.is_sorted
+    keys = unique!(MergeSorted.mergesorted(basis1.keys, basis2.keys, lt = SA.comparable(basis1)))
+    I1 = multi_findsorted(keys, basis1.keys)
+    I2 = multi_findsorted(keys, basis2.keys)
+    return SA.SubBasis(basis1.parent_basis, keys), I1, I2
 end
 
 # Unsafe because we don't check that `monomials` is sorted and without duplicates

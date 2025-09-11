@@ -1,18 +1,19 @@
 abstract type AbstractMonomial <: AbstractMonomialIndexed end
 
 function explicit_basis_covering(
-    ::FullBasis{B},
+    full::FullBasis{B},
     target::SubBasis{<:AbstractMonomial},
 ) where {B<:AbstractMonomial}
-    return SubBasis{B}(target.monomials)
+    return SA.SubBasis(full, target.keys)
 end
 
 # To break ambiguity
 function explicit_basis_covering(
-    ::FullBasis{B},
+    full::FullBasis{B},
     target::SubBasis{B},
 ) where {B<:AbstractMonomial}
-    return SubBasis{B}(target.monomials)
+    @assert full == parent(target)
+    return SA.SubBasis(parent(target), target.keys)
 end
 
 function Base.adjoint(p::Polynomial{B}) where {B<:AbstractMonomialIndexed}
@@ -59,19 +60,22 @@ function MP.polynomial_type(
     return _polynomial_type(B, V, T)
 end
 
+keys_as_monomials(keys, mb::FullBasis) = MP.monomial.(Ref(mb.map.variables), keys)
+keys_as_monomials(mb::SubBasis) = keys_as_monomials(mb.keys, parent(mb))
+
 function MP.polynomial(f::Function, mb::SubBasis{Monomial})
-    return MP.polynomial(f, mb.monomials)
+    return MP.polynomial(f, keys_as_monomials(mb))
 end
 
 function MP.polynomial(Q::AbstractMatrix, mb::SubBasis{Monomial}, T::Type)
-    return MP.polynomial(Q, mb.monomials, T)
+    return MP.polynomial(Q, keys_as_monomials(mb), T)
 end
 
 function MP.coefficients(
     p::MP.AbstractPolynomialLike,
     basis::SubBasis{Monomial},
 )
-    return MP.coefficients(p, basis.monomials)
+    return MP.coefficients(p, keys_as_monomials(basis))
 end
 
 function MP.coefficients(p::MP.AbstractPolynomialLike, ::FullBasis{Monomial})
@@ -125,17 +129,24 @@ end
 #end
 
 # Overload some of the `MP` interface for convenience
-MP.mindegree(basis::SubBasis{Monomial}) = MP.mindegree(basis.monomials)
-MP.maxdegree(basis::SubBasis) = MP.maxdegree(basis.monomials)
-MP.extdegree(basis::SubBasis{Monomial}) = MP.extdegree(basis.monomials)
+MP.mindegree(basis::SubBasis{Monomial}) = minimum(sum, basis.keys)
+MP.maxdegree(basis::SubBasis) = maximum(sum, basis.keys)
+MP.extdegree(basis::SubBasis{Monomial}) = extrema(sum, basis.keys)
+
+variable_index(basis::FullBasis, v) = variable_index(basis.map, v)
+variable_index(basis::SubBasis, v) = variable_index(basis.parent_basis, v)
+
 function MP.mindegree(basis::SubBasis{Monomial}, v)
-    return MP.mindegree(basis.monomials, v)
+    i = variable_index(basis, v)
+    return minimum(Base.Fix2(getindex, i), basis.keys)
 end
 function MP.maxdegree(basis::SubBasis, v)
-    return MP.maxdegree(basis.monomials, v)
+    i = variable_index(basis, v)
+    return maximum(Base.Fix2(getindex, i), basis.keys)
 end
 function MP.extdegree(basis::SubBasis{Monomial}, v)
-    return MP.extdegree(basis.monomials, v)
+    i = variable_index(basis, v)
+    return extrema(Base.Fix2(getindex, i), basis.keys)
 end
 
 _promote_coef(::Type{T}, ::Type{Monomial}) where {T} = T

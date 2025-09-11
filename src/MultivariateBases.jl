@@ -14,6 +14,10 @@ end
 
 Variables{B}(vars) where {B} = Variables{B,typeof(vars)}(vars)
 
+function variable_index(v::Variables, var)
+    return findfirst(isequal(var), v.variables)
+end
+
 function _show(io::IO, mime::MIME, v::Variables{B}) where {B}
     print(io, "$B polynomials in the variables ")
     # We don't use the default `show` since we don't want to print the `eltype`
@@ -74,7 +78,7 @@ include("lagrange.jl")
 include("quotient.jl")
 
 function algebra(
-    basis::Union{QuotientBasis{Polynomial{B}},FullBasis{B},SubBasis{B}},
+    basis::Union{QuotientBasis{<:Polynomial{B}},FullBasis{B},SubBasis{B}},
 ) where {B}
     return SA.StarAlgebra(Variables{B}(MP.variables(basis)), MStruct(basis))
 end
