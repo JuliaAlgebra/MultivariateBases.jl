@@ -11,7 +11,10 @@ using DynamicPolynomials
     c = b * b
     @test c.coeffs ==
           MB.sparse_coefficients(3 // 8 + 1 // 2 * x^3 + 1 // 8 * x^7)
-    d = MB.algebra_element(MB.sparse_coefficients(1//1 * constant_monomial(typeof(x))), full)
+    d = MB.algebra_element(
+        MB.sparse_coefficients(1//1 * constant_monomial(typeof(x))),
+        full,
+    )
     e = MB.algebra_element(MB.sparse_coefficients(1//1 * x^0), full)
     @test a * d == a * e
 end

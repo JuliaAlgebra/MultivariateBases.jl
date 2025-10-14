@@ -60,7 +60,9 @@ function MP.polynomial_type(
     return _polynomial_type(B, V, T)
 end
 
-keys_as_monomials(keys, mb::FullBasis) = MP.monomial.(Ref(mb.map.variables), keys)
+function keys_as_monomials(keys, mb::FullBasis)
+    return MP.monomial.(Ref(mb.map.variables), keys)
+end
 keys_as_monomials(mb::SubBasis) = keys_as_monomials(mb.keys, parent(mb))
 
 function MP.polynomial(f::Function, mb::SubBasis{Monomial})

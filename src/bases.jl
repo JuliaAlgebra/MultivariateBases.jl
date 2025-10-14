@@ -76,7 +76,13 @@ function merge_bases(basis1::MB, basis2::MB) where {MB<:SubBasis}
     @assert basis1.parent_basis == basis2.parent_basis
     @assert basis1.is_sorted
     @assert basis2.is_sorted
-    keys = unique!(MergeSorted.mergesorted(basis1.keys, basis2.keys, lt = SA.comparable(basis1)))
+    keys = unique!(
+        MergeSorted.mergesorted(
+            basis1.keys,
+            basis2.keys;
+            lt = SA.comparable(basis1),
+        ),
+    )
     I1 = multi_findsorted(keys, basis1.keys)
     I2 = multi_findsorted(keys, basis2.keys)
     return SA.SubBasis(basis1.parent_basis, keys), I1, I2
@@ -216,11 +222,13 @@ end
 # Another option is to use `fieldcount`, see
 # https://discourse.julialang.org/t/get-tuple-length-from-type/32483/16?u=blegat
 _similar_type(::Type{<:NTuple{N,Any}}, ::Type{T}) where {N,T} = NTuple{N,T}
-_similar_type(::Type{V}, ::Type{T}) where {V<:AbstractVector,T} = SA.similar_type(V, T)
+function _similar_type(::Type{V}, ::Type{T}) where {V<:AbstractVector,T}
+    return SA.similar_type(V, T)
+end
 
 function MA.promote_operation(
     ::typeof(algebra_element),
-    P::Type{<:MP.AbstractPolynomialLike{T}}
+    P::Type{<:MP.AbstractPolynomialLike{T}},
 ) where {T}
     V = MA.promote_operation(MP.variables, P)
     E = _similar_type(V, Int)
@@ -230,10 +238,7 @@ function MA.promote_operation(
         P,
         E,
         MP.ExponentsIterator{O,Nothing,E},
-        Variables{
-            Monomial,
-            V,
-        },
+        Variables{Monomial,V},
         typeof(MP.exponents),
     }
     return _algebra_element_type(Vector{T}, B)

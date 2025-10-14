@@ -17,7 +17,10 @@ function MP.coefficients(p, basis::QuotientBasis)
 end
 
 function SA.coeffs(coeffs, b::FullBasis{Monomial}, basis::QuotientBasis)
-    return MP.coefficients(MP.polynomial(values(coeffs), keys_as_monomials(keys(coeffs), b)), basis)
+    return MP.coefficients(
+        MP.polynomial(values(coeffs), keys_as_monomials(keys(coeffs), b)),
+        basis,
+    )
 end
 
 function SA.coeffs(coeffs, sub::SubBasis{Monomial}, basis::QuotientBasis)
@@ -31,7 +34,8 @@ function SA.adjoint_coeffs(
 )
     return map(src) do poly
         return sum(MP.terms(rem(MP.polynomial(poly), dest.divisor))) do t
-            MP.coefficient(t) * coeffs[SA.key_index(dest.basis, MP.exponents(t))]
+            return MP.coefficient(t) *
+                   coeffs[SA.key_index(dest.basis, MP.exponents(t))]
         end
     end
 end

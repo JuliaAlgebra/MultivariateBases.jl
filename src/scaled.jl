@@ -71,8 +71,7 @@ function Base.promote_rule(
 end
 
 function scaling(exp)
-    return √(factorial(sum(exp)) /
-             prod(factorial, exp; init = 1),)
+    return √(factorial(sum(exp)) / prod(factorial, exp; init = 1),)
 end
 unscale_coef(t::MP.AbstractTerm) = MP.coefficient(t) / scaling(MP.monomial(t))
 function SA.coeffs(
@@ -106,11 +105,7 @@ function SA.coeffs!(
     MA.operate!(zero, res)
     for (k, v) in SA.nonzero_pairs(cfs)
         exp = source[k].exponents
-        SA.unsafe_push!(
-            res,
-            exponents_index(target, exp),
-            v * scaling(exp),
-        )
+        SA.unsafe_push!(res, exponents_index(target, exp), v * scaling(exp))
     end
     MA.operate!(SA.canonical, res)
     return res
@@ -125,11 +120,7 @@ function SA.coeffs!(
     MA.operate!(zero, res)
     for (k, v) in SA.nonzero_pairs(cfs)
         exp = source[k].exponents
-        SA.unsafe_push!(
-            res,
-            exponents_index(target, exp),
-            v / scaling(exp),
-        )
+        SA.unsafe_push!(res, exponents_index(target, exp), v / scaling(exp))
     end
     MA.operate!(SA.canonical, res)
     return res
