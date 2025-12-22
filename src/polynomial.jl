@@ -60,9 +60,16 @@ end
 
 function Polynomial{B}(v::MP.AbstractVariable) where {B}
     vars = MP.variables(v)
-    # MP.exponents(v) gives (1,) for DynamicPolynomials so we use
-    # a custom `map` as workaround
+    # FIXME MP.exponents(v) gives (1,) for DynamicPolynomials so we use
+    # a custom `map` as workaround. This needs to be fixed in a breaking change of DP
+    # Once it is fixed, we can remove this method and just the one below with
+    # `AbstractMonomialLike`
     return Polynomial(Variables{B}(vars), map(_ -> 1, vars))
+end
+
+function Polynomial{B}(mono::MP.AbstractMonomial) where {B}
+    vars = MP.variables(mono)
+    return Polynomial(Variables{B}(vars), MP.exponents(mono))
 end
 
 MP.exponents(p::Polynomial) = p.exponents

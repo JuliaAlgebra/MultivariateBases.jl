@@ -50,7 +50,7 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @test sprint(print, MB.algebra(full_basis)) ==
           "*-algebra of $B polynomials in the variables [x[1], x[2]]"
     for basis in [
-        maxdegree_basis(full_basis, x, degree),
+        maxdegree_basis(full_basis, degree),
         explicit_basis_covering(
             full_basis,
             MB.SubBasis{MB.Monomial}(monomials(x, 0:degree)),
@@ -160,7 +160,7 @@ function univ_orthogonal_test(
     kwargs...,
 )
     @polyvar x
-    basis = maxdegree_basis(FullBasis{B}(x), [x], 4)
+    basis = maxdegree_basis(FullBasis{B}(x), 4)
     for i in eachindex(basis)
         p_i = polynomial(basis[i])
         @test isapprox(dot(p_i, p_i, B), univ(maxdegree(p_i)); kwargs...)
@@ -182,7 +182,7 @@ function orthogonal_test(
 
     @testset "Univariate $var" for (var, univ) in
                                    [(x, univariate_x), (y, univariate_y)]
-        basis = maxdegree_basis(FullBasis{B}(var), (var,), 4)
+        basis = maxdegree_basis(FullBasis{B}(var), 4)
         for i in 1:5
             @test polynomial(basis[i]) == univ[i]
         end

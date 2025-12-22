@@ -14,6 +14,8 @@ end
 
 Variables{B}(vars) where {B} = Variables{B,typeof(vars)}(vars)
 
+Base.one(v::Variables) = MP.monomial(v.variables, constant_monomial_exponents(v))
+
 function variable_index(v::Variables, var)
     return findfirst(isequal(var), v.variables)
 end
@@ -32,6 +34,8 @@ function Base.:(==)(v::Variables{B}, w::Variables{B}) where {B}
 end
 
 MP.monomial_type(::Type{Variables{B,V}}) where {B,V} = MP.monomial_type(V)
+# FIXME workaround for TP
+MP.monomial_type(v::Variables) = MP.monomial_type(prod(v.variables))
 
 constant_monomial_exponents(v::Variables) = map(_ -> 0, v.variables)
 

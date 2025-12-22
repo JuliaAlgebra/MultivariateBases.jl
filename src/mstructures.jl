@@ -30,3 +30,14 @@ function (m::MStruct{B,V,E})(
 ) where {B,V,E}
     return SA.map_keys(Base.Fix1(getindex, m), m(a, b, E))
 end
+
+SA.promote_with_map(::MStruct, b, m) = MStruct(b), m
+
+function SA.promote_basis_with_maps(a::SA.AbstractBasis, b::MStruct)
+    _a, _b = SA.promote_basis_with_maps(a, SA.basis(b))
+    return _a, SA.maybe_promote(b, _b...)
+end
+
+SA.promote_object(v::Variables, m::MStruct, map) = SA.promote_object(v, SA.basis(m), map)
+SA.promote_object(v::Variables, m::SA.SubBasis, map) = SA.promote_object(v, parent(m), map)
+SA.promote_object(::Variables, m::FullBasis, _) = m.map

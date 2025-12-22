@@ -1,5 +1,5 @@
 """
-    maxdegree_basis(basis::StarAlgebras.AbstractBasis, variables, maxdegree::Int)
+    maxdegree_basis(basis::StarAlgebras.AbstractBasis, maxdegree::Int)
 
 Return the explicit version of `basis`generating all polynomials of degree up to
 `maxdegree` with variables `variables`.

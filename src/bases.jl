@@ -10,15 +10,18 @@ function MP.ordering(::Type{MonomialIndexedBasis{B,V,E}}) where {B,V,E}
 end
 MP.ordering(b::MonomialIndexedBasis) = MP.ordering(typeof(b))
 
-function FullBasis{B}(vars) where {B}
-    O = MP.ordering(vars)
-    v = Variables{B,typeof(vars)}(vars)
-    exps = MP.ExponentsIterator{O}(constant_monomial_exponents(v))
-    return SA.MappedBasis{Polynomial{B,typeof(vars),eltype(exps)}}(
+function FullBasis(vars::Variables{B,V}) where {B,V}
+    O = MP.ordering(vars.variables)
+    exps = MP.ExponentsIterator{O}(constant_monomial_exponents(vars))
+    return SA.MappedBasis{Polynomial{B,V,eltype(exps)}}(
         exps,
-        v,
+        vars,
         MP.exponents,
     )
+end
+
+function FullBasis{B}(vars) where {B}
+    return FullBasis(Variables{B,typeof(vars)}(vars))
 end
 
 function FullBasis{B}(p::MP.AbstractPolynomialLike) where {B}
@@ -54,13 +57,17 @@ function MP.monomial_type(::Type{<:SA.SubBasis{T,I,K,B}}) where {T,I,K,B}
     return MP.monomial_type(B)
 end
 
+# FIXME workaround for TP, we should redirect to typeof
+MP.monomial_type(b::FullBasis) = MP.monomial_type(b.map)
+MP.monomial_type(b::SubBasis) = MP.monomial_type(parent(b))
+
 # The `i`th index of output is the index of occurence of `x[i]` in `y`,
 # or `0` if it does not occur.
-function multi_findsorted(x, y)
+function multi_findsorted(x, y; lt)
     I = zeros(Int, length(x))
     j = 1
     for i in eachindex(x)
-        while j ≤ length(y) && x[i] > y[j]
+        while j ≤ length(y) && lt(y[j], x[i])
             j += 1
         end
         if j ≤ length(y) && x[i] == y[j]
@@ -70,21 +77,25 @@ function multi_findsorted(x, y)
     return I
 end
 
+# FIXME type piracy
+SA.comparable(::MP.ExponentsIterator{M}) where {M} = M()
+
 import MergeSorted
 
 function merge_bases(basis1::MB, basis2::MB) where {MB<:SubBasis}
     @assert basis1.parent_basis == basis2.parent_basis
     @assert basis1.is_sorted
     @assert basis2.is_sorted
+    lt = SA.comparable(parent(basis1))
     keys = unique!(
         MergeSorted.mergesorted(
             basis1.keys,
             basis2.keys;
-            lt = SA.comparable(basis1),
+            lt,
         ),
     )
-    I1 = multi_findsorted(keys, basis1.keys)
-    I2 = multi_findsorted(keys, basis2.keys)
+    I1 = multi_findsorted(keys, basis1.keys; lt)
+    I2 = multi_findsorted(keys, basis2.keys; lt)
     return SA.SubBasis(basis1.parent_basis, keys), I1, I2
 end
 
@@ -131,17 +142,25 @@ function implicit(a::SA.AlgebraElement)
     return algebra_element(SA.coeffs(a, basis), basis)
 end
 
-function _algebra_element_type(
+function _coeffs_type(::Type{C}, ::Type{B}) where {C,B<:FullBasis}
+    T = eltype(C) # Even works for `NTuple`!
+    E = SA.key_type(B)
+    return SA.SparseCoefficients{E,T,_similar_type(C, E),C,typeof(isless)}
+end
+
+function _coeffs_type(::Type{C}, ::Type{B}) where {C,B<:SubBasis}
+    return C
+end
+
+function algebra_element_type(
     ::Type{C}, # type of coefficient vector
     ::Type{B}, # basis type
 ) where {C,B}
     A = MA.promote_operation(algebra, B)
-    T = eltype(C) # Even works for `NTuple`!
-    E = SA.key_type(B)
     return SA.AlgebraElement{
         A,
-        T,
-        SA.SparseCoefficients{E,T,_similar_type(C, E),C,typeof(isless)},
+        eltype(C), # Even works for `NTuple`!
+        _coeffs_type(C, B)
     }
 end
 
@@ -151,7 +170,7 @@ function MA.promote_operation(
 ) where {AG,T,AE<:SA.AlgebraElement{AG,T}}
     BT =
         MA.promote_operation(implicit_basis, MA.promote_operation(SA.basis, AE))
-    return _algebra_element_type(Vector{T}, BT)
+    return algebra_element_type(Vector{T}, BT)
 end
 
 MA.promote_operation(::typeof(implicit_basis), B::Type{<:SA.ImplicitBasis}) = B
@@ -187,11 +206,10 @@ function empty_basis(
 end
 
 function maxdegree_basis(
-    ::FullBasis{B},
-    variables,
+    basis::FullBasis{B},
     maxdegree::Int,
 ) where {B<:AbstractMonomialIndexed}
-    return unsafe_basis(B, MP.monomials(variables, 0:maxdegree))
+    return unsafe_basis(B, MP.monomials(MP.variables(basis), 0:maxdegree))
 end
 
 MP.variables(c::SA.AbstractCoefficients) = MP.variables(SA.keys(c))
@@ -226,22 +244,30 @@ function _similar_type(::Type{V}, ::Type{T}) where {V<:AbstractVector,T}
     return SA.similar_type(V, T)
 end
 
+function full_basis_type(
+    ::Type{B},
+    ::Type{P},
+) where {B,P<:MP.AbstractPolynomialLike}
+    V = MA.promote_operation(MP.variables, P)
+    E = _similar_type(V, Int)
+    O = MP.ordering(P)
+    return SA.MappedBasis{
+        Polynomial{B,V,E},
+        E,
+        MP.ExponentsIterator{O,Nothing,E},
+        Variables{B,V},
+        typeof(MP.exponents),
+    }
+end
+
 function MA.promote_operation(
     ::typeof(algebra_element),
     P::Type{<:MP.AbstractPolynomialLike{T}},
 ) where {T}
-    V = MA.promote_operation(MP.variables, P)
-    E = _similar_type(V, Int)
-    O = MP.ordering(P)
-    P = MultivariateBases.Polynomial{Monomial,V,E}
-    B = SA.MappedBasis{
-        P,
-        E,
-        MP.ExponentsIterator{O,Nothing,E},
-        Variables{Monomial,V},
-        typeof(MP.exponents),
-    }
-    return _algebra_element_type(Vector{T}, B)
+    return algebra_element_type(
+        Vector{T},
+        full_basis_type(Monomial, P),
+    )
 end
 
 _one_if_type(α) = α
@@ -251,7 +277,7 @@ function constant_algebra_element_type(
     ::Type{BT},
     ::Type{T},
 ) where {BT<:FullBasis,T}
-    return _algebra_element_type(Tuple{T}, BT)
+    return algebra_element_type(Tuple{T}, BT)
 end
 
 function constant_algebra_element(b::FullBasis, α)
@@ -280,4 +306,46 @@ function constant_algebra_element(basis::SubBasis, α)
             [constant_monomial_exponents(parent(basis))],
         ),
     )
+end
+
+_idx(needle, haystack) = searchsortedfirst(haystack, needle, rev = true)
+
+struct ExponentMap <: Function
+    indices::Vector{Int}
+    length::Int
+end
+
+function (map::ExponentMap)(exp)
+    new_exp = zeros(Int, map.length)
+    for (i, e) in zip(map.indices, exp)
+        new_exp[i] = e
+    end
+    return new_exp
+end
+
+function _map(needles, haystack)
+    if length(needles) == length(haystack)
+        return
+    end
+    return ExponentMap(map(Base.Fix2(_idx, haystack), needles), length(haystack))
+end
+
+SA.promote_with_map(::Variables{B}, vars, map) where {B} = Variables{B}(vars), map
+
+_vars(a, all_vars) = SA.maybe_promote(a, all_vars, _map(a.variables, all_vars))
+
+# TODO add this to MultivariatePolynomials to make it work with DP and TP
+function promote_variables_with_maps(a::Variables, b::Variables)
+    if a.variables == b.variables
+        return (a, nothing), (b, nothing)
+    end
+    all_vars = sort(union(a.variables, b.variables), rev = true)
+    return _vars(a, all_vars), _vars(b, all_vars)
+end
+
+SA.promote_with_map(::FullBasis, vars, m) = FullBasis(vars), m
+
+function SA.promote_basis_with_maps(a::FullBasis, b::FullBasis)
+    _a, _b = promote_variables_with_maps(a.map, b.map)
+    return SA.maybe_promote(a, _a...), SA.maybe_promote(b, _b...)
 end
