@@ -158,8 +158,8 @@ function algebra_element_type(
 ) where {C,B}
     A = MA.promote_operation(algebra, B)
     return SA.AlgebraElement{
-        A,
         eltype(C), # Even works for `NTuple`!
+        A,
         _coeffs_type(C, B)
     }
 end
@@ -167,7 +167,7 @@ end
 function MA.promote_operation(
     ::typeof(implicit),
     ::Type{AE},
-) where {AG,T,AE<:SA.AlgebraElement{AG,T}}
+) where {AG,T,AE<:SA.AlgebraElement{T,AG}}
     BT =
         MA.promote_operation(implicit_basis, MA.promote_operation(SA.basis, AE))
     return algebra_element_type(Vector{T}, BT)
@@ -295,7 +295,7 @@ function constant_algebra_element_type(
     ::Type{T},
 ) where {B<:SubBasis,T}
     A = MA.promote_operation(algebra, B)
-    return SA.AlgebraElement{A,T,Vector{T}}
+    return SA.AlgebraElement{T,A,Vector{T}}
 end
 
 function constant_algebra_element(basis::SubBasis, α)

@@ -1,6 +1,6 @@
 const _APL = MP.AbstractPolynomialLike
 # We don't define it for all `AlgebraElement` as this would be type piracy
-const _AE = SA.AlgebraElement{<:SA.StarAlgebra{<:Variables}}
+const _AE{T} = SA.AlgebraElement{T,<:SA.StarAlgebra{<:Variables}}
 
 _collect_if_tuple(t::Tuple) = collect(t)
 _collect_if_tuple(v::AbstractVector) = v

@@ -45,8 +45,8 @@ end
 
 export AbstractMonomialIndexed, Monomial, ScaledMonomial
 include("polynomial.jl")
-MP.monomial_type(::Type{<:SA.AlgebraElement{A}}) where {A} = MP.monomial_type(A)
-function MP.polynomial_type(::Type{<:SA.AlgebraElement{A,T}}) where {A,T}
+MP.monomial_type(::Type{<:SA.AlgebraElement{T,A}}) where {T,A} = MP.monomial_type(A)
+function MP.polynomial_type(::Type{<:SA.AlgebraElement{T, A}}) where {A,T}
     return MP.polynomial_type(A, T)
 end
 MP.monomial_type(::Type{<:SA.StarAlgebra{O}}) where {O} = MP.monomial_type(O)
