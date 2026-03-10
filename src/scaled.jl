@@ -33,15 +33,16 @@ Foundations of Computational Mathematics 7.2 (2007): 229-244.
 """
 struct ScaledMonomial <: AbstractMonomial end
 
-function (::Mul{ScaledMonomial})(a::MP.AbstractMonomial, b::MP.AbstractMonomial)
-    mono = a * b
+function (m::MStruct{ScaledMonomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
+    @assert a.variables == b.variables
+    exp = a.exponents .+ b.exponents
     α = prod(
-        MP.variables(mono);
-        init = inv(binomial(MP.degree(mono), MP.degree(a))),
-    ) do v
-        return binomial(MP.degree(mono, v), MP.degree(a, v))
+        eachindex(exp);
+        init = inv(binomial(sum(mono), sum(a.exponents))),
+    ) do i
+        return binomial(exp[i], a.exponents[i])
     end
-    return sparse_coefficients(MP.term(√α, mono))
+    return SA.SparseCoefficients((exp,), (1,))
 end
 
 function SA.coeffs(p::Polynomial{ScaledMonomial}, ::FullBasis{Monomial})
@@ -57,8 +58,8 @@ _promote_coef(::Type{T}, ::Type{ScaledMonomial}) where {T} = _float(T)
 
 function MP.polynomial(f::Function, basis::SubBasis{ScaledMonomial})
     return MP.polynomial(
-        i -> scaling(basis.monomials[i]) * f(i),
-        basis.monomials,
+        i -> scaling(basis.keys[i]) * f(i),
+        keys_as_monomials(basis),
     )
 end
 
@@ -69,10 +70,8 @@ function Base.promote_rule(
     return SubBasis{Monomial,M,V}
 end
 
-function scaling(m::MP.AbstractMonomial)
-    return √(
-        factorial(MP.degree(m)) / prod(factorial, MP.exponents(m); init = 1),
-    )
+function scaling(exp)
+    return √(factorial(sum(exp)) / prod(factorial, exp; init = 1),)
 end
 unscale_coef(t::MP.AbstractTerm) = MP.coefficient(t) / scaling(MP.monomial(t))
 function SA.coeffs(
@@ -87,7 +86,7 @@ function MP.coefficients(p, ::FullBasis{ScaledMonomial})
     return unscale_coef.(MP.terms(p))
 end
 function MP.coefficients(p, basis::SubBasis{ScaledMonomial})
-    return MP.coefficients(p, basis.monomials) ./ scaling.(MP.monomials(p))
+    return MP.coefficients(p, keys_as_monomials(basis)) ./ scaling.(basis.keys)
 end
 function SA.coeffs(
     p::MP.AbstractPolynomialLike,
@@ -105,12 +104,8 @@ function SA.coeffs!(
 )
     MA.operate!(zero, res)
     for (k, v) in SA.nonzero_pairs(cfs)
-        mono = source[k].monomial
-        SA.unsafe_push!(
-            res,
-            target[Polynomial{Monomial}(mono)],
-            v * scaling(mono),
-        )
+        exp = source[k].exponents
+        SA.unsafe_push!(res, exponents_index(target, exp), v * scaling(exp))
     end
     MA.operate!(SA.canonical, res)
     return res
@@ -124,12 +119,8 @@ function SA.coeffs!(
 )
     MA.operate!(zero, res)
     for (k, v) in SA.nonzero_pairs(cfs)
-        mono = source[k].monomial
-        SA.unsafe_push!(
-            res,
-            target[Polynomial{ScaledMonomial}(mono)],
-            v / scaling(mono),
-        )
+        exp = source[k].exponents
+        SA.unsafe_push!(res, exponents_index(target, exp), v / scaling(exp))
     end
     MA.operate!(SA.canonical, res)
     return res

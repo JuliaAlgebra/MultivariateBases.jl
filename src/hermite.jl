@@ -30,7 +30,7 @@ function _scalar_product_function(::Type{ProbabilistsHermite}, i::Int)
         return 0
     else
         n = div(i, 2)
-        return (√(2 * π) / (2^n)) * prod(n+1:2*n)
+        return (√(2 * π) / (2^n)) * prod((n+1):(2*n))
     end
 end
 
@@ -55,6 +55,6 @@ function _scalar_product_function(::Type{PhysicistsHermite}, i::Int)
         return 0
     else
         n = div(i, 2)
-        return (√(π) / (2^i)) * prod(n+1:i)
+        return (√(π) / (2^i)) * prod((n+1):i)
     end
 end

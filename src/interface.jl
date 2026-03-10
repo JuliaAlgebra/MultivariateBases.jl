@@ -1,5 +1,5 @@
 """
-    maxdegree_basis(basis::StarAlgebras.AbstractBasis, variables, maxdegree::Int)
+    maxdegree_basis(basis::StarAlgebras.AbstractBasis, maxdegree::Int)
 
 Return the explicit version of `basis`generating all polynomials of degree up to
 `maxdegree` with variables `variables`.
@@ -23,7 +23,7 @@ julia> using DynamicPolynomials
 julia> @polyvar x
 (x,)
 
-julia> explicit_basis_covering(FullBasis{Chebyshev,typeof(x^2)}(), SubBasis{Monomial}([x^2, x^4]))
+julia> explicit_basis_covering(FullBasis{Chebyshev}(x), SubBasis{Monomial}([x^2, x^4]))
 SubBasis{ChebyshevFirstKind}([1, x², x⁴])
 ```
 """

@@ -25,8 +25,8 @@ function _test(B::Type)
     lag = MB.explicit_basis_covering(implicit, sub)
     @test typeof(lag) == MB.explicit_basis_type(typeof(implicit))
     a = MB.algebra_element(
-        SA.SparseCoefficients(collect(monos), coeffs),
-        MB.FullBasis{B,typeof(prod(x))}(),
+        SA.SparseCoefficients(collect(exponents.(monos)), coeffs),
+        MB.FullBasis{B}(x),
     )
     @test SA.coeffs(a, lag) ≈ SA.coeffs(coeffs, sub, lag)
     @polyvar z

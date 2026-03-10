@@ -4,6 +4,7 @@ struct QuotientBasis{T,I,B<:SA.AbstractBasis{T,I},D} <: SA.ExplicitBasis{T,I}
 end
 
 implicit_basis(basis::QuotientBasis) = implicit_basis(basis.basis)
+MP.variables(basis::QuotientBasis) = MP.variables(basis.basis)
 
 Base.iterate(basis::QuotientBasis) = iterate(basis.basis)
 Base.iterate(basis::QuotientBasis, s) = iterate(basis.basis, s)
@@ -15,12 +16,15 @@ function MP.coefficients(p, basis::QuotientBasis)
     return MP.coefficients(rem(p, basis.divisor), basis.basis)
 end
 
-function SA.coeffs(p, ::FullBasis{Monomial}, basis::QuotientBasis)
-    return MP.coefficients(MP.polynomial(p), basis)
+function SA.coeffs(coeffs, b::FullBasis{Monomial}, basis::QuotientBasis)
+    return MP.coefficients(
+        MP.polynomial(values(coeffs), keys_as_monomials(keys(coeffs), b)),
+        basis,
+    )
 end
 
 function SA.coeffs(coeffs, sub::SubBasis{Monomial}, basis::QuotientBasis)
-    return SA.coeffs(MP.polynomial(coeffs, sub.monomials), parent(sub), basis)
+    return MP.coefficients(MP.polynomial(coeffs, keys_as_monomials(sub)), basis)
 end
 
 function SA.adjoint_coeffs(
@@ -28,11 +32,10 @@ function SA.adjoint_coeffs(
     src::SubBasis{Monomial},
     dest::QuotientBasis{<:Polynomial{Monomial}},
 )
-    return map(src.monomials) do mono
-        return sum(
-            MP.coefficient(t) *
-            coeffs[dest.basis[Polynomial{Monomial}(MP.monomial(t))]] for
-            t in MP.terms(rem(mono, dest.divisor))
-        )
+    return map(src) do poly
+        return sum(MP.terms(rem(MP.polynomial(poly), dest.divisor))) do t
+            return MP.coefficient(t) *
+                   coeffs[SA.key_index(dest.basis, MP.exponents(t))]
+        end
     end
 end

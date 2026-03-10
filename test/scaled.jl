@@ -24,9 +24,11 @@ end
     @test coefficients(p, basis) == [9, 4 / √2, 1]
     a = MB.algebra_element(p)
     @test SA.coeffs(a, basis) == [9, 4 / √2, 1]
-    full = MB.FullBasis{MB.ScaledMonomial,monomial_type(p)}()
-    @test SA.coeffs(a, full) ==
-          SA.SparseCoefficients([y^2, x * y, x^2], [9, 4 / √2, 1])
+    full = MB.FullBasis{MB.ScaledMonomial}(variables(p))
+    @test SA.coeffs(a, full) == SA.SparseCoefficients(
+        exponents.(monomial_vector([y^2, x * y, x^2])),
+        [9, 4 / √2, 1],
+    )
     @test polynomial(basis[1]) == y^2
     @test polynomial(basis[2]) == √2 * x * y
     @test polynomial(basis[3]) == x^2
