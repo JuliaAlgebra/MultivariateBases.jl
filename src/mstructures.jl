@@ -38,6 +38,10 @@ function SA.promote_basis_with_maps(a::SA.AbstractBasis, b::MStruct)
     return _a, SA.maybe_promote(b, _b...)
 end
 
-SA.promote_object(v::Variables, m::MStruct, map) = SA.promote_object(v, SA.basis(m), map)
-SA.promote_object(v::Variables, m::SA.SubBasis, map) = SA.promote_object(v, parent(m), map)
+function SA.promote_object(v::Variables, m::MStruct, map)
+    return SA.promote_object(v, SA.basis(m), map)
+end
+function SA.promote_object(v::Variables, m::SA.SubBasis, map)
+    return SA.promote_object(v, parent(m), map)
+end
 SA.promote_object(::Variables, m::FullBasis, _) = m.map

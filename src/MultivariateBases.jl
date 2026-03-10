@@ -14,7 +14,9 @@ end
 
 Variables{B}(vars) where {B} = Variables{B,typeof(vars)}(vars)
 
-Base.one(v::Variables) = MP.monomial(v.variables, constant_monomial_exponents(v))
+function Base.one(v::Variables)
+    return MP.monomial(v.variables, constant_monomial_exponents(v))
+end
 
 function variable_index(v::Variables, var)
     return findfirst(isequal(var), v.variables)
@@ -45,8 +47,10 @@ end
 
 export AbstractMonomialIndexed, Monomial, ScaledMonomial
 include("polynomial.jl")
-MP.monomial_type(::Type{<:SA.AlgebraElement{T,A}}) where {T,A} = MP.monomial_type(A)
-function MP.polynomial_type(::Type{<:SA.AlgebraElement{T, A}}) where {A,T}
+function MP.monomial_type(::Type{<:SA.AlgebraElement{T,A}}) where {T,A}
+    return MP.monomial_type(A)
+end
+function MP.polynomial_type(::Type{<:SA.AlgebraElement{T,A}}) where {A,T}
     return MP.polynomial_type(A, T)
 end
 MP.monomial_type(::Type{<:SA.StarAlgebra{O}}) where {O} = MP.monomial_type(O)

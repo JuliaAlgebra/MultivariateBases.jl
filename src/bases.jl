@@ -87,13 +87,7 @@ function merge_bases(basis1::MB, basis2::MB) where {MB<:SubBasis}
     @assert basis1.is_sorted
     @assert basis2.is_sorted
     lt = SA.comparable(parent(basis1))
-    keys = unique!(
-        MergeSorted.mergesorted(
-            basis1.keys,
-            basis2.keys;
-            lt,
-        ),
-    )
+    keys = unique!(MergeSorted.mergesorted(basis1.keys, basis2.keys; lt))
     I1 = multi_findsorted(keys, basis1.keys; lt)
     I2 = multi_findsorted(keys, basis2.keys; lt)
     return SA.SubBasis(basis1.parent_basis, keys), I1, I2
@@ -160,7 +154,7 @@ function algebra_element_type(
     return SA.AlgebraElement{
         eltype(C), # Even works for `NTuple`!
         A,
-        _coeffs_type(C, B)
+        _coeffs_type(C, B),
     }
 end
 
@@ -264,10 +258,7 @@ function MA.promote_operation(
     ::typeof(algebra_element),
     P::Type{<:MP.AbstractPolynomialLike{T}},
 ) where {T}
-    return algebra_element_type(
-        Vector{T},
-        full_basis_type(Monomial, P),
-    )
+    return algebra_element_type(Vector{T}, full_basis_type(Monomial, P))
 end
 
 _one_if_type(α) = α
@@ -327,10 +318,15 @@ function _map(needles, haystack)
     if length(needles) == length(haystack)
         return
     end
-    return ExponentMap(map(Base.Fix2(_idx, haystack), needles), length(haystack))
+    return ExponentMap(
+        map(Base.Fix2(_idx, haystack), needles),
+        length(haystack),
+    )
 end
 
-SA.promote_with_map(::Variables{B}, vars, map) where {B} = Variables{B}(vars), map
+function SA.promote_with_map(::Variables{B}, vars, map) where {B}
+    return Variables{B}(vars), map
+end
 
 _vars(a, all_vars) = SA.maybe_promote(a, all_vars, _map(a.variables, all_vars))
 
@@ -339,7 +335,7 @@ function promote_variables_with_maps(a::Variables, b::Variables)
     if a.variables == b.variables
         return (a, nothing), (b, nothing)
     end
-    all_vars = sort(union(a.variables, b.variables), rev = true)
+    all_vars = sort(union(a.variables, b.variables); rev = true)
     return _vars(a, all_vars), _vars(b, all_vars)
 end
 
