@@ -19,6 +19,7 @@ explicit_basis_covering
 
 ```@docs
 Polynomial
+SemisimpleElement
 ```
 
 ## Monomial basis
@@ -45,4 +46,10 @@ Legendre
 ChebyshevFirstKind
 ChebyshevSecondKind
 Trigonometric
+```
+
+## Additional basis
+
+```@docs
+SemisimpleBasis
 ```
