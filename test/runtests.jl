@@ -86,7 +86,7 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         @test SA.star(a) == a
         if B == Chebyshev || B == ScaledMonomial
             mono = explicit_basis_covering(
-                FullBasis{Monomial}(variables(basis)),
+                FullBasis{MB.Monomial}(variables(basis)),
                 basis,
             )
             a = MB.algebra_element(fill(TypeA(), length(basis)), mono)
@@ -204,7 +204,7 @@ function orthogonal_test(
         end
         basis = explicit_basis_covering(
             FullBasis{B}(x^2),
-            FullBasis{Monomial}(x^2)[[x^4, x^2, x]],
+            FullBasis{MB.Monomial}(x^2)[[x^4, x^2, x]],
         )
         if even_odd_separated
             exps = [0, 1, 2, 4]
