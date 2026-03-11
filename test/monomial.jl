@@ -105,3 +105,16 @@ end
 @testset "Coefficients" begin
     coefficient_test(MB.Monomial, [1, -3, 1, 1])
 end
+
+@testset "promote_basis_with_maps" begin
+    @polyvar x[1:2]
+    mono = x[1]^2
+    a = MB.algebra_element(x[1] - x[1]^2)
+    b = MB.FullBasis{MB.Monomial}(x[1] * x[2])
+    a2, b2 = SA.promote_basis(a, b)
+    @test a2.coeffs.basis_elements == [[1, 0], [2, 0]]
+    @test a2.coeffs.basis_elements == [[1, 0], [2, 0]]
+    @test SA.basis(a) != b
+    @test SA.basis(a2) == b
+    b2 === b
+end
