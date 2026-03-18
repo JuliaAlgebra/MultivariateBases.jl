@@ -80,14 +80,12 @@ end
 # FIXME type piracy
 SA.comparable(::MP.ExponentsIterator{M}) where {M} = M()
 
-import MergeSorted
-
 function merge_bases(basis1::MB, basis2::MB) where {MB<:SubBasis}
     @assert basis1.parent_basis == basis2.parent_basis
     @assert basis1.is_sorted
     @assert basis2.is_sorted
     lt = SA.comparable(parent(basis1))
-    keys = unique!(MergeSorted.mergesorted(basis1.keys, basis2.keys; lt))
+    keys = merge_sorted(basis1.keys, basis2.keys; lt)
     I1 = multi_findsorted(keys, basis1.keys; lt)
     I2 = multi_findsorted(keys, basis2.keys; lt)
     return SA.SubBasis(basis1.parent_basis, keys), I1, I2
@@ -299,11 +297,11 @@ function constant_algebra_element(basis::SubBasis, α)
     )
 end
 
-_idx(needle, haystack) = searchsortedfirst(haystack, needle, rev = true)
+_idx(needle, haystack) = search_sorted_first(haystack, needle, rev = true)
 
-struct ExponentMap{I} <: Function
+struct ExponentMap{I,L} <: Function
     indices::I
-    length::Int
+    length::L
 end
 
 function (map::ExponentMap{Vector{Int}})(exp::Vector{Int})
@@ -315,24 +313,21 @@ function (map::ExponentMap{Vector{Int}})(exp::Vector{Int})
 end
 
 function (map::ExponentMap{NTuple{N,Int}})(exp::NTuple{N,Int}) where {N}
-    return ntuple(Val(N)) do i
+    return ntuple(map.length::Val) do i
         # This does not have the best complexity since `findfirst`
         # search through the whole list each time but since we're using
         # tuples, we're probably not having a large list if indices anyway
-        j = findfirst(map.indices)
+        j = findfirst(isequal(i), map.indices)
         if isnothing(j)
             return 0
         else
             return exp[j]
         end
     end
-    new_exp = zeros(Int, map.length)
-    for (i, e) in zip(map.indices, exp)
-        new_exp[i] = e
-    end
-    return new_exp
 end
 
+_length(x::AbstractVector) = length(x)
+_length(::NTuple{N,Any}) where {N} = Val(N)
 
 function _map(needles, haystack)
     if length(needles) == length(haystack)
@@ -340,7 +335,7 @@ function _map(needles, haystack)
     end
     return ExponentMap(
         map(Base.Fix2(_idx, haystack), needles),
-        length(haystack),
+        _length(haystack),
     )
 end
 
@@ -355,7 +350,7 @@ function promote_variables_with_maps(a::Variables, b::Variables)
     if a.variables == b.variables
         return (a, nothing), (b, nothing)
     end
-    all_vars = sort(union(a.variables, b.variables); rev = true)
+    all_vars = merge_sorted(a.variables, b.variables; rev = true)
     return _vars(a, all_vars), _vars(b, all_vars)
 end
 

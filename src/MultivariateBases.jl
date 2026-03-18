@@ -110,5 +110,6 @@ end
 
 include("arithmetic.jl")
 include("fixed.jl")
+include("merge_sorted.jl")
 
 end # module
