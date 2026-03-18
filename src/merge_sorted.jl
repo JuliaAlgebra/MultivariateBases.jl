@@ -20,5 +20,9 @@ function merge_sorted(a::Tuple, b::Tuple; lt = isless, rev = false)
     end
 end
 
-search_sorted_first(haystack::AbstractVector, needle; kws...) = searchsortedfirst(haystack, needle; kws...)
-search_sorted_first(haystack::Tuple, needle; kws...) = findfirst(isequal(needle), haystack)
+function search_sorted_first(haystack::AbstractVector, needle; kws...)
+    return searchsortedfirst(haystack, needle; kws...)
+end
+function search_sorted_first(haystack::Tuple, needle; kws...)
+    return findfirst(isequal(needle), haystack)
+end
