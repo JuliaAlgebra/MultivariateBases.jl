@@ -301,18 +301,38 @@ end
 
 _idx(needle, haystack) = searchsortedfirst(haystack, needle, rev = true)
 
-struct ExponentMap <: Function
-    indices::Vector{Int}
+struct ExponentMap{I} <: Function
+    indices::I
     length::Int
 end
 
-function (map::ExponentMap)(exp)
+function (map::ExponentMap{Vector{Int}})(exp::Vector{Int})
     new_exp = zeros(Int, map.length)
     for (i, e) in zip(map.indices, exp)
         new_exp[i] = e
     end
     return new_exp
 end
+
+function (map::ExponentMap{NTuple{N,Int}})(exp::NTuple{N,Int}) where {N}
+    return ntuple(Val(N)) do i
+        # This does not have the best complexity since `findfirst`
+        # search through the whole list each time but since we're using
+        # tuples, we're probably not having a large list if indices anyway
+        j = findfirst(map.indices)
+        if isnothing(j)
+            return 0
+        else
+            return exp[j]
+        end
+    end
+    new_exp = zeros(Int, map.length)
+    for (i, e) in zip(map.indices, exp)
+        new_exp[i] = e
+    end
+    return new_exp
+end
+
 
 function _map(needles, haystack)
     if length(needles) == length(haystack)
@@ -343,5 +363,7 @@ SA.promote_with_map(::FullBasis, vars, m) = FullBasis(vars), m
 
 function SA.promote_basis_with_maps(a::FullBasis, b::FullBasis)
     _a, _b = promote_variables_with_maps(a.map, b.map)
+    @show _a
+    @show _b
     return SA.maybe_promote(a, _a...), SA.maybe_promote(b, _b...)
 end
