@@ -80,14 +80,12 @@ end
 # FIXME type piracy
 SA.comparable(::MP.ExponentsIterator{M}) where {M} = M()
 
-import MergeSorted
-
 function merge_bases(basis1::MB, basis2::MB) where {MB<:SubBasis}
     @assert basis1.parent_basis == basis2.parent_basis
     @assert basis1.is_sorted
     @assert basis2.is_sorted
     lt = SA.comparable(parent(basis1))
-    keys = unique!(MergeSorted.mergesorted(basis1.keys, basis2.keys; lt))
+    keys = merge_sorted(basis1.keys, basis2.keys; lt)
     I1 = multi_findsorted(keys, basis1.keys; lt)
     I2 = multi_findsorted(keys, basis2.keys; lt)
     return SA.SubBasis(basis1.parent_basis, keys), I1, I2
@@ -299,14 +297,14 @@ function constant_algebra_element(basis::SubBasis, α)
     )
 end
 
-_idx(needle, haystack) = searchsortedfirst(haystack, needle, rev = true)
+_idx(needle, haystack) = search_sorted_first(haystack, needle, rev = true)
 
-struct ExponentMap <: Function
-    indices::Vector{Int}
-    length::Int
+struct ExponentMap{I,L} <: Function
+    indices::I
+    length::L
 end
 
-function (map::ExponentMap)(exp)
+function (map::ExponentMap{Vector{Int}})(exp::Vector{Int})
     new_exp = zeros(Int, map.length)
     for (i, e) in zip(map.indices, exp)
         new_exp[i] = e
@@ -314,13 +312,30 @@ function (map::ExponentMap)(exp)
     return new_exp
 end
 
+function (map::ExponentMap{NTuple{N,Int}})(exp::NTuple{N,Int}) where {N}
+    return ntuple(map.length::Val) do i
+        # This does not have the best complexity since `findfirst`
+        # search through the whole list each time but since we're using
+        # tuples, we're probably not having a large list if indices anyway
+        j = findfirst(isequal(i), map.indices)
+        if isnothing(j)
+            return 0
+        else
+            return exp[j]
+        end
+    end
+end
+
+_length(x::AbstractVector) = length(x)
+_length(::NTuple{N,Any}) where {N} = Val(N)
+
 function _map(needles, haystack)
     if length(needles) == length(haystack)
         return
     end
     return ExponentMap(
         map(Base.Fix2(_idx, haystack), needles),
-        length(haystack),
+        _length(haystack),
     )
 end
 
@@ -335,7 +350,7 @@ function promote_variables_with_maps(a::Variables, b::Variables)
     if a.variables == b.variables
         return (a, nothing), (b, nothing)
     end
-    all_vars = sort(union(a.variables, b.variables); rev = true)
+    all_vars = merge_sorted(a.variables, b.variables; rev = true)
     return _vars(a, all_vars), _vars(b, all_vars)
 end
 
@@ -343,5 +358,7 @@ SA.promote_with_map(::FullBasis, vars, m) = FullBasis(vars), m
 
 function SA.promote_basis_with_maps(a::FullBasis, b::FullBasis)
     _a, _b = promote_variables_with_maps(a.map, b.map)
+    @show _a
+    @show _b
     return SA.maybe_promote(a, _a...), SA.maybe_promote(b, _b...)
 end
