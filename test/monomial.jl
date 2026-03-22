@@ -115,6 +115,16 @@ function test_monomial(x, y)
         @test SA.basis(a2) == b
         b2 === b
     end
+
+    @testset "hash" begin
+        monosx = [1, x]
+        basisx = MB.SubBasis{MB.Monomial}(monosx)
+        scaled_basisx = MB.SubBasis{MB.ScaledMonomial}(monosx)
+        monosy = [1, y]
+        basisy = MB.SubBasis{MB.Monomial}(monosy)
+        @test hash(basisx[2]) != hash(scaled_basisx[2])
+        @test hash(basisx[2]) != hash(basisy[2])
+    end
 end
 
 import DynamicPolynomials

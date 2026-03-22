@@ -77,7 +77,7 @@ MP.exponents(p::Polynomial) = p.exponents
 MP.monomial(p::Polynomial) = MP.monomial(MP.variables(p), MP.exponents(p))
 
 function Base.hash(p::Polynomial{B}, u::UInt) where {B}
-    return hash(p.variables, hash(p.monomial, u))
+    return hash(p.variables, hash(p.exponents, u))
 end
 
 function Base.isequal(p::Polynomial{B}, q::Polynomial{B}) where {B}
