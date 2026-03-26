@@ -40,8 +40,21 @@ function recurrence_eval(::Type{Monomial}, previous, value, degree)
     return previous[degree] * value
 end
 
+# /!\ assumes commutative variables
 function (m::MStruct{Monomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
     return SA.SparseCoefficients((a .+ b,), (1,))
+end
+
+# This one is called by `DiracMStructure` and also works for DynamicPolynomials'
+# noncommutative variables
+# We can remove this once/if we remove this clunky noncommutative variables support
+# in DynamicPolynomials
+# Because it is used by `DiracMStructure`, we return a `Polynomial`,
+# not a `SparseCoefficient`
+# We could also define (::DiracMStructure)(...)
+function Base.:*(a::Polynomial{Monomial}, b::Polynomial{Monomial})
+    c = MP.monomial(a) * MP.monomial(b)
+    return Polynomial{Monomial}(MP.monomial(a) * MP.monomial(b))
 end
 
 SA.coeffs(p::Polynomial{Monomial}, ::FullBasis{Monomial}) = p.monomial
