@@ -13,10 +13,15 @@ MP.ordering(b::MonomialIndexedBasis) = MP.ordering(typeof(b))
 function FullBasis(vars::Variables{B,V}) where {B,V}
     O = MP.ordering(vars.variables)
     exps = MP.ExponentsIterator{O}(constant_monomial_exponents(vars))
+    inverse_map = if MP.is_commutative(V)
+        MP.exponents
+    else
+        Base.Fix2(MP.exponents, vars.variables)
+    end
     return SA.MappedBasis{Polynomial{B,V,eltype(exps)}}(
         exps,
         vars,
-        MP.exponents,
+        inverse_map,
     )
 end
 

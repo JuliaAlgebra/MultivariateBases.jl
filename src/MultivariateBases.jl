@@ -87,9 +87,17 @@ include("lagrange.jl")
 include("quotient.jl")
 
 function algebra(
-    basis::Union{QuotientBasis{<:Polynomial{B}},FullBasis{B},SubBasis{B}},
-) where {B}
-    return SA.StarAlgebra(Variables{B}(MP.variables(basis)), MStruct(basis))
+    basis::Union{QuotientBasis{<:Polynomial{B,V}},FullBasis{B,V},SubBasis{B,V}},
+) where {B,V}
+    mstruct = if MP.is_commutative(V)
+        MStruct(basis)
+    else
+        if B != Monomial
+            error("Only the `Monomial` basis is supported with noncommutative variables")
+        end
+        SA.DiracMStructure(basis, *)
+    end
+    return SA.StarAlgebra(Variables{B}(MP.variables(basis)), mstruct)
 end
 
 function MA.promote_operation(
@@ -102,11 +110,13 @@ function MA.promote_operation(
         },
     },
 ) where {B,V,E}
-    return SA.StarAlgebra{
-        Variables{B,V},
-        Polynomial{B,V,E},
-        MStruct{B,V,E,SA.key_type(BT),BT},
-    }
+    P = Polynomial{B,V,E}
+    MS = if MP.is_commutative(V)
+        MStruct{B,V,E,SA.key_type(BT),BT}
+    else
+        SA.DiracMStructure{P,SA.key_type(BT),BT,typeof(*)}
+    end
+    return SA.StarAlgebra{Variables{B,V},P,MS}
 end
 
 include("arithmetic.jl")
