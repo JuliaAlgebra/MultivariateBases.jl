@@ -80,17 +80,6 @@ end
 # FIXME type piracy
 SA.comparable(::MP.ExponentsIterator{M}) where {M} = M()
 
-function merge_bases(basis1::MB, basis2::MB) where {MB<:SubBasis}
-    @assert basis1.parent_basis == basis2.parent_basis
-    @assert basis1.is_sorted
-    @assert basis2.is_sorted
-    lt = SA.comparable(parent(basis1))
-    keys = merge_sorted(basis1.keys, basis2.keys; lt)
-    I1 = multi_findsorted(keys, basis1.keys; lt)
-    I2 = multi_findsorted(keys, basis2.keys; lt)
-    return SA.SubBasis(basis1.parent_basis, keys), I1, I2
-end
-
 # Unsafe because we don't check that `monomials` is sorted and without duplicates
 function unsafe_basis(
     ::Type{B},

@@ -64,7 +64,7 @@ function test_monomial(x, y)
         @test extdegree(basis2) == (2, 2)
         @test extdegree(basis2, x) == (0, 1)
         @test extdegree(basis2, y) == (1, 2)
-        basis, I1, I2 = MultivariateBases.merge_bases(basis1, basis2)
+        basis, I1, I2 = SA.merge_bases_with_maps(basis1, basis2)
         @test MB.keys_as_monomials(basis) == [y^2, x * y, x^2]
         @test I1 == [1, 0, 2]
         @test I2 == [1, 2, 0]
