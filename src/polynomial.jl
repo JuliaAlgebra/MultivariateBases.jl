@@ -74,6 +74,9 @@ end
 
 MP.exponents(p::Polynomial) = p.exponents
 
+# Needed for noncommutative case
+MP.exponents(p::Polynomial, vars) = MP.exponents(MP.monomial(p), vars)
+
 MP.monomial(p::Polynomial) = MP.monomial(MP.variables(p), MP.exponents(p))
 
 function Base.hash(p::Polynomial{B}, u::UInt) where {B}
