@@ -61,7 +61,7 @@ function MP.polynomial_type(
 end
 
 function keys_as_monomials(keys, mb::FullBasis)
-    return MP.monomial.(Ref(mb.map.variables), keys)
+    return MP.monomial_vector(MP.monomial.(Ref(mb.map.variables), keys))
 end
 keys_as_monomials(mb::SubBasis) = keys_as_monomials(mb.keys, parent(mb))
 
