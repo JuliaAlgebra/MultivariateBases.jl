@@ -270,80 +270,18 @@ function constant_algebra_element(basis::SubBasis, α)
     )
 end
 
-function _search_sorted_first(haystack::AbstractVector, needle; kws...)
-    return searchsortedfirst(haystack, needle; kws...)
-end
-function _search_sorted_first(haystack::Tuple, needle; kws...)
-    return findfirst(isequal(needle), haystack)
-end
-
-_idx(needle, haystack) = _search_sorted_first(haystack, needle, rev = true)
-
-struct ExponentMap{I,L} <: Function
-    indices::I
-    length::L
-end
-
-function (map::ExponentMap{Vector{Int}})(exp::Vector{Int})
-    new_exp = zeros(Int, map.length)
-    for (i, e) in zip(map.indices, exp)
-        new_exp[i] = e
-    end
-    return new_exp
-end
-
-function (map::ExponentMap{NTuple{N,Int}})(exp::NTuple{N,Int}) where {N}
-    return ntuple(map.length::Val) do i
-        # This does not have the best complexity since `findfirst`
-        # search through the whole list each time but since we're using
-        # tuples, we're probably not having a large list if indices anyway
-        j = findfirst(isequal(i), map.indices)
-        if isnothing(j)
-            return 0
-        else
-            return exp[j]
-        end
-    end
-end
-
-_length(x::AbstractVector) = length(x)
-_length(::NTuple{N,Any}) where {N} = Val(N)
-
-function _map(needles, haystack)
-    if length(needles) == length(haystack)
-        return
-    end
-    return ExponentMap(
-        map(Base.Fix2(_idx, haystack), needles),
-        _length(haystack),
-    )
-end
-
 function SA.promote_with_map(::Variables{B}, vars, map) where {B}
     return Variables{B}(vars), map
 end
 
-_vars(a, all_vars) = SA.maybe_promote(a, all_vars, _map(a.variables, all_vars))
-
-# TODO add this to MultivariatePolynomials to make it work with DP and TP
-function promote_variables_with_maps(a::Variables, b::Variables)
-    if a.variables == b.variables
-        return (a, nothing), (b, nothing)
-    end
-    all_vars = SA.merge_sorted(
-        a.variables,
-        b.variables;
-        lt = isless,
-        combine = SA.first_of,
-        filter = _ -> true,
-        rev = true,
-    )
-    return _vars(a, all_vars), _vars(b, all_vars)
-end
-
 SA.promote_with_map(::FullBasis, vars, m) = FullBasis(vars), m
 
-function SA.promote_bases_with_maps(a::FullBasis, b::FullBasis)
+function MP.promote_variables_with_maps(a::Variables, b::Variables)
+    _a, _b = MP.promote_variables_with_maps(a.variables, b.variables)
+    return SA.maybe_promote(a, _a...), SA.maybe_promote(b, _b...)
+end
+
+function SA.promote_basis_with_maps(a::FullBasis, b::FullBasis)
     _a, _b = promote_variables_with_maps(a.map, b.map)
     return SA.maybe_promote(a, _a...), SA.maybe_promote(b, _b...)
 end
