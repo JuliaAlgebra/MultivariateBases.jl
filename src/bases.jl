@@ -356,7 +356,7 @@ end
 
 SA.promote_with_map(::FullBasis, vars, m) = FullBasis(vars), m
 
-function SA.promote_basis_with_maps(a::FullBasis, b::FullBasis)
+function SA.promote_bases_with_maps(a::FullBasis, b::FullBasis)
     _a, _b = promote_variables_with_maps(a.map, b.map)
     return SA.maybe_promote(a, _a...), SA.maybe_promote(b, _b...)
 end
