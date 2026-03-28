@@ -286,7 +286,14 @@ function constant_algebra_element(basis::SubBasis, α)
     )
 end
 
-_idx(needle, haystack) = SA.search_sorted_first(haystack, needle, rev = true)
+function _search_sorted_first(haystack::AbstractVector, needle; kws...)
+    return searchsortedfirst(haystack, needle; kws...)
+end
+function _search_sorted_first(haystack::Tuple, needle; kws...)
+    return findfirst(isequal(needle), haystack)
+end
+
+_idx(needle, haystack) = _search_sorted_first(haystack, needle, rev = true)
 
 struct ExponentMap{I,L} <: Function
     indices::I
@@ -339,7 +346,7 @@ function promote_variables_with_maps(a::Variables, b::Variables)
     if a.variables == b.variables
         return (a, nothing), (b, nothing)
     end
-    all_vars = SA.merge_sorted(a.variables, b.variables; rev = true)
+    all_vars = SA.merge_sorted(a.variables, b.variables; lt = isless, combine = first, filter = _ -> true, rev = true)
     return _vars(a, all_vars), _vars(b, all_vars)
 end
 
