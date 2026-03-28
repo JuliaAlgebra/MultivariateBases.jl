@@ -80,17 +80,6 @@ end
 # FIXME type piracy
 SA.comparable(::MP.ExponentsIterator{M}) where {M} = M()
 
-function merge_bases(basis1::MB, basis2::MB) where {MB<:SubBasis}
-    @assert basis1.parent_basis == basis2.parent_basis
-    @assert basis1.is_sorted
-    @assert basis2.is_sorted
-    lt = SA.comparable(parent(basis1))
-    keys = merge_sorted(basis1.keys, basis2.keys; lt)
-    I1 = multi_findsorted(keys, basis1.keys; lt)
-    I2 = multi_findsorted(keys, basis2.keys; lt)
-    return SA.SubBasis(basis1.parent_basis, keys), I1, I2
-end
-
 # Unsafe because we don't check that `monomials` is sorted and without duplicates
 function unsafe_basis(
     ::Type{B},
@@ -297,7 +286,7 @@ function constant_algebra_element(basis::SubBasis, α)
     )
 end
 
-_idx(needle, haystack) = search_sorted_first(haystack, needle, rev = true)
+_idx(needle, haystack) = SA.search_sorted_first(haystack, needle, rev = true)
 
 struct ExponentMap{I,L} <: Function
     indices::I
@@ -350,7 +339,7 @@ function promote_variables_with_maps(a::Variables, b::Variables)
     if a.variables == b.variables
         return (a, nothing), (b, nothing)
     end
-    all_vars = merge_sorted(a.variables, b.variables; rev = true)
+    all_vars = SA.merge_sorted(a.variables, b.variables; rev = true)
     return _vars(a, all_vars), _vars(b, all_vars)
 end
 

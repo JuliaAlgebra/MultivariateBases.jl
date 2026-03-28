@@ -52,35 +52,6 @@ function test_monomial(x, y)
         @test sprint(print, basis) == "SubBasis{Monomial}([y^2, x*y, x^2])"
     end
 
-    @testset "merge_bases" begin
-        basis1 = SubBasis{MB.Monomial}([x^2, y^2])
-        basis2 = SubBasis{MB.Monomial}([x * y, y^2])
-        @test mindegree(basis2) == 2
-        @test mindegree(basis2, x) == 0
-        @test mindegree(basis2, y) == 1
-        @test maxdegree(basis2) == 2
-        @test maxdegree(basis2, x) == 1
-        @test maxdegree(basis2, y) == 2
-        @test extdegree(basis2) == (2, 2)
-        @test extdegree(basis2, x) == (0, 1)
-        @test extdegree(basis2, y) == (1, 2)
-        basis, I1, I2 = MultivariateBases.merge_bases(basis1, basis2)
-        @test MB.keys_as_monomials(basis) == [y^2, x * y, x^2]
-        @test I1 == [1, 0, 2]
-        @test I2 == [1, 2, 0]
-        for i in eachindex(basis)
-            @test SA.key_index(basis, basis.keys[i]) == i
-            for (I, b) in [(I1, basis1), (I2, basis2)]
-                idx = SA.key_index(b, basis.keys[i])
-                if iszero(I[i])
-                    @test isnothing(idx)
-                else
-                    @test idx == I[i]
-                end
-            end
-        end
-    end
-
     @testset "API degree = $degree" for degree in 0:3
         api_test(MB.Monomial, degree)
     end
