@@ -61,35 +61,8 @@ end
 MP.monomial_type(b::FullBasis) = MP.monomial_type(b.map)
 MP.monomial_type(b::SubBasis) = MP.monomial_type(parent(b))
 
-# The `i`th index of output is the index of occurence of `x[i]` in `y`,
-# or `0` if it does not occur.
-function multi_findsorted(x, y; lt)
-    I = zeros(Int, length(x))
-    j = 1
-    for i in eachindex(x)
-        while j ≤ length(y) && lt(y[j], x[i])
-            j += 1
-        end
-        if j ≤ length(y) && x[i] == y[j]
-            I[i] = j
-        end
-    end
-    return I
-end
-
 # FIXME type piracy
 SA.comparable(::MP.ExponentsIterator{M}) where {M} = M()
-
-function merge_bases(basis1::MB, basis2::MB) where {MB<:SubBasis}
-    @assert basis1.parent_basis == basis2.parent_basis
-    @assert basis1.is_sorted
-    @assert basis2.is_sorted
-    lt = SA.comparable(parent(basis1))
-    keys = merge_sorted(basis1.keys, basis2.keys; lt)
-    I1 = multi_findsorted(keys, basis1.keys; lt)
-    I2 = multi_findsorted(keys, basis2.keys; lt)
-    return SA.SubBasis(basis1.parent_basis, keys), I1, I2
-end
 
 # Unsafe because we don't check that `monomials` is sorted and without duplicates
 function unsafe_basis(
@@ -297,7 +270,14 @@ function constant_algebra_element(basis::SubBasis, α)
     )
 end
 
-_idx(needle, haystack) = search_sorted_first(haystack, needle, rev = true)
+function _search_sorted_first(haystack::AbstractVector, needle; kws...)
+    return searchsortedfirst(haystack, needle; kws...)
+end
+function _search_sorted_first(haystack::Tuple, needle; kws...)
+    return findfirst(isequal(needle), haystack)
+end
+
+_idx(needle, haystack) = _search_sorted_first(haystack, needle, rev = true)
 
 struct ExponentMap{I,L} <: Function
     indices::I
@@ -350,7 +330,14 @@ function promote_variables_with_maps(a::Variables, b::Variables)
     if a.variables == b.variables
         return (a, nothing), (b, nothing)
     end
-    all_vars = merge_sorted(a.variables, b.variables; rev = true)
+    all_vars = SA.merge_sorted(
+        a.variables,
+        b.variables;
+        lt = isless,
+        combine = SA.first_of,
+        filter = _ -> true,
+        rev = true,
+    )
     return _vars(a, all_vars), _vars(b, all_vars)
 end
 
