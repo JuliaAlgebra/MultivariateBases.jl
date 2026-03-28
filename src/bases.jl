@@ -61,22 +61,6 @@ end
 MP.monomial_type(b::FullBasis) = MP.monomial_type(b.map)
 MP.monomial_type(b::SubBasis) = MP.monomial_type(parent(b))
 
-# The `i`th index of output is the index of occurence of `x[i]` in `y`,
-# or `0` if it does not occur.
-function multi_findsorted(x, y; lt)
-    I = zeros(Int, length(x))
-    j = 1
-    for i in eachindex(x)
-        while j ≤ length(y) && lt(y[j], x[i])
-            j += 1
-        end
-        if j ≤ length(y) && x[i] == y[j]
-            I[i] = j
-        end
-    end
-    return I
-end
-
 # FIXME type piracy
 SA.comparable(::MP.ExponentsIterator{M}) where {M} = M()
 
@@ -346,7 +330,14 @@ function promote_variables_with_maps(a::Variables, b::Variables)
     if a.variables == b.variables
         return (a, nothing), (b, nothing)
     end
-    all_vars = SA.merge_sorted(a.variables, b.variables; lt = isless, combine = first, filter = _ -> true, rev = true)
+    all_vars = SA.merge_sorted(
+        a.variables,
+        b.variables;
+        lt = isless,
+        combine = SA.first_of,
+        filter = _ -> true,
+        rev = true,
+    )
     return _vars(a, all_vars), _vars(b, all_vars)
 end
 
