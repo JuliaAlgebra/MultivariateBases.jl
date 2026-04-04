@@ -10,13 +10,24 @@ function MP.ordering(::Type{MonomialIndexedBasis{B,V,E}}) where {B,V,E}
 end
 MP.ordering(b::MonomialIndexedBasis) = MP.ordering(typeof(b))
 
+# Base.Fix2 will implement `==` by checking `===` on the list of variables
+struct _ExponentsWithVariables{V}
+    variables::V
+end
+
+(e::_ExponentsWithVariables)(mono) = MP.exponents(mono, e.variables)
+
+function Base.:(==)(a::_ExponentsWithVariables, b::_ExponentsWithVariables)
+    unique(sort(a.variables)) == unique(sort(b.variables))
+end
+
 function FullBasis(vars::Variables{B,V}) where {B,V}
     O = MP.ordering(vars.variables)
     exps = MP.ExponentsIterator{O}(constant_monomial_exponents(vars))
     inverse_map = if MP.is_commutative(V)
         MP.exponents
     else
-        Base.Fix2(MP.exponents, vars.variables)
+        _ExponentsWithVariables(vars.variables)
     end
     return SA.MappedBasis{Polynomial{B,V,eltype(exps)}}(
         exps,
