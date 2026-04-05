@@ -33,6 +33,20 @@ function test_monomial(x, y)
         @test sprint(print, basis) == "SubBasis{Monomial}([y, x])"
     end
 
+    @testset "FullBasis printing" begin
+        fb = MB.FullBasis{MB.Monomial}(x * y)
+        @test sprint(show, fb) == "FullBasis{Monomial}([x, y])"
+        @test sprint(show, MIME"text/print"(), fb) ==
+              "FullBasis{Monomial}([x, y])"
+        @test sprint(show, MIME"text/plain"(), fb) ==
+              "FullBasis{Monomial}([x, y])"
+        @test sprint(print, fb) == "FullBasis{Monomial}([x, y])"
+        # Single variable
+        fb1 = MB.FullBasis{MB.Monomial}(x)
+        @test sprint(show, fb1) == "FullBasis{Monomial}([x])"
+        @test sprint(print, fb1) == "FullBasis{Monomial}([x])"
+    end
+
     @testset "Affine" begin
         # It will be sorted and 1 will be moved at the end
         basis = SubBasis{MB.Monomial}([1, x, y])
