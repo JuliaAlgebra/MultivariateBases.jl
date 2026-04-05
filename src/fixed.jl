@@ -1,35 +1,23 @@
-# TODO refactor with `SA.MappedBasis`
-# https://github.com/JuliaAlgebra/StarAlgebras.jl/pull/76
-
 """
-    struct SemisimpleBasis{T,I,B<:SA.ExplicitBasis{T,I}} <: SA.ExplicitBasis{T,I}
-        bases::Vector{B}
+    struct SimpleBasis{T} <: SA.ExplicitBasis{T,Int}
+        elements::Vector{T}
     end
 
-Semisimple basis for use with [SymbolicWedderburn](https://github.com/kalmarek/SymbolicWedderburn.jl/).
-Its elements are of [`SemisimpleElement`](@ref)s.
+Simple vector-backed basis without star-closure requirement.
+Used as inner basis for [`SemisimpleBasis`](@ref).
 """
-struct SemisimpleBasis{T,I,B<:SA.ExplicitBasis{T,I}} <: SA.ExplicitBasis{T,I}
-    bases::Vector{B}
+struct SimpleBasis{T} <: SA.ExplicitBasis{T,Int}
+    elements::Vector{T}
 end
 
-Base.length(b::SemisimpleBasis) = length(first(b.bases))
-
-function _iterate(b::SemisimpleBasis, elem_state)
-    if isnothing(elem_state)
-        return
-    end
-    elem, state = elem_state
-    return b[elem], state
-end
-Base.iterate(b::SemisimpleBasis) = _iterate(b, iterate(keys(first(b.bases))))
-function Base.iterate(b::SemisimpleBasis, st)
-    return _iterate(b, iterate(keys(first(b.bases)), st))
-end
+Base.length(b::SimpleBasis) = length(b.elements)
+Base.getindex(b::SimpleBasis, i::Integer) = b.elements[i]
+Base.iterate(b::SimpleBasis) = iterate(b.elements)
+Base.iterate(b::SimpleBasis, st) = iterate(b.elements, st)
 
 """
     struct SemisimpleElement{P}
-        polynomials::Vector{P}
+        elements::Vector{P}
     end
 
 Elements of [`SemisimpleBasis`](@ref).
@@ -58,6 +46,33 @@ function MA.operate!(
     end
 end
 
+"""
+    struct SemisimpleBasis{T,B<:SA.ExplicitBasis{T}} <: SA.ExplicitBasis{SemisimpleElement{T},Int}
+        bases::Vector{B}
+    end
+
+Semisimple basis for use with [SymbolicWedderburn](https://github.com/kalmarek/SymbolicWedderburn.jl/).
+Its elements are [`SemisimpleElement`](@ref)s.
+"""
+struct SemisimpleBasis{T,B<:SA.ExplicitBasis{T}} <:
+       SA.ExplicitBasis{SemisimpleElement{T},Int}
+    bases::Vector{B}
+end
+
+Base.length(b::SemisimpleBasis) = length(first(b.bases))
+
+function _iterate(b::SemisimpleBasis, elem_state)
+    if isnothing(elem_state)
+        return
+    end
+    elem, state = elem_state
+    return b[elem], state
+end
+Base.iterate(b::SemisimpleBasis) = _iterate(b, iterate(Base.OneTo(length(b))))
+function Base.iterate(b::SemisimpleBasis, st)
+    return _iterate(b, iterate(Base.OneTo(length(b)), st))
+end
+
 function Base.getindex(b::SemisimpleBasis, i::Integer)
     return SemisimpleElement(getindex.(b.bases, i))
 end
@@ -74,3 +89,16 @@ function Base.show(io::IO, b::SemisimpleBasis)
         print(io, basis)
     end
 end
+
+# Extract the implicit (full) basis from a SemisimpleBasis
+function implicit_basis(b::SemisimpleBasis{AE}) where {AE<:SA.AlgebraElement}
+    return implicit_basis(SA.basis(first(first(b.bases))))
+end
+
+# parent for SemisimpleBasis - needed for _combine_with_gram
+function Base.parent(b::SemisimpleBasis{AE}) where {AE<:SA.AlgebraElement}
+    return implicit_basis(b)
+end
+
+MP.variables(b::SemisimpleBasis) = MP.variables(implicit_basis(b))
+MP.nvariables(b::SemisimpleBasis) = MP.nvariables(implicit_basis(b))
