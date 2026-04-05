@@ -220,19 +220,11 @@ end
 
     # Create complex AlgebraElements directly
     ae_cx = SA.AlgebraElement(
-        SA.SparseCoefficients(
-            [exp_x],
-            [1.0 + 1.0im],
-            isless,
-        ),
+        SA.SparseCoefficients([exp_x], [1.0 + 1.0im], isless),
         alg,
     )
     ae_cy = SA.AlgebraElement(
-        SA.SparseCoefficients(
-            [exp_y],
-            [1.0 - 1.0im],
-            isless,
-        ),
+        SA.SparseCoefficients([exp_y], [1.0 - 1.0im], isless),
         alg,
     )
 

@@ -56,7 +56,8 @@ end
 Semisimple basis for use with [SymbolicWedderburn](https://github.com/kalmarek/SymbolicWedderburn.jl/).
 Its elements are [`SemisimpleElement`](@ref)s.
 """
-struct SemisimpleBasis{T,B<:SA.ExplicitBasis{T}} <: SA.ExplicitBasis{SemisimpleElement{T},Int}
+struct SemisimpleBasis{T,B<:SA.ExplicitBasis{T}} <:
+       SA.ExplicitBasis{SemisimpleElement{T},Int}
     bases::Vector{B}
 end
 
@@ -92,16 +93,12 @@ function Base.show(io::IO, b::SemisimpleBasis)
 end
 
 # Extract the implicit (full) basis from a SemisimpleBasis
-function implicit_basis(
-    b::SemisimpleBasis{AE},
-) where {AE<:SA.AlgebraElement}
+function implicit_basis(b::SemisimpleBasis{AE}) where {AE<:SA.AlgebraElement}
     return implicit_basis(SA.basis(first(first(b.bases))))
 end
 
 # parent for SemisimpleBasis - needed for _combine_with_gram
-function Base.parent(
-    b::SemisimpleBasis{AE},
-) where {AE<:SA.AlgebraElement}
+function Base.parent(b::SemisimpleBasis{AE}) where {AE<:SA.AlgebraElement}
     return implicit_basis(b)
 end
 
