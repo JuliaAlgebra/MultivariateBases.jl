@@ -51,5 +51,6 @@ Trigonometric
 ## Additional basis
 
 ```@docs
+SimpleBasis
 SemisimpleBasis
 ```
