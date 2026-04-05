@@ -105,14 +105,46 @@ function test_monomial(x, y)
         @test new_b isa MB.MStruct
         @test variables(SA.basis(new_a)) == variables(x * y)
         @test variables(SA.basis(new_b)) == variables(x * y)
+        # Test that maps are callable and remap indices correctly
+        @test map_a isa Function
+        @test map_b isa Function
         # Test MStruct-MStruct promotion with same variables (identity case)
         c = MB.algebra_element(x + y)
         alg_c = SA.parent(c)
         mstruct_c = alg_c.mstructure
-        (new_c1, _), (new_c2, _) =
+        (new_c1, map_c1), (new_c2, map_c2) =
             SA.promote_bases_with_maps(mstruct_c, mstruct_c)
         @test variables(SA.basis(new_c1)) == variables(x * y)
         @test variables(SA.basis(new_c2)) == variables(x * y)
+        # Identity promotion should preserve the basis
+        @test SA.basis(new_c1) == SA.basis(mstruct_c)
+        @test SA.basis(new_c2) == SA.basis(mstruct_c)
+    end
+
+    @testset "promote_bases MStruct across variables" begin
+        # Test that promote_bases works end-to-end on algebra elements
+        # with disjoint variables (exercises MStruct-MStruct promotion)
+        a = MB.algebra_element(x - x^2)
+        b = MB.algebra_element(y + y^2)
+        a2, b2 = SA.promote_bases(a, b)
+        @test variables(a2) == variables(x * y)
+        @test variables(b2) == variables(x * y)
+        @test polynomial(a2) ≈ x - x^2
+        @test polynomial(b2) ≈ y + y^2
+        # After promotion, parents should match
+        @test SA.parent(a2) == SA.parent(b2)
+        # Test with overlapping but non-identical variables
+        c = MB.algebra_element(x + y)
+        d = MB.algebra_element(x^2)
+        c2, d2 = SA.promote_bases(c, d)
+        @test variables(c2) == variables(x * y)
+        @test variables(d2) == variables(x * y)
+        @test polynomial(c2) ≈ x + y
+        @test polynomial(d2) ≈ x^2
+        @test SA.parent(c2) == SA.parent(d2)
+        # Promoted algebra elements can do arithmetic in the same algebra
+        s = a2 + b2
+        @test polynomial(s) ≈ x - x^2 + y + y^2
     end
 
     @testset "hash" begin
