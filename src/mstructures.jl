@@ -38,6 +38,11 @@ function SA.promote_bases_with_maps(a::MStruct, b::SA.AbstractBasis)
     return SA.maybe_promote(a, _a...), _b
 end
 
+function SA.promote_bases_with_maps(a::MStruct, b::MStruct)
+    _a, _b = SA.promote_bases_with_maps(SA.basis(a), SA.basis(b))
+    return SA.maybe_promote(a, _a...), SA.maybe_promote(b, _b...)
+end
+
 function SA.promote_object(v::Variables, m::MStruct, map)
     return SA.promote_object(v, SA.basis(m), map)
 end
