@@ -177,3 +177,16 @@ test_monomial((DynamicPolynomials.@polyvar x y)...)
 
 import TypedPolynomials
 test_monomial((TypedPolynomials.@polyvar x y)...)
+
+import MutableArithmetics as MA
+
+DynamicPolynomials.@ncpolyvar x y
+p = x * y + x
+q = y + x * y
+a = MB.algebra_element(p)
+b = MB.algebra_element(q)
+c = MB.algebra_element(p * q)
+MA.operate!(zero, c)
+MA.operate_to!(c, *, a, b)
+@edit a * b
+p * q
