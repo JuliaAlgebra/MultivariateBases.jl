@@ -87,6 +87,28 @@ function test_monomial(x, y)
         b2 === b
     end
 
+    @testset "promote_bases_with_maps MStruct" begin
+        # Test MStruct-MStruct promotion with different variables
+        a = MB.algebra_element(x - x^2)
+        b = MB.algebra_element(y + y^2)
+        alg_a = SA.parent(a)
+        alg_b = SA.parent(b)
+        mstruct_a = alg_a.mstructure
+        mstruct_b = alg_b.mstructure
+        @test mstruct_a isa MB.MStruct
+        @test mstruct_b isa MB.MStruct
+        ma, mb = SA.promote_bases_with_maps(mstruct_a, mstruct_b)
+        # After promotion, both MStructs should have a basis
+        # with variables [x, y]
+        promoted_basis_a = SA.basis(ma[1])
+        promoted_basis_b = SA.basis(mb[1])
+        @test variables(promoted_basis_a) == variables(x * y)
+        @test variables(promoted_basis_b) == variables(x * y)
+        # Test that adding algebra elements with different variables works
+        c = a + b
+        @test c ≈ MB.algebra_element(x - x^2 + y + y^2)
+    end
+
     @testset "hash" begin
         monosx = [1, x]
         basisx = MB.SubBasis{MB.Monomial}(monosx)
