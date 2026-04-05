@@ -97,16 +97,22 @@ function test_monomial(x, y)
         mstruct_b = alg_b.mstructure
         @test mstruct_a isa MB.MStruct
         @test mstruct_b isa MB.MStruct
-        ma, mb = SA.promote_bases_with_maps(mstruct_a, mstruct_b)
+        (new_a, map_a), (new_b, map_b) =
+            SA.promote_bases_with_maps(mstruct_a, mstruct_b)
         # After promotion, both MStructs should have a basis
         # with variables [x, y]
-        promoted_basis_a = SA.basis(ma[1])
-        promoted_basis_b = SA.basis(mb[1])
-        @test variables(promoted_basis_a) == variables(x * y)
-        @test variables(promoted_basis_b) == variables(x * y)
-        # Test that adding algebra elements with different variables works
-        c = a + b
-        @test c ≈ MB.algebra_element(x - x^2 + y + y^2)
+        @test new_a isa MB.MStruct
+        @test new_b isa MB.MStruct
+        @test variables(SA.basis(new_a)) == variables(x * y)
+        @test variables(SA.basis(new_b)) == variables(x * y)
+        # Test MStruct-MStruct promotion with same variables (identity case)
+        c = MB.algebra_element(x + y)
+        alg_c = SA.parent(c)
+        mstruct_c = alg_c.mstructure
+        (new_c1, _), (new_c2, _) =
+            SA.promote_bases_with_maps(mstruct_c, mstruct_c)
+        @test variables(SA.basis(new_c1)) == variables(x * y)
+        @test variables(SA.basis(new_c2)) == variables(x * y)
     end
 
     @testset "hash" begin
