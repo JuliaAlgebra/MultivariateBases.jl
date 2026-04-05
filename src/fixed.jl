@@ -1,5 +1,3 @@
-const FixedBasis = SA.FixedBasis
-
 """
     struct SimpleBasis{T} <: SA.ExplicitBasis{T,Int}
         elements::Vector{T}

@@ -252,7 +252,3 @@ end
         @test elems[2].elements[1] == ae_cy
     end
 end
-
-@testset "FixedBasis alias" begin
-    @test MB.FixedBasis === SA.FixedBasis
-end

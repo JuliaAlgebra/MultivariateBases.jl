@@ -4,7 +4,7 @@ import MutableArithmetics as MA
 import StarAlgebras as SA
 import MultivariatePolynomials as MP
 
-export FullBasis, SubBasis, FixedBasis
+export FullBasis, SubBasis
 export maxdegree_basis, explicit_basis_covering, empty_basis, monomial_index
 export keys_as_monomials
 include("interface.jl")
