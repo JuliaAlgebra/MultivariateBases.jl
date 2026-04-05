@@ -215,10 +215,18 @@ function _show(io::IO, mime::MIME, basis::SubBasis{B}) where {B}
     return
 end
 
+function _show(io::IO, mime::MIME, basis::FullBasis{B}) where {B}
+    print(io, "FullBasis{$(nameof(B))}(")
+    # Skip the element type compared to `Base.show_vector`
+    _show_vector(io, mime, MP.variables(basis))
+    print(io, ")")
+    return
+end
+
 function Base.show(
     io::IO,
     mime::MIME"text/plain",
-    basis::Union{Variables,SubBasis},
+    basis::Union{Variables,SubBasis,FullBasis},
 )
     return _show(io, mime, basis)
 end
@@ -226,15 +234,15 @@ end
 function Base.show(
     io::IO,
     mime::MIME"text/print",
-    basis::Union{Variables,SubBasis},
+    basis::Union{Variables,SubBasis,FullBasis},
 )
     return _show(io, mime, basis)
 end
 
-function Base.print(io::IO, basis::Union{Variables,SubBasis})
+function Base.print(io::IO, basis::Union{Variables,SubBasis,FullBasis})
     return show(io, MIME"text/print"(), basis)
 end
 
-function Base.show(io::IO, basis::Union{Variables,SubBasis})
+function Base.show(io::IO, basis::Union{Variables,SubBasis,FullBasis})
     return show(io, MIME"text/plain"(), basis)
 end
