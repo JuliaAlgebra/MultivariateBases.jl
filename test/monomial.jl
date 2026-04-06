@@ -220,7 +220,8 @@ import MutableArithmetics as MA
 
     @testset "NC degree-2 polynomials" begin
         # Various degree-2 NC polynomials preserve structure
-        for p in [x^2 + y^2, x * y + y * x, x * y - y * x, x^2 + x * y + y * x + y^2]
+        for p in
+            [x^2 + y^2, x * y + y * x, x * y - y * x, x^2 + x * y + y * x + y^2]
             a = MB.algebra_element(p)
             @test MultivariatePolynomials.polynomial(a) == p
         end

@@ -18,7 +18,7 @@ end
 (e::_ExponentsWithVariables)(mono) = MP.exponents(mono, e.variables)
 
 function Base.:(==)(a::_ExponentsWithVariables, b::_ExponentsWithVariables)
-    unique(sort(a.variables)) == unique(sort(b.variables))
+    return unique(sort(a.variables)) == unique(sort(b.variables))
 end
 
 function FullBasis(vars::Variables{B,V}) where {B,V}
@@ -29,11 +29,7 @@ function FullBasis(vars::Variables{B,V}) where {B,V}
     else
         _ExponentsWithVariables(vars.variables)
     end
-    return SA.MappedBasis{Polynomial{B,V,eltype(exps)}}(
-        exps,
-        vars,
-        inverse_map,
-    )
+    return SA.MappedBasis{Polynomial{B,V,eltype(exps)}}(exps, vars, inverse_map)
 end
 
 function FullBasis{B}(vars) where {B}

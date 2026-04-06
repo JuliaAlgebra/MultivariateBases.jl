@@ -93,7 +93,9 @@ function algebra(
         MStruct(basis)
     else
         if B != Monomial
-            error("Only the `Monomial` basis is supported with noncommutative variables")
+            error(
+                "Only the `Monomial` basis is supported with noncommutative variables",
+            )
         end
         SA.DiracMStructure(basis, *)
     end
