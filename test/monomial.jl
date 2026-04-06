@@ -180,13 +180,82 @@ test_monomial((TypedPolynomials.@polyvar x y)...)
 
 import MutableArithmetics as MA
 
-DynamicPolynomials.@ncpolyvar x y
-p = x * y + x
-q = y + x * y
-a = MB.algebra_element(p)
-b = MB.algebra_element(q)
-c = MB.algebra_element(p * q)
-MA.operate!(zero, c)
-MA.operate_to!(c, *, a, b)
-@edit a * b
-p * q
+@testset "Noncommutative" begin
+    DynamicPolynomials.@ncpolyvar x y
+
+    @testset "NC FullBasis" begin
+        fb = MB.FullBasis{MB.Monomial}(x * y)
+        @test variables(fb) == [x, y]
+        # NC FullBasis uses DiracMStructure, not MStruct
+        alg = MB.algebra(fb)
+        @test alg.mstructure isa SA.DiracMStructure
+    end
+
+    @testset "NC SubBasis" begin
+        sb = MB.SubBasis{MB.Monomial}([x * y, y * x, x^2])
+        @test length(sb) == 3
+        monos = MB.keys_as_monomials(sb)
+        # xy and yx are distinct NC monomials
+        @test x * y in monos
+        @test y * x in monos
+        @test x^2 in monos
+    end
+
+    @testset "NC algebra_element round-trip" begin
+        p = x * y + y * x + 2x^2
+        a = MB.algebra_element(p)
+        # Round-trip: polynomial → algebra_element → polynomial
+        @test MultivariatePolynomials.polynomial(a) == p
+        # NC terms are kept separate: xy, yx, x^2
+        @test length(SA.supp(a)) == 3
+    end
+
+    @testset "NC monomial distinctness" begin
+        # In NC, xy ≠ yx
+        @test x * y != y * x
+        a_xy = MB.algebra_element(x * y)
+        a_yx = MB.algebra_element(y * x)
+        @test !(a_xy ≈ a_yx)
+    end
+
+    @testset "NC degree-2 polynomials" begin
+        # Various degree-2 NC polynomials preserve structure
+        for p in [x^2 + y^2, x * y + y * x, x * y - y * x, x^2 + x * y + y * x + y^2]
+            a = MB.algebra_element(p)
+            @test MultivariatePolynomials.polynomial(a) == p
+        end
+    end
+
+    @testset "NC explicit_basis" begin
+        p = x * y + y * x + x^2 + y^2
+        a = MB.algebra_element(p)
+        eb = MB.explicit_basis(a)
+        @test length(eb) == 4
+        monos = MB.keys_as_monomials(eb)
+        @test x * y in monos
+        @test y * x in monos
+        @test x^2 in monos
+        @test y^2 in monos
+    end
+
+    @testset "NC Polynomial type" begin
+        p_xy = MB.Polynomial{MB.Monomial}(x * y)
+        p_yx = MB.Polynomial{MB.Monomial}(y * x)
+        # These should be distinct NC Polynomial wrappers
+        @test p_xy != p_yx
+        @test monomial(p_xy) == x * y
+        @test monomial(p_yx) == y * x
+    end
+
+    @testset "NC algebra_element arithmetic" begin
+        # Scalar multiplication preserves NC structure
+        a = MB.algebra_element(x * y)
+        c = 3 * a
+        @test MultivariatePolynomials.polynomial(c) == 3 * x * y
+        # Addition/subtraction of NC polynomials (same variables, same algebra)
+        p = x * y + y * x
+        a_sum = MB.algebra_element(p)
+        @test MultivariatePolynomials.polynomial(2 * a_sum) == 2p
+        @test MultivariatePolynomials.polynomial(a_sum - a_sum) == 0 * p
+    end
+end
