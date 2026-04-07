@@ -33,6 +33,13 @@ function test_monomial(x, y)
         @test sprint(print, basis) == "SubBasis{Monomial}([y, x])"
     end
 
+    @testset "FullBasis type stability" begin
+        fb = @inferred MB.FullBasis{MB.Monomial}(x * y)
+        @test isconcretetype(typeof(fb))
+        a = @inferred MB.algebra_element(x + y)
+        @test isconcretetype(typeof(a))
+    end
+
     @testset "FullBasis printing" begin
         fb = MB.FullBasis{MB.Monomial}(x * y)
         @test sprint(show, fb) == "FullBasis{Monomial}([x, y])"
