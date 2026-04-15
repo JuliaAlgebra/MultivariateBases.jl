@@ -35,10 +35,7 @@ struct ScaledMonomial <: AbstractMonomial end
 
 function (m::MStruct{ScaledMonomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
     exp = a .+ b
-    α = prod(
-        eachindex(exp);
-        init = inv(binomial(sum(exp), sum(a))),
-    ) do i
+    α = prod(eachindex(exp); init = inv(binomial(sum(exp), sum(a)))) do i
         return binomial(exp[i], a[i])
     end
     return SA.SparseCoefficients((exp,), (√α,))
