@@ -34,19 +34,15 @@ Foundations of Computational Mathematics 7.2 (2007): 229-244.
 struct ScaledMonomial <: AbstractMonomial end
 
 function (m::MStruct{ScaledMonomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
-    @assert a.variables == b.variables
-    exp = a.exponents .+ b.exponents
-    α = prod(
-        eachindex(exp);
-        init = inv(binomial(sum(mono), sum(a.exponents))),
-    ) do i
-        return binomial(exp[i], a.exponents[i])
+    exp = a .+ b
+    α = prod(eachindex(exp); init = inv(binomial(sum(exp), sum(a)))) do i
+        return binomial(exp[i], a[i])
     end
-    return SA.SparseCoefficients((exp,), (1,))
+    return SA.SparseCoefficients((exp,), (√α,))
 end
 
 function SA.coeffs(p::Polynomial{ScaledMonomial}, ::FullBasis{Monomial})
-    return scaling(p.monomial) * p.monomial
+    return SA.SparseCoefficients((p.exponents,), (scaling(p.exponents),))
 end
 
 _float(::Type{T}) where {T<:Number} = float(T)
