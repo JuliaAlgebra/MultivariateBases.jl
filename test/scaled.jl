@@ -49,26 +49,25 @@ end
     @test only(SA.nonzero_pairs(c_x2y))[2] ≈ √3
 end
 @testset "Algebra multiplication (MStruct)" begin
-    # Converting polynomial to ScaledMonomial and back should roundtrip.
-    # This exercises the MStruct because convert_basis uses the algebra
-    # multiplication to build the product basis elements.
-    p = x^2 + 2x * y + y^2
-    a_mono = MB.algebra_element(p)
-    scaled_full = MB.FullBasis{MB.ScaledMonomial}(variables(p))
-    a_scaled = MB.convert_basis(scaled_full, a_mono)
-    # Polynomial roundtrip
-    @test polynomial(a_scaled) ≈ p
-    # ScaledMonomial coefficients for p = y² + 2xy + x²
-    # In ScaledMonomial basis: c(y²)=1, c(√2·xy)=√2, c(x²)=1
-    basis_scaled = MB.explicit_basis(a_scaled)
-    c_scaled = Vector{Float64}(SA.coeffs(a_scaled, basis_scaled))
-    @test c_scaled ≈ [1.0, √2, 1.0]
-    # Higher degree: x³y has ScaledMonomial coefficient α/√4 = α/2
-    # where scaling(x³y) = √(4!/(3!·1!)) = 2
-    q = x^3 * y + x * y^3
-    a_q = MB.algebra_element(q)
-    a_q_scaled = MB.convert_basis(scaled_full, a_q)
-    @test polynomial(a_q_scaled) ≈ q
+    # The MStruct for ScaledMonomial computes the structure coefficient
+    # c = scaling(a)·scaling(b) / scaling(a+b) for the product ŝ_a · ŝ_b = c · ŝ_{a+b}.
+    # Test this directly by multiplying algebra elements and inspecting coefficients.
+    scaled_full = MB.FullBasis{MB.ScaledMonomial}(variables(x * y))
+    alg = MB.algebra(scaled_full)
+    e_y = SA.AlgebraElement(SA.SparseCoefficients([[0, 1]], [1.0]), alg)
+    e_x = SA.AlgebraElement(SA.SparseCoefficients([[1, 0]], [1.0]), alg)
+    # ŷ · x̂: scaling(y)=1, scaling(x)=1, scaling(xy)=√2 → coeff = 1/√2
+    prod_yx = e_y * e_x
+    pairs_yx = collect(SA.nonzero_pairs(SA.coeffs(prod_yx)))
+    @test length(pairs_yx) == 1
+    @test pairs_yx[1][1] == [1, 1]
+    @test pairs_yx[1][2] ≈ 1 / √2
+    # ŷ · ŷ: scaling(y)=1, scaling(y²)=1 → coeff = 1
+    prod_yy = e_y * e_y
+    pairs_yy = collect(SA.nonzero_pairs(SA.coeffs(prod_yy)))
+    @test length(pairs_yy) == 1
+    @test pairs_yy[1][1] == [0, 2]
+    @test pairs_yy[1][2] ≈ 1.0
 end
 @testset "API degree = $degree" for degree in 0:3
     api_test(MB.ScaledMonomial, degree)
