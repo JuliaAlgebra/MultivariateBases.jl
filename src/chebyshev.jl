@@ -70,7 +70,10 @@ function (m::MStruct{B,V,E})(
         end
     end
     # FIXME is `canonical` needed ?
-    return MA.operate!(SA.canonical, SA.SparseCoefficients(exps, coefs, SA.comparable(m.basis)))
+    return MA.operate!(
+        SA.canonical,
+        SA.SparseCoefficients(exps, coefs, SA.comparable(m.basis)),
+    )
 end
 
 function _add_mul_scalar_vector!(res, ::SubBasis, scalar, vector)

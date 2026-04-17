@@ -97,31 +97,83 @@ function test_monomial(x, y)
         coefficient_test(MB.Monomial, [1, -3, 1, 1])
     end
 
-    @testset "sparse_coefficients ordering" begin
-        # `isless` on exponent vectors gives lex order: [0,2] < [1,0]
-        # but Graded{LexOrder} gives:                   [1,0] < [0,2]
-        # These disagree when mixing monomials of different total degrees
-        # (e.g. x degree 1 vs y² degree 2).
-        # sparse_coefficients must use the graded ordering so that
-        # after `canonical`, the keys/values stay consistent with
-        # the algebra's SubBasis ordering. This is critical because
-        # the SOS bridges use `vectorize(SA.values(SA.coeffs(p)))`
-        # paired with `explicit_basis(p)`.
-        p = x + y^2  # mixes degree 1 (x) and degree 2 (y²)
-        full = MB.FullBasis{MB.Monomial}([x, y])
-        ae = MB.algebra_element(MB.sparse_coefficients(p), full)
-        # After canonical (which sorts keys), the ordering must
-        # be Graded{LexOrder}: [1,0] (x) before [0,2] (y²).
-        # With the old `isless` default, canonical would reorder
-        # to [0,2] before [1,0], swapping the coefficients.
+    # All SparseCoefficients in MultivariateBases must use the algebra's
+    # Graded{LexOrder}, not Julia's default `isless` on exponent vectors.
+    # `isless` gives lex order [0,2] < [1,0], but Graded{LexOrder} gives
+    # [1,0] < [0,2] (lower total degree first). These disagree when mixing
+    # monomials of different total degrees (e.g. x degree 1 vs y² degree 2).
+    # The helper below checks that after `canonical`, keys stay in the
+    # algebra's ordering. With the old `isless` default, canonical would
+    # reorder [1,0],[0,2] to [0,2],[1,0], silently swapping coefficients.
+    function test_graded_order(ae)
         MA.operate!(SA.canonical, SA.coeffs(ae))
         keys = collect(SA.keys(SA.coeffs(ae)))
         vals = collect(SA.values(SA.coeffs(ae)))
-        @test keys == [[1, 0], [0, 2]]  # x before y², NOT [0,2] before [1,0]
+        return keys, vals
+    end
+
+    @testset "sparse_coefficients ordering" begin
+        p = x + y^2  # mixes degree 1 (x) and degree 2 (y²)
+        full = MB.FullBasis{MB.Monomial}([x, y])
+        ae = MB.algebra_element(MB.sparse_coefficients(p), full)
+        keys, vals = test_graded_order(ae)
+        @test keys == [[1, 0], [0, 2]]
         @test vals == [1, 1]
-        # Also check explicit_basis preserves this order
         eb = MB.explicit_basis(ae)
         @test collect(eb.keys) == [[1, 0], [0, 2]]
+    end
+
+    @testset "term_element ordering" begin
+        # term_element is used when multiplying a scalar by a Polynomial
+        full = MB.FullBasis{MB.Monomial}([x, y])
+        p_x = full[[1, 0]]    # the Polynomial for x
+        ae = 2 * p_x           # calls term_element
+        keys, _ = test_graded_order(ae)
+        @test keys == [[1, 0]]
+        # Now test with y² to make sure the ordering type is right
+        p_y2 = full[[0, 2]]   # the Polynomial for y²
+        # Combine: this triggers canonical on mixed-degree keys
+        combined = ae + (3 * p_y2)
+        keys, vals = test_graded_order(combined)
+        @test keys == [[1, 0], [0, 2]]
+        @test vals == [2, 3]
+    end
+
+    @testset "constant_algebra_element ordering" begin
+        full = MB.FullBasis{MB.Monomial}([x, y])
+        ce = MB.constant_algebra_element(full, Float64)
+        keys, vals = test_graded_order(ce)
+        @test keys == [[0, 0]]
+        @test vals == [1.0]
+        # Combine with a degree-2 element to trigger ordering
+        p_y2 = full[[0, 2]]
+        combined = ce + (2.0 * p_y2)
+        keys, vals = test_graded_order(combined)
+        @test keys == [[0, 0], [0, 2]]
+        @test vals == [1.0, 2.0]
+    end
+
+    @testset "MStruct multiplication ordering" begin
+        full = MB.FullBasis{MB.Monomial}([x, y])
+        # (xy + 1)(x + y²) = x²y + xy³ + x + y²
+        # Degrees 3,4,1,2 → Graded: [1,0],[0,2],[2,1],[1,3]
+        a = MB.algebra_element(MB.sparse_coefficients(x * y + 1 + 0 * x), full)
+        b = MB.algebra_element(MB.sparse_coefficients(x + y^2), full)
+        c = a * b
+        keys, vals = test_graded_order(c)
+        @test keys == [[1, 0], [0, 2], [2, 1], [1, 3]]
+        @test vals == [1, 1, 1, 1]
+    end
+
+    @testset "coeffs SubBasis→FullBasis ordering" begin
+        full = MB.FullBasis{MB.Monomial}([x, y])
+        sub = MB.SubBasis{MB.Monomial}([x, y^2])  # mixed degrees
+        cfs = SA.coeffs([3, 7], sub, full)
+        MA.operate!(SA.canonical, cfs)
+        keys = collect(SA.keys(cfs))
+        vals = collect(SA.values(cfs))
+        @test keys == [[1, 0], [0, 2]]
+        @test vals == [3, 7]
     end
 
     @testset "promote_bases_with_maps" begin

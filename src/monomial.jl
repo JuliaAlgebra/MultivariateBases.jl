@@ -188,7 +188,11 @@ function SA.coeffs(
     if B1 === B2 && target isa FullBasis
         # The defaults initialize to zero and then sums which promotes
         # `JuMP.VariableRef` to `JuMP.AffExpr`
-        return SA.SparseCoefficients(_vec(source.keys), _vec(cfs), SA.comparable(target))
+        return SA.SparseCoefficients(
+            _vec(source.keys),
+            _vec(cfs),
+            SA.comparable(target),
+        )
     else
         res = SA.zero_coeffs(
             _promote_coef(_promote_coef(SA.value_type(cfs), B1), B2),

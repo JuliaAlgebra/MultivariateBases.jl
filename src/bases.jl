@@ -119,7 +119,11 @@ function implicit(a::SA.AlgebraElement)
     return algebra_element(SA.coeffs(a, basis), basis)
 end
 
-_comparable_type(::Type{<:SA.MappedBasis{T,I,<:MP.ExponentsIterator{M}}}) where {T,I,M} = M
+function _comparable_type(
+    ::Type{<:SA.MappedBasis{T,I,<:MP.ExponentsIterator{M}}},
+) where {T,I,M}
+    return M
+end
 function _coeffs_type(::Type{C}, ::Type{B}) where {C,B<:FullBasis}
     T = eltype(C) # Even works for `NTuple`!
     E = SA.key_type(B)
