@@ -42,7 +42,7 @@ end
 
 # /!\ assumes commutative variables
 function (m::MStruct{Monomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
-    return SA.SparseCoefficients((a .+ b,), (1,))
+    return SA.SparseCoefficients((a .+ b,), (1,), SA.comparable(m.basis))
 end
 
 # This one is called by `DiracMStructure` and also works for DynamicPolynomials'
@@ -188,7 +188,7 @@ function SA.coeffs(
     if B1 === B2 && target isa FullBasis
         # The defaults initialize to zero and then sums which promotes
         # `JuMP.VariableRef` to `JuMP.AffExpr`
-        return SA.SparseCoefficients(_vec(source.keys), _vec(cfs))
+        return SA.SparseCoefficients(_vec(source.keys), _vec(cfs), SA.comparable(target))
     else
         res = SA.zero_coeffs(
             _promote_coef(_promote_coef(SA.value_type(cfs), B1), B2),

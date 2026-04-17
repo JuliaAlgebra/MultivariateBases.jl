@@ -38,11 +38,15 @@ function (m::MStruct{ScaledMonomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
     α = prod(eachindex(exp); init = inv(binomial(sum(exp), sum(a)))) do i
         return binomial(exp[i], a[i])
     end
-    return SA.SparseCoefficients((exp,), (√α,))
+    return SA.SparseCoefficients((exp,), (√α,), SA.comparable(m.basis))
 end
 
-function SA.coeffs(p::Polynomial{ScaledMonomial}, ::FullBasis{Monomial})
-    return SA.SparseCoefficients((p.exponents,), (scaling(p.exponents),))
+function SA.coeffs(p::Polynomial{ScaledMonomial}, b::FullBasis{Monomial})
+    return SA.SparseCoefficients(
+        (p.exponents,),
+        (scaling(p.exponents),),
+        SA.comparable(b),
+    )
 end
 
 _float(::Type{T}) where {T<:Number} = float(T)
