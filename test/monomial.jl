@@ -97,6 +97,33 @@ function test_monomial(x, y)
         coefficient_test(MB.Monomial, [1, -3, 1, 1])
     end
 
+    @testset "sparse_coefficients ordering" begin
+        # `isless` on exponent vectors gives lex order: [0,2] < [1,0]
+        # but Graded{LexOrder} gives:                   [1,0] < [0,2]
+        # These disagree when mixing monomials of different total degrees
+        # (e.g. x degree 1 vs y² degree 2).
+        # sparse_coefficients must use the graded ordering so that
+        # after `canonical`, the keys/values stay consistent with
+        # the algebra's SubBasis ordering. This is critical because
+        # the SOS bridges use `vectorize(SA.values(SA.coeffs(p)))`
+        # paired with `explicit_basis(p)`.
+        p = x + y^2  # mixes degree 1 (x) and degree 2 (y²)
+        full = MB.FullBasis{MB.Monomial}([x, y])
+        ae = MB.algebra_element(MB.sparse_coefficients(p), full)
+        # After canonical (which sorts keys), the ordering must
+        # be Graded{LexOrder}: [1,0] (x) before [0,2] (y²).
+        # With the old `isless` default, canonical would reorder
+        # to [0,2] before [1,0], swapping the coefficients.
+        MA.operate!(SA.canonical, SA.coeffs(ae))
+        keys = collect(SA.keys(SA.coeffs(ae)))
+        vals = collect(SA.values(SA.coeffs(ae)))
+        @test keys == [[1, 0], [0, 2]]  # x before y², NOT [0,2] before [1,0]
+        @test vals == [1, 1]
+        # Also check explicit_basis preserves this order
+        eb = MB.explicit_basis(ae)
+        @test collect(eb.keys) == [[1, 0], [0, 2]]
+    end
+
     @testset "promote_bases_with_maps" begin
         a = MB.algebra_element(x - x^2)
         b = MB.FullBasis{MB.Monomial}(x * y)
