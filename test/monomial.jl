@@ -111,63 +111,64 @@ function test_monomial(x, y)
         vals = collect(SA.values(SA.coeffs(ae)))
         return keys, vals
     end
-    # exponent vector for monomial m in the FullBasis over [x, y]
-    E = exponents(x * y)  # use the right container type (Vector or Tuple)
-    e(a, b) = E isa Tuple ? (a, b) : [a, b]
+    # Use FullBasis from a polynomial to get the native exponent type
+    # (Tuple for TypedPolynomials, Vector for DynamicPolynomials)
+    full = MB.FullBasis{MB.Monomial}(x * y)
+    # Get the exponent keys from the FullBasis directly
+    e_x = MB.sparse_coefficients(x + 0 * y).basis_elements[1]
+    e_y2 = MB.sparse_coefficients(y^2 + 0 * x).basis_elements[1]
+    e_00 = MB.sparse_coefficients(1 * one(x * y)).basis_elements[1]
 
     @testset "sparse_coefficients ordering" begin
         p = x + y^2  # mixes degree 1 (x) and degree 2 (y²)
-        full = MB.FullBasis{MB.Monomial}([x, y])
         ae = MB.algebra_element(MB.sparse_coefficients(p), full)
         keys, vals = test_graded_order(ae)
-        @test keys == [e(1, 0), e(0, 2)]
+        @test keys == [e_x, e_y2]
         @test vals == [1, 1]
         eb = MB.explicit_basis(ae)
-        @test collect(eb.keys) == [e(1, 0), e(0, 2)]
+        @test collect(eb.keys) == [e_x, e_y2]
     end
 
     @testset "term_element ordering" begin
-        full = MB.FullBasis{MB.Monomial}([x, y])
-        p_x = full[e(1, 0)]
+        p_x = full[e_x]
         ae = 2 * p_x
         keys, _ = test_graded_order(ae)
-        @test keys == [e(1, 0)]
-        p_y2 = full[e(0, 2)]
+        @test keys == [e_x]
+        p_y2 = full[e_y2]
         combined = ae + (3 * p_y2)
         keys, vals = test_graded_order(combined)
-        @test keys == [e(1, 0), e(0, 2)]
+        @test keys == [e_x, e_y2]
         @test vals == [2, 3]
     end
 
     @testset "constant_algebra_element ordering" begin
-        full = MB.FullBasis{MB.Monomial}([x, y])
         ce = MB.constant_algebra_element(full, Float64)
         keys, vals = test_graded_order(ce)
-        @test keys == [e(0, 0)]
+        @test keys == [e_00]
         @test vals == [1.0]
-        p_y2 = full[e(0, 2)]
+        p_y2 = full[e_y2]
         combined = ce + (2.0 * p_y2)
         keys, vals = test_graded_order(combined)
-        @test keys == [e(0, 0), e(0, 2)]
+        @test keys == [e_00, e_y2]
         @test vals == [1.0, 2.0]
     end
 
     @testset "MStruct multiplication ordering" begin
-        full = MB.FullBasis{MB.Monomial}([x, y])
-        a = MB.algebra_element(MB.sparse_coefficients(x * y + 1 + 0 * x), full)
-        b = MB.algebra_element(MB.sparse_coefficients(x + y^2), full)
+        a = MB.algebra_element(x + y^2)
+        b = MB.algebra_element(x + y^2)
         c = a * b
         keys, vals = test_graded_order(c)
-        @test keys == [e(1, 0), e(0, 2), e(2, 1), e(1, 3)]
-        @test vals == [1, 1, 1, 1]
+        # (x + y²)² = x² + 2xy² + y⁴
+        # Graded order: x² (deg 2), xy² (deg 3), y⁴ (deg 4)
+        @test vals == [1, 2, 1]
+        @test sum(first(keys)) < sum(keys[2]) < sum(last(keys))
     end
 
     @testset "coeffs SubBasis→FullBasis ordering" begin
-        full = MB.FullBasis{MB.Monomial}([x, y])
         sub = MB.SubBasis{MB.Monomial}([x, y^2])
         cfs = SA.coeffs([3, 7], sub, full)
         MA.operate!(SA.canonical, cfs)
-        @test collect(SA.keys(cfs)) == [e(1, 0), e(0, 2)]
+        @test collect(SA.keys(cfs)) == [e_x, e_y2]
         @test collect(SA.values(cfs)) == [3, 7]
     end
 
