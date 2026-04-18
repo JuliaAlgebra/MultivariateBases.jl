@@ -92,9 +92,10 @@ for op in [:+, :-]
 end
 
 function term_element(α, p::Polynomial{B}) where {B}
+    basis = FullBasis{B}(MP.variables(p))
     return algebra_element(
-        SA.SparseCoefficients((p.exponents,), (α,)),
-        FullBasis{B}(MP.variables(p)),
+        SA.SparseCoefficients((p.exponents,), (α,), SA.comparable(basis)),
+        basis,
     )
 end
 

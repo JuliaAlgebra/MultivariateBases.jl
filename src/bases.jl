@@ -119,10 +119,16 @@ function implicit(a::SA.AlgebraElement)
     return algebra_element(SA.coeffs(a, basis), basis)
 end
 
+function _comparable_type(
+    ::Type{<:SA.MappedBasis{T,I,<:MP.ExponentsIterator{M}}},
+) where {T,I,M}
+    return M
+end
 function _coeffs_type(::Type{C}, ::Type{B}) where {C,B<:FullBasis}
     T = eltype(C) # Even works for `NTuple`!
     E = SA.key_type(B)
-    return SA.SparseCoefficients{E,T,_similar_type(C, E),C,typeof(isless)}
+    L = _comparable_type(B)
+    return SA.SparseCoefficients{E,T,_similar_type(C, E),C,L}
 end
 
 function _coeffs_type(::Type{C}, ::Type{B}) where {C,B<:SubBasis}
@@ -199,11 +205,16 @@ function sparse_coefficients(p::MP.AbstractPolynomial)
     return SA.SparseCoefficients(
         MP.exponents.(MP.monomials(p)),
         _lazy_collect(MP.coefficients(p)),
+        MP.ordering(MP.variables(p))(),
     )
 end
 
 function sparse_coefficients(t::MP.AbstractTermLike)
-    return SA.SparseCoefficients((MP.exponents(t),), (MP.coefficient(t),))
+    return SA.SparseCoefficients(
+        (MP.exponents(t),),
+        (MP.coefficient(t),),
+        MP.ordering(MP.variables(t))(),
+    )
 end
 
 function algebra_element(p::MP.AbstractPolynomialLike)
@@ -259,6 +270,7 @@ function constant_algebra_element(b::FullBasis, α)
         SA.SparseCoefficients(
             (constant_monomial_exponents(b),),
             (_one_if_type(α),),
+            SA.comparable(b),
         ),
         b,
     )
