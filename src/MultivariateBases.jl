@@ -36,6 +36,10 @@ function Base.:(==)(v::Variables{B}, w::Variables{B}) where {B}
     return v.variables === w.variables || v.variables == w.variables
 end
 
+function Base.hash(v::Variables{B}, u::UInt) where {B}
+    return hash(v.variables, hash(B, u))
+end
+
 MP.monomial_type(::Type{Variables{B,V}}) where {B,V} = MP.monomial_type(V)
 # FIXME workaround for TP
 MP.monomial_type(v::Variables) = MP.monomial_type(prod(v.variables))
