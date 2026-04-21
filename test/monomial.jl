@@ -3,6 +3,10 @@ using MultivariateBases
 const MB = MultivariateBases
 using MultivariatePolynomials
 
+_copy(x) = copy(x)
+# For TypedPolynomials
+_copy(x::Tuple) = x
+
 function test_monomial(x, y)
     @testset "StarAlgebras" begin
         vars = MB.Variables{MB.Monomial}(variables(x))
@@ -10,7 +14,7 @@ function test_monomial(x, y)
         @test vars(exponents(x^3)) != vars(exponents(x^2))
         o = vars(exponents(constant_monomial(x^2)))
         @test isone(o)
-        vars2 = MB.Variables{MB.Monomial}(copy(variables(x)))
+        vars2 = MB.Variables{MB.Monomial}(_copy(variables(x)))
         @test vars == vars2
         @test hash(vars) == hash(vars2)
     end
