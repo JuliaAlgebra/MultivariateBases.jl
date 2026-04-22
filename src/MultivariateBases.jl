@@ -16,7 +16,7 @@ end
 Variables{B}(vars) where {B} = Variables{B,typeof(vars)}(vars)
 
 function Base.one(v::Variables)
-    return MP.monomial(v.variables, constant_monomial_exponents(v))
+    return Polynomial(v, constant_monomial_exponents(v))
 end
 
 function variable_index(v::Variables, var)

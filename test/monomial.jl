@@ -14,6 +14,8 @@ function test_monomial(x, y)
         @test vars(exponents(x^3)) != vars(exponents(x^2))
         o = vars(exponents(constant_monomial(x^2)))
         @test isone(o)
+        @test one(vars) isa MB.Polynomial
+        @test isone(one(vars))
         vars2 = MB.Variables{MB.Monomial}(_copy(variables(x)))
         @test vars == vars2
         @test hash(vars) == hash(vars2)
@@ -150,6 +152,7 @@ function test_monomial(x, y)
 
     @testset "constant_algebra_element ordering" begin
         ce = MB.constant_algebra_element(full, Float64)
+        @test isone(ce)
         keys, vals = test_graded_order(ce)
         @test keys == [e_00]
         @test vals == [1.0]
