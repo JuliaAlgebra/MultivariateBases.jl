@@ -202,6 +202,46 @@ function SA.coeffs(
     end
 end
 
+function SA.adjoint_coeffs(
+    cfs,
+    source::MonomialIndexedBasis{B1},
+    target::MonomialIndexedBasis{B2},
+) where {B1,B2}
+    source === target && return cfs
+    source == target && return cfs
+    res = SA.zero_coeffs(
+        _promote_coef(_promote_coef(SA.value_type(cfs), B1), B2),
+        source,
+    )
+    return SA.adjoint_coeffs!(res, cfs, source, target)
+end
+
+function SA.adjoint_coeffs!(
+    res,
+    cfs,
+    source::MonomialIndexedBasis{B1},
+    target::MonomialIndexedBasis{B2},
+) where {B1,B2}
+    if B1 === B2
+        return @invoke SA.adjoint_coeffs!(
+            res,
+            cfs,
+            source::SA.AbstractBasis,
+            target::SA.AbstractBasis,
+        )
+    end
+    MA.operate!(zero, res)
+    target_full = implicit_basis(target)
+    for (i, src_elem) in enumerate(source)
+        full_col = SA.coeffs(algebra_element(src_elem), target_full)
+        col = SA.coeffs(full_col, target_full, target)
+        for (j, v) in SA.nonzero_pairs(col)
+            res[i] += v * cfs[j]
+        end
+    end
+    return res
+end
+
 # FIXME this assumes that the basis is invariant under adjoint
 SA.star(::SubBasis, coeffs) = SA.star.(coeffs)
 

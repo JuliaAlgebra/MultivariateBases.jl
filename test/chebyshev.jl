@@ -1,4 +1,6 @@
 using Test
+import LinearAlgebra
+import MultivariatePolynomials as MP
 import StarAlgebras as SA
 using MultivariateBases
 import MultivariateBases as MB
@@ -73,4 +75,20 @@ end
             0.875,
         ]),
     )
+end
+
+@testset "Cross-algebra adjoint vs transformation_to" begin
+    @polyvar x
+    monos = MP.monomials(x, 0:3)
+    mono_sub = MB.SubBasis{MB.Monomial}(monos)
+    cheby_sub = MB.SubBasis{MB.Chebyshev}(monos)
+    A = Matrix(MB.transformation_to(cheby_sub, mono_sub))
+    cfs_cheby = collect(1.0:length(cheby_sub))
+    @test collect(SA.coeffs(cfs_cheby, cheby_sub, mono_sub)) ≈ A * cfs_cheby
+    f_mono = collect(1.0:length(mono_sub))
+    @test collect(SA.adjoint_coeffs(f_mono, cheby_sub, mono_sub)) ≈ A' * f_mono
+    Ainv = inv(A)
+    g_cheby = collect(1.0:length(cheby_sub))
+    @test collect(SA.adjoint_coeffs(g_cheby, mono_sub, cheby_sub)) ≈
+          Ainv' * g_cheby
 end
