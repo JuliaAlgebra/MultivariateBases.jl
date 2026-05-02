@@ -15,6 +15,15 @@ Base.getindex(b::SimpleBasis, i::Integer) = b.elements[i]
 Base.iterate(b::SimpleBasis) = iterate(b.elements)
 Base.iterate(b::SimpleBasis, st) = iterate(b.elements, st)
 
+function MA.promote_operation(
+    ::typeof(implicit_basis),
+    ::Type{<:SimpleBasis{T}},
+) where {T}
+    return MA.promote_operation(SA.basis, T)
+end
+
+implicit_basis(basis::SimpleBasis) = SA.basis(first(basis.elements))
+
 """
     struct SemisimpleElement{P}
         elements::Vector{P}
@@ -57,6 +66,13 @@ Its elements are [`SemisimpleElement`](@ref)s.
 struct SemisimpleBasis{T,B<:SA.ExplicitBasis{T}} <:
        SA.ExplicitBasis{SemisimpleElement{T},Int}
     bases::Vector{B}
+end
+
+function MA.promote_operation(
+    ::typeof(implicit_basis),
+    ::Type{<:SemisimpleBasis{T,B}},
+) where {T,B}
+    return MA.promote_operation(implicit_basis, B)
 end
 
 Base.length(b::SemisimpleBasis) = length(first(b.bases))
