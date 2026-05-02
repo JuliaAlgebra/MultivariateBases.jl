@@ -22,6 +22,9 @@ end
 
     sb = MB.SimpleBasis([ae1, ae2, ae3])
 
+    @test MA.promote_operation(MB.implicit_basis, typeof(sb)) ==
+          typeof(MB.implicit_basis(sb))
+
     @testset "length" begin
         @test length(sb) == 3
     end
@@ -119,6 +122,9 @@ end
     @testset "single simple sub-basis" begin
         sb = MB.SimpleBasis([ae1, ae2, ae3])
         semi = MB.SemisimpleBasis([sb])
+
+        @test MA.promote_operation(MB.implicit_basis, typeof(semi)) ==
+              typeof(MB.implicit_basis(semi))
 
         @test length(semi) == 3
         @test length(semi.bases) == 1
