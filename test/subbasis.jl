@@ -16,5 +16,6 @@ const MB = MultivariateBases
     @test sub isa SA.SubBasis
     @test !(sub isa MB.SubBasis)  # not a polynomial-typed SubBasis
     @test MB.implicit_basis(sub) === parent_basis
-    @test MA.promote_operation(MB.implicit_basis, typeof(sub)) == typeof(parent_basis)
+    @test MA.promote_operation(MB.implicit_basis, typeof(sub)) ==
+          typeof(parent_basis)
 end

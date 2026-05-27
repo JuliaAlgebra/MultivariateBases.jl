@@ -124,9 +124,9 @@ function test_monomial(x, y)
     # (Tuple for TypedPolynomials, Vector for DynamicPolynomials)
     full = MB.FullBasis{MB.Monomial}(x * y)
     # Get the exponent keys from the FullBasis directly
-    e_x = MB.sparse_coefficients(x + 0 * y).basis_elements[1]
-    e_y2 = MB.sparse_coefficients(y^2 + 0 * x).basis_elements[1]
-    e_00 = MB.sparse_coefficients(1 * one(x * y)).basis_elements[1]
+    e_x = MB.sparse_coefficients(x+0*y).basis_elements[1]
+    e_y2 = MB.sparse_coefficients(y^2+0*x).basis_elements[1]
+    e_00 = MB.sparse_coefficients(1*one(x*y)).basis_elements[1]
 
     @testset "sparse_coefficients ordering" begin
         p = x + y^2  # mixes degree 1 (x) and degree 2 (y²)
