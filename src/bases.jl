@@ -111,7 +111,7 @@ function algebra_type(::Type{BT}) where {B,M,BT<:MonomialIndexedBasis{B,M}}
     return Algebra{BT,B,M}
 end
 
-implicit_basis(basis::SubBasis) = parent(basis)
+implicit_basis(basis::SA.SubBasis) = parent(basis)
 implicit_basis(basis::FullBasis) = basis
 
 function implicit(a::SA.AlgebraElement)

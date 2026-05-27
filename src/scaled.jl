@@ -71,7 +71,7 @@ function Base.promote_rule(
 end
 
 function scaling(exp)
-    return √(factorial(sum(exp)) / prod(factorial, exp; init = 1),)
+    return √(factorial(sum(exp)) / prod(factorial, exp; init = 1))
 end
 unscale_coef(t::MP.AbstractTerm) = MP.coefficient(t) / scaling(MP.monomial(t))
 function SA.coeffs(

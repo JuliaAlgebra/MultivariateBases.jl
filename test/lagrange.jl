@@ -11,14 +11,14 @@ function _test(B::Type)
     implicit =
         MB.ImplicitLagrangeBasis(x, MB.BoxSampling([-1, -1], UInt32[1, 1]))
     point = zeros(2)
-    poly = implicit[x=>point]
+    poly = implicit[x => point]
     @test poly isa MB.LagrangePolynomial
     @test poly.variables == x
     @test poly.point === point
     err = ErrorException(
         "Variables `$([x[1]])` do not match Lagrange basis variables `$x`",
     )
-    @test_throws err implicit[[x[1]]=>[0.0]]
+    @test_throws err implicit[[x[1]] => [0.0]]
     monos = monomials(x, 0:2)
     coeffs = collect(eachindex(monos))
     sub = MB.SubBasis{B}(monos)
