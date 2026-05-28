@@ -59,7 +59,7 @@ function univariate_mul!(::Type{Trigonometric}, exps, coefs, var, a, b)
                 push!(exps, _increment(exps[i], _sin_id(da + db), var))
                 exps[i] = _increment!(exps[i], _sin_id(abs(da - db)), var)
                 coefs[i] = MA.operate!!(/, coefs[i], 2)
-                push!(coefs, MA.copy_if_mutable(MP.coefficient(terms[i])))
+                push!(coefs, MA.copy_if_mutable(coefs[i]))
                 if da < db
                     coefs[i] = MA.operate!!(*, coefs[i], -1)
                 end
