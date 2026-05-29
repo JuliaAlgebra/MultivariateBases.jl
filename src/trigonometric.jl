@@ -291,6 +291,23 @@ function Base.:*(
     return LinearAlgebra.mul!(x, Madj, y)
 end
 
+# Adjoint matrix-RHS: column-wise FFT (used by `LowRankOpt.BurerMonteiro`'s
+# batched `add_jtprod!` to compute `JtV.factor += M' * Z` in one batched
+# pass).
+function LinearAlgebra.mul!(
+    X::AbstractMatrix,
+    Madj::LinearAlgebra.Adjoint{<:Any,<:TrigEvalMatrix{T}},
+    Y::AbstractMatrix,
+) where {T}
+    @assert size(X, 1) == size(Madj, 1)
+    @assert size(Madj, 2) == size(Y, 1)
+    @assert size(X, 2) == size(Y, 2)
+    for j in axes(Y, 2)
+        @views LinearAlgebra.mul!(X[:, j], Madj, Y[:, j])
+    end
+    return X
+end
+
 # Override `transformation_to(::SubBasis{Trigonometric}, ::LagrangeBasis)` so
 # that the bridge layer carries an FFT-backed `AbstractMatrix` instead of the
 # dense Vandermonde matrix built by the generic `transformation_to` in
