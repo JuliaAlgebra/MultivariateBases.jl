@@ -191,25 +191,33 @@ Base.elsize(::Type{<:TrigEvalMatrix{T}}) where {T} = sizeof(T)
 # Reorder a coefficient vector laid out in MultivariateBases' interleaved order
 # `[a0, c1, s1, c2, s2, ...]` into TrigPolys' layout `[a0, c1, ..., cn, s1, ..., sn]`.
 function _trig_coefs_to_trigpoly!(out::AbstractVector, x::AbstractVector)
-    n = length(x)
-    @assert isodd(n)
-    d = div(n - 1, 2)
+    n_x = length(x)
+    n_out = length(out)
+    @assert isodd(n_x)
+    @assert isodd(n_out)
+    d = div(n_x - 1, 2)
+    n = div(n_out - 1, 2)
+    @assert n >= d
     out[1] = x[1]
     @inbounds for k in 1:d
         out[1+k] = x[2k]
-        out[1+d+k] = x[2k+1]
+        out[1+n+k] = x[2k+1]
     end
     return out
 end
 
 function _trigpoly_to_trig_coefs!(out::AbstractVector, a::AbstractVector)
-    n = length(out)
-    @assert isodd(n)
-    d = div(n - 1, 2)
+    n_out = length(out)
+    n_a = length(a)
+    @assert isodd(n_out)
+    @assert isodd(n_a)
+    d = div(n_out - 1, 2)
+    n = div(n_a - 1, 2)
+    @assert n >= d
     out[1] = a[1]
     @inbounds for k in 1:d
         out[2k] = a[1+k]
-        out[2k+1] = a[1+d+k]
+        out[2k+1] = a[1+n+k]
     end
     return out
 end
@@ -218,18 +226,12 @@ function _trigpoly_for_eval(M::TrigEvalMatrix{T}, x::AbstractVector) where {T}
     n_coef = M.n_coef
     @assert length(x) == n_coef
     @assert isodd(n_coef)
-    d = div(n_coef - 1, 2)
     grid_d = div(length(M.points) - 1, 2)
-    n = max(d, grid_d)
+    n = max(div(n_coef - 1, 2), grid_d)
     a = zeros(T, 2n + 1)
-    # `a` is laid out as `[a0, c1..cn, s1..sn]`.
-    # Place the (smaller) coefficients into the low frequencies and leave
-    # the high-frequency padding at zero, mirroring `vectorized_pad_to`.
-    a[1] = x[1]
-    @inbounds for k in 1:d
-        a[1+k] = x[2k]
-        a[1+n+k] = x[2k+1]
-    end
+    # `a` is laid out as `[a0, c1..cn, s1..sn]`; padding for the high
+    # frequencies stays at zero (mirroring `vectorized_pad_to`).
+    _trig_coefs_to_trigpoly!(a, x)
     return TrigPolys.TrigPoly(a)
 end
 
@@ -276,19 +278,11 @@ function LinearAlgebra.mul!(
     y::AbstractVector,
 ) where {T}
     M = parent(Madj)
-    n_coef = M.n_coef
-    @assert length(x) == n_coef
+    @assert length(x) == M.n_coef
     @assert length(y) == size(M, 1)
-    d = div(n_coef - 1, 2)
-    grid_d = div(length(M.points) - 1, 2)
-    n = max(d, grid_d)
-    a = TrigPolys.evaluateT(y)
-    # `a` is laid out as `[a0, c1..cn, s1..sn]`.
-    x[1] = a[1]
-    @inbounds for k in 1:d
-        x[2k] = a[1+k]
-        x[2k+1] = a[1+n+k]
-    end
+    # `a` is laid out as `[a0, c1..cn, s1..sn]`; `_trigpoly_to_trig_coefs!`
+    # unpads it into MB's interleaved layout.
+    _trigpoly_to_trig_coefs!(x, TrigPolys.evaluateT(y))
     return x
 end
 
