@@ -129,11 +129,6 @@ struct TrigEvalMatrix{T,P<:AbstractVector} <: AbstractMatrix{T}
     dense::Matrix{T}
 end
 
-# `MultivariateBases.LagrangeBasis` stores points as `AbstractVector`s
-# (univariate point = 1-element vector). Extract the scalar.
-_trig_point_value(::Type{T}, p) where {T} = T(p)
-_trig_point_value(::Type{T}, p::AbstractVector) where {T} = T(only(p))
-
 function _materialize_trig_eval(
     ::Type{T},
     points::AbstractVector,
@@ -142,7 +137,9 @@ function _materialize_trig_eval(
     n_pts = length(points)
     out = Matrix{T}(undef, n_pts, n_coef)
     for i in 1:n_pts
-        val = _trig_point_value(T, points[i])
+        # `LagrangeBasis` stores each point as a 1-element `AbstractVector`
+        # (univariate); the basis-recurrence expects the scalar value.
+        val = T(only(points[i]))
         if n_coef >= 1
             out[i, 1] = one(T)
         end

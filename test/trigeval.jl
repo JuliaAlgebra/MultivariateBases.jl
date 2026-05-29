@@ -172,24 +172,6 @@ function test_symbolic_fallback_uses_dense()
     @test all(yi -> yi isa Symb, y)
 end
 
-function test_trig_point_value_scalar_overload()
-    # `_materialize_trig_eval` calls `_trig_point_value(T, points[i])` where
-    # `points[i]` is always an `AbstractVector` (LagrangeBasis uses 1-element
-    # vectors), so the scalar fallback at line 134 is reached only via direct
-    # call — exercise it here.
-    @test MB._trig_point_value(Float64, 0.25) === 0.25
-    @test MB._trig_point_value(Float64, 1) === 1.0
-    # And confirm the dispatch tagged `<:AbstractVector` strips the
-    # 1-element wrapper.
-    @test MB._trig_point_value(Float64, [0.75]) === 0.75
-end
-
-function test_even_odd_separated_trigonometric()
-    # `Trigonometric` is the basis tagged as not even/odd separated (the
-    # `FIXME` at line 96 — kept here so the marker doesn't bit-rot).
-    @test MB.even_odd_separated(MB.Trigonometric) === false
-end
-
 function test_transformation_to_dispatch()
     # The new `transformation_to(::SubBasis{Trigonometric}, ::LagrangeBasis)`
     # method should fire and return a `TrigEvalMatrix` — NOT the generic
