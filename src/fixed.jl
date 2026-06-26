@@ -24,6 +24,10 @@ end
 
 implicit_basis(basis::SimpleBasis) = SA.basis(first(basis.elements))
 
+# Needed by SumOfSquares' `_combine_with_gram` which calls `parent` on each
+# gram basis to verify the algebras match.
+Base.parent(b::SimpleBasis) = implicit_basis(b)
+
 """
     struct SemisimpleElement{P}
         elements::Vector{P}
