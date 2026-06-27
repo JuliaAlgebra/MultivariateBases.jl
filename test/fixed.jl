@@ -25,6 +25,15 @@ end
     @test MA.promote_operation(MB.implicit_basis, typeof(sb)) ==
           typeof(MB.implicit_basis(sb))
 
+    @testset "parent" begin
+        # `Base.parent(::SimpleBasis)` is used by SumOfSquares'
+        # `_combine_with_gram` to check that the gram basis lives in the
+        # same algebra as the polynomial basis.
+        @test parent(sb) === MB.implicit_basis(sb)
+        sb1 = MB.SimpleBasis([ae1])
+        @test parent(sb1) === MB.implicit_basis(sb1)
+    end
+
     @testset "length" begin
         @test length(sb) == 3
     end
