@@ -133,6 +133,16 @@ function transformation_to(basis::SubBasis, lag::LagrangeBasis{T}) where {T}
     return V
 end
 
+function transformation_to(
+    basis::SubBasis{Trigonometric},
+    lag::LagrangeBasis{T},
+) where {T}
+    # FFT-friendly lazy matrix. The hot-path `*`/`mul!` use TrigPolys.evaluate /
+    # evaluateT in `O(d log d)` instead of the dense `O(n d)` Vandermonde path
+    # above.
+    return TrigEvalMatrix{T}(lag.points, length(basis))
+end
+
 # Heuristic taken from Hypatia
 function num_samples(sample_factor, dim)
     if iszero(sample_factor)
