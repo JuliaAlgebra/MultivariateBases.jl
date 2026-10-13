@@ -111,7 +111,7 @@ function univariate_orthogonal_basis(
             undef,
             degree + 1,
         ),
-        variable,
+        MP.polynomial(variable, _promote_coef(Int, B)),
     )
 end
 
@@ -151,7 +151,7 @@ end
 function explicit_basis_covering(
     full::FullBasis{BM,M},
     monos::SubBasis{B,M},
-) where {BM<:AbstractMonomial,B<:AbstractMultipleOrthogonal,M}
+) where {BM<:AbstractMonomialBasis,B<:AbstractMultipleOrthogonal,M}
     return SA.SubBasis(
         full,
         _covering(FullBasis{B}(MP.variables(full)), monos.keys),
@@ -160,7 +160,7 @@ end
 
 function explicit_basis_covering(
     full::FullBasis{B,V,E},
-    monos::SubBasis{<:AbstractMonomial,V,E},
+    monos::SubBasis{<:AbstractMonomialBasis,V,E},
 ) where {B<:AbstractMultipleOrthogonal,V,E}
     return SA.SubBasis(full, _covering(full, monos.keys))
 end
@@ -202,18 +202,19 @@ function _integral(
     p::MP.AbstractPolynomial,
     basis_type::Type{<:AbstractMultipleOrthogonal},
 )
-    return sum([_integral(t, basis_type) for t in MP.terms(p)])
+    mono = convert_basis(FullBasis{Monomial}(MP.variables(p)), p)
+    return sum([_integral(t, basis_type) for t in MP.terms(mono)])
 end
 
 function MP.coefficients(
     p,
     basis::SubBasis{B,M},
 ) where {B<:AbstractMultipleOrthogonal,M}
-    poly_p = MP.polynomial(p)
+    full_mono = FullBasis{Monomial}(MP.variables(basis))
+    poly_p = convert_basis(full_mono, MP.polynomial(p))
     return map(basis) do el
-        full_mono = FullBasis{Monomial}(MP.variables(basis))
         q = SA.coeffs(el, full_mono)
-        poly_q = _polynomial(full_mono, q)
+        poly_q = algebra_element(q, full_mono)
         return LinearAlgebra.dot(poly_p, poly_q, B) /
                LinearAlgebra.dot(poly_q, poly_q, B)
     end

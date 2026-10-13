@@ -4,68 +4,42 @@ import MutableArithmetics as MA
 import StarAlgebras as SA
 import MultivariatePolynomials as MP
 
+import MultivariatePolynomials:
+    AbstractMonomialIndexed,
+    AbstractMonomialBasis,
+    Monomial,
+    Polynomial,
+    Variables,
+    FullBasis,
+    SubBasis,
+    MonomialIndexedBasis,
+    MStruct,
+    algebra,
+    algebra_element,
+    sparse_coefficients,
+    convert_basis,
+    implicit,
+    implicit_basis,
+    explicit_basis,
+    explicit_basis_type,
+    explicit_basis_covering,
+    empty_basis,
+    maxdegree_basis,
+    keys_as_monomials,
+    exponents_index,
+    variable_index,
+    constant_algebra_element,
+    constant_algebra_element_type,
+    algebra_element_type,
+    recurrence_eval,
+    degree_one_univariate_polynomial,
+    _polynomial_type,
+    _promote_coef
+
 export FullBasis, SubBasis
-export maxdegree_basis, explicit_basis_covering, empty_basis, monomial_index
+export maxdegree_basis, explicit_basis_covering, empty_basis
 export keys_as_monomials
-include("interface.jl")
-
-struct Variables{B,V}
-    variables::V
-end
-
-Variables{B}(vars) where {B} = Variables{B,typeof(vars)}(vars)
-
-function Base.one(v::Variables)
-    return Polynomial(v, constant_monomial_exponents(v))
-end
-
-function variable_index(v::Variables, var)
-    return findfirst(isequal(var), v.variables)
-end
-
-function _show(io::IO, mime::MIME, v::Variables{B}) where {B}
-    print(io, "$B polynomials in the variables ")
-    # We don't use the default `show` since we don't want to print the `eltype`
-    # and we want to use the `mime`
-    _show_vector(io, mime, v.variables)
-    return
-end
-
-function Base.:(==)(v::Variables{B}, w::Variables{B}) where {B}
-    # Testing `===` allows speeding up a typical situations
-    return v.variables === w.variables || v.variables == w.variables
-end
-
-function Base.hash(v::Variables{B}, u::UInt) where {B}
-    return hash(v.variables, hash(B, u))
-end
-
-MP.monomial_type(::Type{Variables{B,V}}) where {B,V} = MP.monomial_type(V)
-# FIXME workaround for TP
-MP.monomial_type(v::Variables) = MP.monomial_type(prod(v.variables))
-
-constant_monomial_exponents(v::Variables) = map(_ -> 0, v.variables)
-
-function (v::Variables)(exponents)
-    return Polynomial(v, exponents)
-end
-
 export AbstractMonomialIndexed, Monomial, ScaledMonomial
-include("polynomial.jl")
-function MP.monomial_type(::Type{<:SA.AlgebraElement{T,A}}) where {T,A}
-    return MP.monomial_type(A)
-end
-function MP.polynomial_type(::Type{<:SA.AlgebraElement{T,A}}) where {A,T}
-    return MP.polynomial_type(A, T)
-end
-MP.monomial_type(::Type{<:SA.StarAlgebra{O}}) where {O} = MP.monomial_type(O)
-function MP.polynomial_type(::Type{A}, ::Type{T}) where {A<:SA.StarAlgebra,T}
-    return MP.polynomial_type(MA.promote_operation(SA.basis, A), T)
-end
-
-include("bases.jl")
-include("mstructures.jl")
-include("monomial.jl")
 include("scaled.jl")
 
 export AbstractMultipleOrthogonal,
@@ -90,9 +64,7 @@ include("trigonometric.jl")
 include("lagrange.jl")
 include("quotient.jl")
 
-function algebra(
-    basis::Union{QuotientBasis{<:Polynomial{B,V}},FullBasis{B,V},SubBasis{B,V}},
-) where {B,V}
+function algebra(basis::QuotientBasis{<:Polynomial{B,V}}) where {B,V}
     mstruct = if MP.is_commutative(V)
         MStruct(basis)
     else
@@ -108,13 +80,7 @@ end
 
 function MA.promote_operation(
     ::typeof(algebra),
-    BT::Type{
-        <:Union{
-            QuotientBasis{Polynomial{B,V,E}},
-            FullBasis{B,V,E},
-            SubBasis{B,V,E},
-        },
-    },
+    BT::Type{<:QuotientBasis{Polynomial{B,V,E}}},
 ) where {B,V,E}
     P = Polynomial{B,V,E}
     MS = if MP.is_commutative(V)

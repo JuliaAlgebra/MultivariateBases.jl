@@ -1,5 +1,5 @@
 """
-    struct ScaledMonomial <: AbstractMonomial end
+    struct ScaledMonomial <: AbstractMonomialBasis end
 
 *Scaled monomial basis* (see [Section 3.1.5, BPT12]) with the monomials of the vector `monomials`.
 Given a monomial ``x^\\alpha = x_1^{\\alpha_1} \\cdots x_n^{\\alpha_n}`` of degree ``d = \\sum_{i=1}^n \\alpha_i``,
@@ -31,7 +31,7 @@ Society for Industrial and Applied Mathematics (2012).
 *Integration and optimization of multivariate polynomials by restriction onto a random subspace.*
 Foundations of Computational Mathematics 7.2 (2007): 229-244.
 """
-struct ScaledMonomial <: AbstractMonomial end
+struct ScaledMonomial <: AbstractMonomialBasis end
 
 function (m::MStruct{ScaledMonomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
     exp = a .+ b
