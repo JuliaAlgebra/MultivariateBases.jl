@@ -46,6 +46,7 @@ Legendre
 ChebyshevFirstKind
 ChebyshevSecondKind
 Trigonometric
+TrigEvalMatrix
 ```
 
 ## Additional basis
