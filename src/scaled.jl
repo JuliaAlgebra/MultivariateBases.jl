@@ -33,6 +33,13 @@ Foundations of Computational Mathematics 7.2 (2007): 229-244.
 """
 struct ScaledMonomial <: AbstractMonomialBasis end
 
+function SA.term_product_style(
+    ::MStruct{ScaledMonomial,V,E,E,<:FullBasis},
+    ::MP.AbstractMonomialOrdering,
+) where {V,E}
+    return SA.OrderedTermProduct()
+end
+
 function (m::MStruct{ScaledMonomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
     exp = a .+ b
     α = prod(eachindex(exp); init = inv(binomial(sum(exp), sum(a)))) do i
@@ -55,13 +62,6 @@ _float(::Type{T}) where {T<:Number} = float(T)
 _float(::Type{F}) where {F} = MA.promote_operation(*, Float64, F)
 
 _promote_coef(::Type{T}, ::Type{ScaledMonomial}) where {T} = _float(T)
-
-function MP.polynomial(f::Function, basis::SubBasis{ScaledMonomial})
-    return MP.polynomial(
-        i -> scaling(basis.keys[i]) * f(i),
-        keys_as_monomials(basis),
-    )
-end
 
 function Base.promote_rule(
     ::Type{SubBasis{ScaledMonomial,M,V}},

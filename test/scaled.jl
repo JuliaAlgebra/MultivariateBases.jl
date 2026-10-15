@@ -1,3 +1,7 @@
+if !@isdefined api_test
+    include("utils.jl")
+end
+
 using Test
 using MultivariateBases
 using DynamicPolynomials
@@ -5,33 +9,35 @@ using DynamicPolynomials
 
 @testset "Linear" begin
     basis = MB.SubBasis{MB.ScaledMonomial}([x, y])
-    @test polynomial_type(basis, Int) == polynomial_type(x, Float64)
-    @test polynomial(i -> i^2, basis) == 4x + y
+    @test polynomial_type(basis, Int) == typeof(polynomial(i -> i^2, basis))
+    @test monomial_expansion(polynomial(i -> i^2, basis)) == 4x + y
     @test coefficients(x + 4y, basis) == [4, 1]
 end
 @testset "Affine" begin
     # It will be sorted and 1 will be moved at the end
     basis = MB.SubBasis{MB.ScaledMonomial}([1, x, y])
-    @test polynomial_type(basis, Int) == polynomial_type(x, Float64)
-    @test polynomial(i -> i^2, basis) == 9x + 4y + 1
+    @test polynomial_type(basis, Int) == typeof(polynomial(i -> i^2, basis))
+    @test monomial_expansion(polynomial(i -> i^2, basis)) == 9x + 4y + 1
     @test coefficients(9 + x + 4y, basis) == [9, 4, 1]
 end
 @testset "Quadratic" begin
     basis = MB.SubBasis{MB.ScaledMonomial}([x^2, x * y, y^2])
-    @test polynomial_type(basis, Int) == polynomial_type(x, Float64)
-    @test polynomial(i -> i^2, basis) == 9x^2 + 4 * √2 * x * y + y^2
+    @test polynomial_type(basis, Int) == typeof(polynomial(i -> i^2, basis))
+    @test monomial_expansion(polynomial(i -> i^2, basis)) ==
+          9x^2 + 4 * √2 * x * y + y^2
     p = x^2 + 4x * y + 9y^2
     @test coefficients(p, basis) == [9, 4 / √2, 1]
     a = MB.algebra_element(p)
     @test SA.coeffs(a, basis) == [9, 4 / √2, 1]
     full = MB.FullBasis{MB.ScaledMonomial}(variables(p))
     @test SA.coeffs(a, full) == SA.SparseCoefficients(
-        exponents.(monomial_vector([y^2, x * y, x^2])),
+        [[0, 2], [1, 1], [2, 0]],
         [9, 4 / √2, 1],
+        SA.comparable(full),
     )
-    @test polynomial(basis[1]) == y^2
-    @test polynomial(basis[2]) == √2 * x * y
-    @test polynomial(basis[3]) == x^2
+    @test monomial_expansion(basis[1]) == y^2
+    @test monomial_expansion(basis[2]) == √2 * x * y
+    @test monomial_expansion(basis[3]) == x^2
 end
 @testset "coeffs(Polynomial{ScaledMonomial}, FullBasis{Monomial})" begin
     mono_full = MB.FullBasis{MB.Monomial}([x, y])
@@ -77,7 +83,7 @@ end
     monos = [1, y, x]
     basis = MB.SubBasis{MB.ScaledMonomial}(monos)
     for (i, e) in enumerate(basis)
-        @test polynomial(e) == monos[i]
+        @test monomial_expansion(e) == monos[i]
     end
 end
 

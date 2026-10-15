@@ -22,6 +22,31 @@ end
 
 DP.@polyvar x y
 
+@testset "Explicit conversion between basis families" begin
+    monomial_basis = MB.FullBasis{MB.Monomial}(x * y)
+    for (B, expected) in ((MB.ScaledMonomial, 2x^2), (MB.Chebyshev, 4x^2 - 2))
+        full = MB.FullBasis{B}(x * y)
+        element = full[[2, 0]]
+        t = SA.Term(2, element)
+        p = MB.algebra_element(t)
+        @test MP.polynomial_type(full, Int) === typeof(p)
+        @test MP.polynomial(p) === p
+        @test MB.explicit_basis(t) == SA.SubBasis(full, [[2, 0]])
+        @test MB.convert_basis(monomial_basis, t) ≈ expected
+        @test 2 * MB.convert_basis(monomial_basis, element) ≈ expected
+        @test typeof(zero(typeof(p))) === typeof(p)
+        @test iszero(zero(typeof(p)))
+        for op in (+, -, *)
+            @test_throws ArgumentError op(p, MP.polynomial(x))
+            @test_throws ArgumentError op(MP.polynomial(x), p)
+        end
+        sub = MB.SubBasis{B}([x^2, y^2])
+        @test MP.variables(sub) == [x, y]
+        @test sub.keys == [[0, 2], [2, 0]]
+        @test full[[y^2]].keys == [[0, 2]]
+    end
+end
+
 @testset "Scaled conversion and adjoint" begin
     mono = MB.FullBasis{MB.Monomial}(MP.variables(x * y))
     scaled = MB.FullBasis{MB.ScaledMonomial}(MP.variables(x * y))
