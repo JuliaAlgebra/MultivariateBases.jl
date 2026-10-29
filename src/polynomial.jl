@@ -17,8 +17,6 @@ function Base.hash(p::Polynomial{B}, u::UInt) where {B<:_Basis}
 end
 
 MP.isconstant(p::Polynomial{<:_Basis}) = all(iszero, MP.exponents(p))
-MP.monomial_type(::Type{P}) where {P<:Polynomial{<:_Basis}} = P
-MP.monomial_type(p::Polynomial{<:_Basis}) = typeof(p)
 MP.nvariables(p::Polynomial{<:_Basis}) = MP.nvariables(p.variables)
 
 function MP.algebra_element(p::Polynomial{B}) where {B<:_Basis}
