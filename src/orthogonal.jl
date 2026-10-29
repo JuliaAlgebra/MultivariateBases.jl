@@ -145,7 +145,7 @@ function _covering(b::FullBasis{B}, exps) where {B}
             end
         end
     end
-    return sort!(collect(m); lt = MP.ordering(b)())
+    return sort!(collect(m); lt = MP.ordering(b))
 end
 
 function explicit_basis_covering(
