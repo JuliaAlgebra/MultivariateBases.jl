@@ -85,5 +85,3 @@ for op in [:+, :-, :*]
         end
     end
 end
-
-Base.:*(α::Number, p::Polynomial{<:_Basis}) = SA.algebra_element(SA.Term(α, p))
