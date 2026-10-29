@@ -1,10 +1,6 @@
 # Basis-specific operations that currently expand to the monomial basis.
-const _BasisPolynomial{T} = SA.AlgebraElement{
-    T,
-    <:SA.StarAlgebra{
-        <:Variables{<:Union{ScaledMonomial,AbstractMultipleOrthogonal}},
-    },
-}
+const _BasisPolynomial{T} =
+    SA.AlgebraElement{T,<:SA.StarAlgebra{<:Variables{<:_Basis}}}
 
 function _monomial_expansion(p::_BasisPolynomial)
     return convert_basis(FullBasis{Monomial}(MP.variables(p)), p)

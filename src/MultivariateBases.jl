@@ -63,6 +63,7 @@ include("chebyshev.jl")
 include("trigonometric.jl")
 include("lagrange.jl")
 include("quotient.jl")
+include("polynomial.jl")
 
 function algebra(basis::QuotientBasis{<:Polynomial{B,V}}) where {B,V}
     mstruct = if MP.is_commutative(V)
