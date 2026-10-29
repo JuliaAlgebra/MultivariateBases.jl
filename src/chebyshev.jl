@@ -1,3 +1,10 @@
+function _collect_if_tuple(t::Tuple)
+    return collect(t)
+end
+function _collect_if_tuple(v::AbstractVector)
+    return v
+end
+
 abstract type AbstractChebyshev <: AbstractGegenbauer end
 
 _promote_div(::Type{I}) where {I<:Integer} = Rational{I}
@@ -120,11 +127,17 @@ function SA.coeffs(
     # Need to make A square so that it's UpperTriangular
     extended = SA.SubBasis(parent(source), sub.keys)
     ext = _collect_if_tuple(SA.coeffs(algebra_element(cfs, source), extended))
+    T = SA.promote_coefficient_type(
+        SA.coeffs,
+        eltype(ext),
+        typeof(source),
+        typeof(target),
+    )
     return SA.SparseCoefficients(
         sub.keys,
         #transformation_to(sub, extended) \ ext, # Julia v1.6 converts the matrix to the eltype of the `result` which is bad for JuMP
         LinearAlgebra.ldiv!(
-            zeros(_promote_coef(eltype(ext), Chebyshev), length(sub)),
+            zeros(T, length(sub)),
             transformation_to(sub, extended),
             ext,
         ),

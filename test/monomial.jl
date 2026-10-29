@@ -1,3 +1,7 @@
+if !@isdefined api_test
+    include("utils.jl")
+end
+
 using Test
 using MultivariateBases
 const MB = MultivariateBases
@@ -115,9 +119,10 @@ function test_monomial(x, y)
     # algebra's ordering. With the old `isless` default, canonical would
     # reorder [1,0],[0,2] to [0,2],[1,0], silently swapping coefficients.
     function test_graded_order(ae)
-        MA.operate!(SA.canonical, SA.coeffs(ae))
-        keys = collect(SA.keys(SA.coeffs(ae)))
-        vals = collect(SA.values(SA.coeffs(ae)))
+        cfs = MB.sparse_coefficients(ae)
+        MA.operate!(SA.canonical, cfs)
+        keys = collect(SA.keys(cfs))
+        vals = collect(SA.values(cfs))
         return keys, vals
     end
     # Use FullBasis from a polynomial to get the native exponent type

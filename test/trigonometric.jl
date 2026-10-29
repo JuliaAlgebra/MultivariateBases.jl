@@ -1,5 +1,6 @@
 using Test
 using MultivariateBases
+import MultivariateBases as MB
 using DynamicPolynomials
 
 @testset "StarAlgebras" begin
@@ -12,7 +13,7 @@ using DynamicPolynomials
     @test c.coeffs ==
           MB.sparse_coefficients(3 // 8 + 1 // 2 * x^3 + 1 // 8 * x^7)
     d = MB.algebra_element(
-        MB.sparse_coefficients(1//1 * constant_monomial(typeof(x))),
+        MB.sparse_coefficients(1//1 * constant_monomial(x)),
         full,
     )
     e = MB.algebra_element(MB.sparse_coefficients(1//1 * x^0), full)

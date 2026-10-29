@@ -1,3 +1,8 @@
+using Test
+using DynamicPolynomials
+import MultivariateBases as MB
+import StarAlgebras as SA
+
 struct ImRem # Reduce modulo `x^2 = -1`
 end
 function Base.rem(m::AbstractMonomial, ::ImRem)

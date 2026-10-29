@@ -1,3 +1,7 @@
+if !@isdefined api_test
+    include("utils.jl")
+end
+
 using Test
 using MultivariateBases
 
