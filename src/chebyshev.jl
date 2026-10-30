@@ -51,20 +51,21 @@ function (m::MStruct{B,V,E})(
 ) where {B<:AbstractMonomialIndexed,V,E}
     exps = [zero.(a)]
     coefs = [1 // 1]
+    # findall returns ascending indices; merge them in the same order.
     vars_a = findall(!iszero, a)
     var_state_a = iterate(vars_a)
     vars_b = findall(!iszero, b)
     var_state_b = iterate(vars_b)
     while !isnothing(var_state_a) || !isnothing(var_state_b)
         if isnothing(var_state_a) ||
-           (!isnothing(var_state_b) && var_state_b[1] > var_state_a[1])
+           (!isnothing(var_state_b) && var_state_b[1] < var_state_a[1])
             var_b, state_b = var_state_b
             for i in eachindex(exps)
                 exps[i] = _increment!(exps[i], b[var_b], var_b)
             end
             var_state_b = iterate(vars_b, state_b)
         elseif isnothing(var_state_b) ||
-               (!isnothing(var_state_a) && var_state_a[1] > var_state_b[1])
+               (!isnothing(var_state_a) && var_state_a[1] < var_state_b[1])
             var_a, state_a = var_state_a
             for i in eachindex(exps)
                 exps[i] = _increment!(exps[i], a[var_a], var_a)
