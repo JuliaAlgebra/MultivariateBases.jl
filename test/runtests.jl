@@ -248,7 +248,9 @@ function coefficient_test(
 end
 
 for file in readdir(@__DIR__)
-    if endswith(file, ".jl") && !in(file, ["runtests.jl"])
+    if endswith(file, ".jl") &&
+       file != "runtests.jl" &&
+       (isempty(ARGS) || file in ARGS)
         @testset "$file" begin
             include(joinpath(@__DIR__, file))
         end
