@@ -18,7 +18,7 @@ explicit_basis_covering
 ## Basis elements
 
 ```@docs
-Polynomial
+BasisElement
 SemisimpleElement
 ```
 

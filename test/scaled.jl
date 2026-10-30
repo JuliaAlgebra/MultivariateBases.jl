@@ -39,7 +39,7 @@ end
     @test monomial_expansion(basis[2]) == √2 * x * y
     @test monomial_expansion(basis[3]) == x^2
 end
-@testset "coeffs(Polynomial{ScaledMonomial}, FullBasis{Monomial})" begin
+@testset "coeffs(BasisElement{ScaledMonomial}, FullBasis{Monomial})" begin
     mono_full = MB.FullBasis{MB.Monomial}([x, y])
     # ScaledMonomial(xy) = √2·xy, so coefficient in Monomial basis is √2
     p_xy = collect(MB.SubBasis{MB.ScaledMonomial}([x * y]))[1]

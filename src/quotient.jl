@@ -28,7 +28,7 @@ end
 function SA.adjoint_coeffs(
     coeffs,
     src::SubBasis{Monomial},
-    dest::QuotientBasis{<:Polynomial{Monomial}},
+    dest::QuotientBasis{<:BasisElement{Monomial}},
 )
     return map(src) do poly
         return sum(MP.terms(rem(MP.polynomial(poly), dest.divisor))) do t

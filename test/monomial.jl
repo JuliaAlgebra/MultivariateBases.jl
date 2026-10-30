@@ -18,7 +18,7 @@ function test_monomial(x, y)
         @test vars(exponents(x^3)) != vars(exponents(x^2))
         o = vars(exponents(constant_monomial(x^2)))
         @test isone(o)
-        @test one(vars) isa MB.Polynomial
+        @test one(vars) isa MB.BasisElement
         @test isone(one(vars))
         vars2 = MB.Variables{MB.Monomial}(_copy(variables(x)))
         @test vars == vars2
@@ -336,10 +336,10 @@ import MutableArithmetics as MA
         @test y^2 in monos
     end
 
-    @testset "NC Polynomial type" begin
-        p_xy = MB.Polynomial{MB.Monomial}(x * y)
-        p_yx = MB.Polynomial{MB.Monomial}(y * x)
-        # These should be distinct NC Polynomial wrappers
+    @testset "NC BasisElement type" begin
+        p_xy = MB.BasisElement{MB.Monomial}(x * y)
+        p_yx = MB.BasisElement{MB.Monomial}(y * x)
+        # These should be distinct NC BasisElement wrappers
         @test p_xy != p_yx
         @test monomial(p_xy) == x * y
         @test monomial(p_yx) == y * x

@@ -221,7 +221,7 @@ function MP.coefficients(
 end
 
 function SA.coeffs(
-    p::Polynomial{B},
+    p::BasisElement{B},
     basis::SubBasis{Monomial},
 ) where {B<:AbstractMultipleOrthogonal}
     full = implicit_basis(basis)
@@ -229,7 +229,7 @@ function SA.coeffs(
 end
 
 function SA.coeffs(
-    p::Polynomial{B},
+    p::BasisElement{B},
     ::FullBasis{Monomial},
 ) where {B<:AbstractMultipleOrthogonal}
     mono = MP.monomial(p)
