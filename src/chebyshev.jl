@@ -8,6 +8,8 @@ end
 abstract type AbstractChebyshev <: AbstractGegenbauer end
 
 _promote_div(::Type{I}) where {I<:Integer} = Rational{I}
+# Monomials have `Bool` coefficients but `Rational{Bool}` cannot represent `-1`
+_promote_div(::Type{Bool}) = Rational{Int}
 _promote_div(::Type{T}) where {T<:Number} = MA.promote_operation(/, T, Int)
 # Could be for instance `MathOptInterface.ScalarAffineFunction{Float64}`
 # which does not support division with `Int`

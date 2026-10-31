@@ -6,7 +6,7 @@ const MB = MultivariateBases
 
 @testset "implicit_basis on generic SA.SubBasis" begin
     # `MB.implicit_basis` was historically only defined on `MB.SubBasis`
-    # (= `SA.SubBasis{Polynomial}`). It is now defined on any `SA.SubBasis`,
+    # (= `SA.SubBasis{BasisElement}`). It is now defined on any `SA.SubBasis`,
     # so that a `SubBasis` whose parent is a non-polynomial `SA.ImplicitBasis`
     # (such as the `SA.DiracBasis` wrapping a custom algebra of monoid elements
     # used by the CHSH tutorial) routes through the same fallback.

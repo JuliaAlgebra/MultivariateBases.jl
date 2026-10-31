@@ -3,20 +3,19 @@ module MultivariateBases
 import MutableArithmetics as MA
 import StarAlgebras as SA
 import MultivariatePolynomials as MP
+import StarAlgebras: algebra_element
 
 import MultivariatePolynomials:
     AbstractMonomialIndexed,
     AbstractMonomialBasis,
     Monomial,
-    Polynomial,
+    BasisElement,
     Variables,
     FullBasis,
     SubBasis,
     MonomialIndexedBasis,
     MStruct,
     algebra,
-    algebra_element,
-    sparse_coefficients,
     convert_basis,
     implicit,
     implicit_basis,
@@ -47,7 +46,6 @@ export AbstractMultipleOrthogonal,
 export AbstractGegenbauer,
     Legendre, Chebyshev, ChebyshevFirstKind, ChebyshevSecondKind, Trigonometric
 export algebra_element,
-    sparse_coefficients,
     univariate_orthogonal_basis,
     reccurence_first_coef,
     reccurence_second_coef,
@@ -64,7 +62,7 @@ include("trigonometric.jl")
 include("lagrange.jl")
 include("quotient.jl")
 
-function algebra(basis::QuotientBasis{<:Polynomial{B,V}}) where {B,V}
+function algebra(basis::QuotientBasis{<:BasisElement{B,V}}) where {B,V}
     mstruct = if MP.is_commutative(V)
         MStruct(basis)
     else
@@ -80,9 +78,9 @@ end
 
 function MA.promote_operation(
     ::typeof(algebra),
-    BT::Type{<:QuotientBasis{Polynomial{B,V,E}}},
+    BT::Type{<:QuotientBasis{BasisElement{B,V,E}}},
 ) where {B,V,E}
-    P = Polynomial{B,V,E}
+    P = BasisElement{B,V,E}
     MS = if MP.is_commutative(V)
         MStruct{B,V,E,SA.key_type(BT),BT}
     else

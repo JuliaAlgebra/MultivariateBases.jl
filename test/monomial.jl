@@ -4,6 +4,7 @@ end
 
 using Test
 using MultivariateBases
+import StarAlgebras as SA
 const MB = MultivariateBases
 using MultivariatePolynomials
 
@@ -18,7 +19,7 @@ function test_monomial(x, y)
         @test vars(exponents(x^3)) != vars(exponents(x^2))
         o = vars(exponents(constant_monomial(x^2)))
         @test isone(o)
-        @test one(vars) isa MB.Polynomial
+        @test one(vars) isa MB.BasisElement
         @test isone(one(vars))
         vars2 = MB.Variables{MB.Monomial}(_copy(variables(x)))
         @test vars == vars2
@@ -119,7 +120,7 @@ function test_monomial(x, y)
     # algebra's ordering. With the old `isless` default, canonical would
     # reorder [1,0],[0,2] to [0,2],[1,0], silently swapping coefficients.
     function test_graded_order(ae)
-        cfs = MB.sparse_coefficients(ae)
+        cfs = SA.coeffs(ae)
         MA.operate!(SA.canonical, cfs)
         keys = collect(SA.keys(cfs))
         vals = collect(SA.values(cfs))
@@ -129,13 +130,13 @@ function test_monomial(x, y)
     # (Tuple for TypedPolynomials, Vector for DynamicPolynomials)
     full = MB.FullBasis{MB.Monomial}(x * y)
     # Get the exponent keys from the FullBasis directly
-    e_x = MB.sparse_coefficients(x+0*y).basis_elements[1]
-    e_y2 = MB.sparse_coefficients(y^2+0*x).basis_elements[1]
-    e_00 = MB.sparse_coefficients(1*one(x*y)).basis_elements[1]
+    e_x = SA.coeffs(x+0*y).basis_elements[1]
+    e_y2 = SA.coeffs(y^2+0*x).basis_elements[1]
+    e_00 = SA.coeffs(1*one(x*y)).basis_elements[1]
 
-    @testset "sparse_coefficients ordering" begin
+    @testset "coeffs ordering" begin
         p = x + y^2  # mixes degree 1 (x) and degree 2 (y²)
-        ae = MB.algebra_element(MB.sparse_coefficients(p), full)
+        ae = MB.algebra_element(SA.coeffs(p), full)
         keys, vals = test_graded_order(ae)
         @test keys == [e_x, e_y2]
         @test vals == [1, 1]
@@ -336,10 +337,10 @@ import MutableArithmetics as MA
         @test y^2 in monos
     end
 
-    @testset "NC Polynomial type" begin
-        p_xy = MB.Polynomial{MB.Monomial}(x * y)
-        p_yx = MB.Polynomial{MB.Monomial}(y * x)
-        # These should be distinct NC Polynomial wrappers
+    @testset "NC BasisElement type" begin
+        p_xy = MB.BasisElement{MB.Monomial}(x * y)
+        p_yx = MB.BasisElement{MB.Monomial}(y * x)
+        # These should be distinct NC BasisElement wrappers
         @test p_xy != p_yx
         @test monomial(p_xy) == x * y
         @test monomial(p_yx) == y * x

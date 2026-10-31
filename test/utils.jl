@@ -68,8 +68,10 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         _test_basis(basis)
         @test basis isa MB.explicit_basis_type(typeof(full_basis))
         for i in eachindex(basis)
-            poly =
-                MB.Polynomial(MB.Variables{B}(variables(basis)), basis.keys[i])
+            poly = MB.BasisElement(
+                MB.Variables{B}(variables(basis)),
+                basis.keys[i],
+            )
             @test basis[i] == poly
             @test basis[poly] == i
         end
@@ -97,14 +99,14 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         end
     end
     mono = x[1]^2 * x[2]^3
-    p = MB.Polynomial(MB.Variables{B}(variables(mono)), exponents(mono))
+    p = MB.BasisElement(MB.Variables{B}(variables(mono)), exponents(mono))
     @test full_basis[p] == exponents(mono)
     @test full_basis[exponents(mono)] == p
     a = MB.algebra_element(p)
     @test polynomial_type(typeof(p), TypeA) == SA.similar_type(typeof(a), TypeA)
     @test variables(a) == x
     @test typeof(polynomial(a)) == polynomial_type(typeof(a))
-    @test typeof(polynomial(a)) == polynomial_type(typeof(p), Int)
+    @test typeof(polynomial(a)) == polynomial_type(typeof(p), Bool)
     @test a ≈ a
     if B == MB.Monomial
         @test a ≈ monomial(p)
@@ -122,7 +124,7 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
           _wrap(MB.SA.trim_LaTeX(mime, sprint(show, mime, monomial(p)))) *
           " \$\$"
     const_mono = constant_monomial(prod(x))
-    const_poly = MB.Polynomial(
+    const_poly = MB.BasisElement(
         MB.Variables{B}(variables(const_mono)),
         exponents(const_mono),
     )
@@ -135,8 +137,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     end
     @test iszero(MA.operate!(-, copy(const_alg_el), const_alg_el))
     @test iszero(MA.operate!(+, -const_alg_el, const_alg_el))
-    @test typeof(MB.sparse_coefficients(sum(x))) ==
-          MA.promote_operation(MB.sparse_coefficients, typeof(sum(x)))
+    @test typeof(SA.coeffs(sum(x))) ==
+          MA.promote_operation(SA.coeffs, typeof(sum(x)))
     @test typeof(MB.algebra_element(sum(x))) ==
           MA.promote_operation(MB.algebra_element, typeof(sum(x)))
     @test const_alg_el(x => ones(length(x))) == const_mono

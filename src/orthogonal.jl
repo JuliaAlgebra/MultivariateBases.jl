@@ -145,7 +145,7 @@ function _covering(b::FullBasis{B}, exps) where {B}
             end
         end
     end
-    return sort!(collect(m); lt = MP.ordering(b)())
+    return sort!(collect(m); lt = MP.ordering(b))
 end
 
 function explicit_basis_covering(
@@ -221,7 +221,7 @@ function MP.coefficients(
 end
 
 function SA.coeffs(
-    p::Polynomial{B},
+    p::BasisElement{B},
     basis::SubBasis{Monomial},
 ) where {B<:AbstractMultipleOrthogonal}
     full = implicit_basis(basis)
@@ -229,11 +229,11 @@ function SA.coeffs(
 end
 
 function SA.coeffs(
-    p::Polynomial{B},
+    p::BasisElement{B},
     ::FullBasis{Monomial},
 ) where {B<:AbstractMultipleOrthogonal}
     mono = MP.monomial(p)
-    return sparse_coefficients(
+    return SA.coeffs(
         prod(MP.powers(mono); init = MP.constant_monomial(mono)) do (var, deg)
             return univariate_orthogonal_basis(B, var, deg)[deg+1]
         end,

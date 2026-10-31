@@ -48,7 +48,7 @@ function (m::MStruct{ScaledMonomial,V,E})(a::E, b::E, ::Type{E}) where {V,E}
     return SA.SparseCoefficients((exp,), (√α,), SA.comparable(m.basis))
 end
 
-function SA.coeffs(p::Polynomial{ScaledMonomial}, b::FullBasis{Monomial})
+function SA.coeffs(p::BasisElement{ScaledMonomial}, b::FullBasis{Monomial})
     return SA.SparseCoefficients(
         (p.exponents,),
         (scaling(p.exponents),),

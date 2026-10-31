@@ -18,7 +18,7 @@ end
 DP.@polyvar x y
 
 @testset "Shared monomial core" begin
-    @test MB.Polynomial === MP.Polynomial
+    @test MB.BasisElement === MP.BasisElement
     @test MB.FullBasis === MP.FullBasis
     @test MB.MStruct === MP.MStruct
     full = MB.FullBasis{MB.Monomial}(MP.variables(x * y))
@@ -27,13 +27,13 @@ DP.@polyvar x y
     @test collect(SA.values(SA.coeffs(a * b))) == [6]
     @test only(SA.keys(SA.coeffs(a * b))) == [1, 1]
     @test MB.algebra_element(a) === a
-    @test MB.Polynomial{MB.Monomial}(x) isa MP.AbstractMonomial
+    @test MB.BasisElement{MB.Monomial}(x) isa MP.AbstractMonomial
 end
 
 @testset "Scaled basis" begin
     full = MB.FullBasis{MB.ScaledMonomial}(MP.variables(x * y))
     @test MB.Monomial !== MB.ScaledMonomial
-    @test one(full.map) isa MB.Polynomial{MB.ScaledMonomial}
+    @test one(full.map) isa MB.BasisElement{MB.ScaledMonomial}
     a = indexed_element(full, [1, 0], 1.0)
     b = indexed_element(full, [0, 1], 1.0)
     @test only(SA.values(SA.coeffs(a * b))) ≈ inv(sqrt(2.0))
