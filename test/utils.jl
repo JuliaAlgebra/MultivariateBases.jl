@@ -137,8 +137,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     end
     @test iszero(MA.operate!(-, copy(const_alg_el), const_alg_el))
     @test iszero(MA.operate!(+, -const_alg_el, const_alg_el))
-    @test typeof(MB.sparse_coefficients(sum(x))) ==
-          MA.promote_operation(MB.sparse_coefficients, typeof(sum(x)))
+    @test typeof(SA.coeffs(sum(x))) ==
+          MA.promote_operation(SA.coeffs, typeof(sum(x)))
     @test typeof(MB.algebra_element(sum(x))) ==
           MA.promote_operation(MB.algebra_element, typeof(sum(x)))
     @test const_alg_el(x => ones(length(x))) == const_mono

@@ -4,6 +4,7 @@ end
 
 using Test
 using MultivariateBases
+import StarAlgebras as SA
 const MB = MultivariateBases
 using MultivariatePolynomials
 
@@ -119,7 +120,7 @@ function test_monomial(x, y)
     # algebra's ordering. With the old `isless` default, canonical would
     # reorder [1,0],[0,2] to [0,2],[1,0], silently swapping coefficients.
     function test_graded_order(ae)
-        cfs = MB.sparse_coefficients(ae)
+        cfs = SA.coeffs(ae)
         MA.operate!(SA.canonical, cfs)
         keys = collect(SA.keys(cfs))
         vals = collect(SA.values(cfs))
@@ -129,13 +130,13 @@ function test_monomial(x, y)
     # (Tuple for TypedPolynomials, Vector for DynamicPolynomials)
     full = MB.FullBasis{MB.Monomial}(x * y)
     # Get the exponent keys from the FullBasis directly
-    e_x = MB.sparse_coefficients(x+0*y).basis_elements[1]
-    e_y2 = MB.sparse_coefficients(y^2+0*x).basis_elements[1]
-    e_00 = MB.sparse_coefficients(1*one(x*y)).basis_elements[1]
+    e_x = SA.coeffs(x+0*y).basis_elements[1]
+    e_y2 = SA.coeffs(y^2+0*x).basis_elements[1]
+    e_00 = SA.coeffs(1*one(x*y)).basis_elements[1]
 
-    @testset "sparse_coefficients ordering" begin
+    @testset "coeffs ordering" begin
         p = x + y^2  # mixes degree 1 (x) and degree 2 (y²)
-        ae = MB.algebra_element(MB.sparse_coefficients(p), full)
+        ae = MB.algebra_element(SA.coeffs(p), full)
         keys, vals = test_graded_order(ae)
         @test keys == [e_x, e_y2]
         @test vals == [1, 1]
