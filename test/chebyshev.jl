@@ -94,3 +94,13 @@ end
     @test collect(SA.adjoint_coeffs(g_cheby, mono_sub, cheby_sub)) ≈
           Ainv' * g_cheby
 end
+
+@testset "Multivariate products" begin
+    @polyvar x y
+    basis = MB.SubBasis{MB.Chebyshev}(MP.monomials([x, y], 0:3))
+    for i in eachindex(basis), j in eachindex(basis)
+        a = (1 // 1) * MB.algebra_element(basis[i])
+        b = (1 // 1) * MB.algebra_element(basis[j])
+        @test MP.polynomial(a * b) == MP.polynomial(a) * MP.polynomial(b)
+    end
+end
