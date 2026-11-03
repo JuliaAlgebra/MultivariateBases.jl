@@ -20,10 +20,7 @@ jobs:
         shell: julia --project=docs/ {0}
         run: |
           using Pkg
-          Pkg.add([
-              PackageSpec(name="StarAlgebras", rev="main"),
-              PackageSpec(path=pwd()),
-          ])
+          Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
       - name: Build and deploy
         env:
