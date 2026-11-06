@@ -34,6 +34,12 @@ DP.@polyvar x y
         @test MB.explicit_basis(t) == SA.SubBasis(full, [[2, 0]])
         @test MB.convert_basis(monomial_basis, t) ≈ expected
         @test 2 * MB.convert_basis(monomial_basis, element) ≈ expected
+        q = MP.subs(p, x => 2y)
+        @test SA.basis(q) isa MB.FullBasis{B}
+        q_mono = MB.FullBasis{MB.Monomial}(MP.variables(q))
+        @test MB.convert_basis(q_mono, q) ≈ MP.subs(expected, x => 2y)
+        @test MB.convert_basis(monomial_basis, p - q) ≈
+              expected - MP.subs(expected, x => 2y)
         @test typeof(zero(typeof(p))) === typeof(p)
         @test iszero(zero(typeof(p)))
         for op in (+, -, *)
