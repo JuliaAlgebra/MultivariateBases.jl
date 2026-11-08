@@ -113,13 +113,20 @@ end
 function transformation_to(
     source::SubBasis{Chebyshev},
     target::SubBasis{Monomial},
-)
-    A = zeros(Float64, length(target), length(source))
+    ::Type{T} = Float64,
+) where {T}
+    A = zeros(T, length(target), length(source))
     for (i, cheby) in enumerate(source)
         A[:, i] = SA.coeffs(algebra_element(cheby), target)
     end
     return LinearAlgebra.UpperTriangular(A)
 end
+
+# The matrix entries are integers so we use the coefficient type to keep exact
+# arithmetic, e.g., for `Rational`, unless it is not a number, e.g., for
+# `JuMP.AffExpr`, see the comment below.
+_matrix_eltype(::Type{T}) where {T<:Number} = T
+_matrix_eltype(::Type) = Float64
 
 function SA.coeffs(
     cfs,
@@ -141,7 +148,7 @@ function SA.coeffs(
         #transformation_to(sub, extended) \ ext, # Julia v1.6 converts the matrix to the eltype of the `result` which is bad for JuMP
         LinearAlgebra.ldiv!(
             zeros(T, length(sub)),
-            transformation_to(sub, extended),
+            transformation_to(sub, extended, _matrix_eltype(T)),
             ext,
         ),
         SA.comparable(target),

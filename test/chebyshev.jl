@@ -79,6 +79,15 @@ end
     )
 end
 
+@testset "Exact conversion" begin
+    @polyvar x
+    full = MB.FullBasis{MB.Chebyshev}([x])
+    mono = MB.FullBasis{MB.Monomial}([x])
+    for p in (3x^2 + 1, (1 // 3) * x^2 + 1 // 7, (big(1) // 3) * x^4)
+        @test MB.convert_basis(mono, MB.convert_basis(full, p)) == p
+    end
+end
+
 @testset "Cross-algebra adjoint vs transformation_to" begin
     @polyvar x
     monos = MP.monomials(x, 0:3)
