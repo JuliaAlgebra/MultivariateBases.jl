@@ -30,6 +30,9 @@ Base.zero(::Type{TypeB}) = TypeB()
 Base.iszero(::TypeB) = false
 LinearAlgebra.adjoint(::TypeB) = TypeB()
 
+# Values represented by `TypeA` and `TypeB` are `Float64`
+MB._matrix_eltype(::Type{<:Union{TypeA,TypeB}}) = Float64
+
 Base.:*(::Float64, ::TypeA) = TypeB()
 Base.:*(::TypeA, ::Float64) = TypeB()
 Base.:*(::Float64, ::TypeB) = TypeB()
