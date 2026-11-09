@@ -122,11 +122,18 @@ function transformation_to(
     return LinearAlgebra.UpperTriangular(A)
 end
 
-# The matrix entries are integers so we use the coefficient type to keep exact
-# arithmetic, e.g., for `Rational`, unless it is not a number, e.g., for
-# `JuMP.AffExpr`, see the comment below.
+# The matrix entries are integers so we use the type of the values of the
+# coefficients to keep the accuracy, e.g., for `Rational` or `BigFloat`.
+# The matrix cannot use the coefficient type if it is not a number, e.g., for
+# `JuMP.AffExpr`, see the comment below, so we need the type of the values
+# it represents, see the JuMP extension.
 _matrix_eltype(::Type{T}) where {T<:Number} = T
-_matrix_eltype(::Type) = Float64
+
+function _matrix_eltype(::Type{T}) where {T}
+    return error(
+        "Cannot determine the type of the values represented by coefficients of type `$T`, define a method for `MultivariateBases._matrix_eltype(::Type{$T})`.",
+    )
+end
 
 function SA.coeffs(
     cfs,

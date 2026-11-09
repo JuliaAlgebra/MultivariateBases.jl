@@ -4,6 +4,8 @@ end
 
 using Test
 import LinearAlgebra
+import JuMP
+import MathOptInterface as MOI
 import MultivariatePolynomials as MP
 import StarAlgebras as SA
 using MultivariateBases
@@ -86,6 +88,16 @@ end
     for p in (3x^2 + 1, (1 // 3) * x^2 + 1 // 7, (big(1) // 3) * x^4)
         @test MB.convert_basis(mono, MB.convert_basis(full, p)) == p
     end
+    model = JuMP.GenericModel{BigFloat}()
+    JuMP.@variable(model, v)
+    @test MB._matrix_eltype(typeof(1 * v)) == BigFloat
+    @test MB._matrix_eltype(MOI.ScalarAffineFunction{BigFloat}) == BigFloat
+    @test MB._matrix_eltype(MOI.ScalarQuadraticFunction{BigFloat}) == BigFloat
+    @test_throws ErrorException MB._matrix_eltype(Vector{Int})
+    # `x^2 = (T_0 + T_2) / 2`
+    q = SA.coeffs(MB.convert_basis(full, v * x^2 + 1))
+    @test JuMP.isequal_canonical(q[[0]], v / 2 + 1)
+    @test JuMP.isequal_canonical(q[[2]], v / 2)
 end
 
 @testset "Cross-algebra adjoint vs transformation_to" begin
