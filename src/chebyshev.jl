@@ -79,11 +79,8 @@ function (m::MStruct{B,V,E})(
             var_state_b = iterate(vars_b, state_b)
         end
     end
-    # FIXME is `canonical` needed ?
-    return MA.operate!(
-        SA.canonical,
-        SA.SparseCoefficients(exps, coefs, SA.comparable(m.basis)),
-    )
+    # The products of the univariate polynomials are not sorted
+    return SA.sparse_coefficients(exps, coefs, SA.comparable(m.basis))
 end
 
 function _add_mul_scalar_vector!(res, ::SubBasis, scalar, vector)
