@@ -108,6 +108,23 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @test typeof(polynomial(a)) == polynomial_type(typeof(a))
     @test typeof(polynomial(a)) == polynomial_type(typeof(p), Bool)
     @test a ≈ a
+    expanded = monomial_expansion(a)
+    for s in (
+        (x[1] => 2x[2] + 1,),
+        (x[1] => x[1] * x[2] - 1,),
+        (x => [x[2], x[1]],),
+        (x[2] => 3,),
+    )
+        q = subs(a, s...)
+        @test SA.basis(q) isa MB.FullBasis{B}
+        @test monomial_expansion(q) ≈ subs(expanded, s...)
+    end
+    vals = [1 // 2, -2]
+    @test a(x => vals) ≈ expanded(x => vals)
+    @test a(vals) ≈ expanded(vals)
+    @test a(vals...) ≈ expanded(vals...)
+    @test a(tuple(vals...)) ≈ expanded(tuple(vals...))
+    @test iszero(zero(a)(vals))
     if B == MB.Monomial
         @test a ≈ monomial(p)
         @test monomial(p) ≈ a
@@ -145,8 +162,14 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
     @test const_alg_el(ones(length(x))) == const_mono
     @test const_alg_el(ones(length(x))...) == const_mono
     @test const_alg_el(tuple(ones(length(x))...)) == const_mono
-    @test subs(const_alg_el, x => ones(length(x))) == const_mono
-    @test const_alg_el(x[1] => x[2], x[2] => x[1]) == const_mono
+    # Substitutions keep the basis family
+    for q in (
+        subs(const_alg_el, x => ones(length(x))),
+        const_alg_el(x[1] => x[2], x[2] => x[1]),
+    )
+        @test SA.basis(q) isa MB.FullBasis{B}
+        @test monomial_expansion(q) == const_mono
+    end
     @test differentiate(const_alg_el, x) == differentiate(const_mono, x)
     @test differentiate(const_alg_el, x, 2) == differentiate(const_mono, x, 2)
     expanded = monomial_expansion(const_alg_el)
