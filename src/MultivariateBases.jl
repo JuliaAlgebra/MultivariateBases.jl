@@ -62,7 +62,15 @@ include("trigonometric.jl")
 include("lagrange.jl")
 include("quotient.jl")
 
-function algebra(basis::QuotientBasis{<:BasisElement{B,V}}) where {B,V}
+import SparseArrays
+include("macaulay.jl")
+
+function algebra(
+    basis::Union{
+        QuotientBasis{<:BasisElement{B,V}},
+        LinearQuotientBasis{<:BasisElement{B,V}},
+    },
+) where {B,V}
     mstruct = if MP.is_commutative(V)
         MStruct(basis)
     else
@@ -78,7 +86,12 @@ end
 
 function MA.promote_operation(
     ::typeof(algebra),
-    BT::Type{<:QuotientBasis{BasisElement{B,V,E}}},
+    BT::Type{
+        <:Union{
+            QuotientBasis{BasisElement{B,V,E}},
+            LinearQuotientBasis{BasisElement{B,V,E}},
+        },
+    },
 ) where {B,V,E}
     P = BasisElement{B,V,E}
     MS = if MP.is_commutative(V)

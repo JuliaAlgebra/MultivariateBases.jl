@@ -47,3 +47,17 @@ Trigonometric
 SimpleBasis
 SemisimpleBasis
 ```
+
+## Quotient basis
+
+```@docs
+LinearQuotientBasis
+```
+
+## Macaulay matrix
+
+```@docs
+LazyMatrix
+macaulay
+expand!
+```
