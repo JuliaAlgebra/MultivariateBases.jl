@@ -30,3 +30,28 @@ end
     q = MB.algebra_element(coeffs, basis)
     @test SA.adjoint_coeffs(q, explicit) == [3, -2, 1]
 end
+
+@testset "LinearQuotientBasis" begin
+    @polyvar x y
+    sub = MB.SubBasis{MB.Monomial}([1, y, x])
+    @test_throws DimensionMismatch MB.LinearQuotientBasis(sub, ones(2, 2))
+    # Quotient by the span of `x - y`
+    basis = MB.LinearQuotientBasis(sub, [1 0; 0 1; 0 1])
+    @test length(basis) == 2
+    @test sprint(show, basis) == "Quotient of dimension 2 of the span of $sub"
+    @test coefficients(2 + 3x + y, basis) == [2, 4]
+    @test iszero(coefficients(x - y, basis))
+    @test_throws ArgumentError coefficients(x^2, basis)
+    a = MB.algebra_element(2 + 3x + y)
+    @test SA.coeffs(a, basis) == [2, 4]
+    explicit = MB.explicit_basis(a)
+    exp = MB.algebra_element(SA.coeffs(a, explicit), explicit)
+    @test SA.coeffs(exp, basis) == [2, 4]
+    @test SA.adjoint_coeffs(
+        [5, 7],
+        MB.SubBasis{MB.Monomial}([y, x^2]),
+        basis,
+    ) == [7, 0]
+    q = MB.algebra_element([5, 7], basis)
+    @test SA.coeffs(q) == [5, 7]
+end
