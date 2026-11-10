@@ -60,7 +60,9 @@ include("legendre.jl")
 include("chebyshev.jl")
 include("trigonometric.jl")
 include("lagrange.jl")
+import SparseArrays
 include("quotient.jl")
+include("macaulay.jl")
 
 function algebra(basis::QuotientBasis{<:BasisElement{B,V}}) where {B,V}
     mstruct = if MP.is_commutative(V)
