@@ -2,6 +2,7 @@ using Test
 using DynamicPolynomials
 import MultivariateBases as MB
 import SparseArrays
+import TypedPolynomials
 
 function _test_rows(M::MB.LazyMatrix, expected_rows)
     A = Matrix(SparseArrays.sparse(M))
@@ -56,4 +57,14 @@ end
     M = MB.LazyMatrix([p, q])
     @test MB.expand!(M, MB.FixedShifts([x])) == 2
     _test_rows(M, [x * p, x * q])
+end
+
+@testset "Shifts in variables not in the polynomials" begin
+    # The type of the monomials of `q` does not contain `y` with
+    # `TypedPolynomials` so the shifts need the monomial type of the columns
+    TypedPolynomials.@polyvar x y
+    q = x^2 + 1
+    M = MB.macaulay([q], 3, (x, y))
+    @test MB.keys_as_monomials(M.row_shifts) == [1, y, x]
+    _test_rows(M, [q, x * q, y * q])
 end

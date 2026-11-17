@@ -53,8 +53,9 @@ function LazyMatrix(
     )
 end
 
-function MP.monomial_type(::Type{<:LazyMatrix{T,P}}) where {T,P}
-    return MP.monomial_type(P)
+# The variables of the columns may not all be in the polynomials
+function MP.monomial_type(::Type{<:LazyMatrix{T,P,V,B}}) where {T,P,V,B}
+    return MP.monomial_type(B)
 end
 
 MP.variables(M::LazyMatrix) = MP.variables(M.column_basis)
