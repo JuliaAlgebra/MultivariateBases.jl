@@ -60,4 +60,11 @@ QuotientBasis
 LazyMatrix
 macaulay
 expand!
+ColumnDegrees
+FixedShifts
+TargetColumns
+LeadingTargetColumns
+ShiftStatus
+is_saturated
+is_forever_trivial
 ```

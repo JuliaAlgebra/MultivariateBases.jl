@@ -132,8 +132,8 @@ function api_test(B::Type{<:MB.AbstractMonomialIndexed}, degree)
         @test a ≈ monomial(p)
         @test monomial(p) ≈ a
     else
-        @test !(a ≈ monomial(p))
-        @test !(monomial(p) ≈ a)
+        @test !(expanded ≈ monomial(p))
+        @test !(monomial(p) ≈ expanded)
     end
     _wrap(s) = (B == MB.Monomial ? s : "$B($s)")
     @test sprint(show, p) == _wrap(sprint(show, monomial(p)))
